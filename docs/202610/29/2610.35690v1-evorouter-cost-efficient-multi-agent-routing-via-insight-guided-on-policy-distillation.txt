@@ -1,0 +1,915 @@
+Title: EvoRouter: Cost-Efficient Multi-Agent Routing via Insight-Guided On-Policy Distillation
+
+URL Source: https://arxiv.org/pdf/2610.35690v1
+
+Published Time: Tue, 27 Oct 2026 03:07:29 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# EvoRouter: Cost-Efficient Multi-Agent Routing via Insight-Guided On-Policy Distillation 
+
+# Yitao Xiao ∗
+
+Beijing University of Posts and Telecommunications Beijing, China yitooooom@bupt.edu.cn 
+
+# Xu Zhang ∗
+
+Beijing University of Posts and Telecommunications Beijing, China zhangxu2024@bupt.edu.cn 
+
+# Ye Cheng †
+
+Beijing University of Posts and Telecommunications Beijing, China yecheng@bupt.edu.cn 
+
+# Shaoyong Guo 
+
+Beijing University of Posts and Telecommunications Beijing, China syguo@bupt.edu.cn 
+
+# Yan Sun 
+
+Beijing University of Posts and Telecommunications Beijing, China sunyan79@bupt.edu.cn 
+
+# Ziyue Zhu 
+
+Beijing University of Posts and Telecommunications Beijing, China zyzhu@bupt.edu.cn 
+
+# Sitao Xie 
+
+Fudan University, Shanghai Innovation Institute Shanghai, China 26113050151@m.fudan.edu.cn 
+
+# Guo Tong 
+
+Nanyang Technological University Singapore tong.guo@ntu.edu.sg 
+
+# Haoran Luo †
+
+Nanyang Technological University Singapore haoran.luo@ntu.edu.sg 
+
+## Abstract 
+
+Serving web queries at scale with multi-agent systems requires jointly configuring large language models, collaboration modes, agent counts, interaction rounds, and skills. However, the result-ing configuration space grows combinatorially, while sparse ex-ecution rewards provide limited fine-grained supervision for in-terdependent planning decisions. We propose EvoRouter , a self-evolving multi-agent routing framework driven by insight-guided on-policy distillation. A dedicated expert periodically synthesizes performance–cost feedback from configuration trajectories across tasks into reusable conditional routing insights about capability re-quirements, returns from resource scaling, and interactions among configuration choices. A privileged teacher combines these evolv-ing insights with current execution feedback to provide dense token-level supervision for the router’s own planning trajectories through on-policy distillation. Cost-aware reinforcement learning jointly optimizes task performance and computational cost. To-gether, these training signals internalize execution insights into the routing policy. The updated policy generates new trajectories that support subsequent insight extraction, forming an execution-driven self-improvement loop. We evaluate EvoRouter on 19 in-domain datasets spanning five domains and two out-of-domain benchmarks. EvoRouter achieves an average in-domain accuracy of 68.69%, out-performing the strongest routing baseline by 7.23 percentage points while reducing inference compute cost by 50.95%. Our code is open-sourced at https://github.com/CenYangtze/EvoRouter. 
+
+## Keywords 
+
+LLM Routing, Multi-Agent Systems, Recursive Self-Improvement, On-Policy Distillation, Reinforcement Learning 
+
+> ∗Equal contribution.
+> †Corresponding authors.
+
+Environment 
+
+MAS Router 
+
+MAS Execution 
+
+Multimodal 
+
+Math 
+
+Code 
+
+Retrieval Web Query 
+
+MAS Configuration Space MAS Result 
+
+LLM …… Skill Round Num I/O Chain Debate 
+
+Collaboration Mode 
+
+…… 
+
+…… 
+
+Cost Perf 
+
+How can experience be distilled from configurations and outcomes, then internalized in routers? 
+
+Figure 1: MAS router for web queries. 
+
+## 1 Introduction 
+
+Agents powered by large language models (LLMs) are rapidly ex-panding the capabilities of Web services [29, 35], from information seeking to complex reasoning and problem solving [21, 38]. LLM routers have emerged as a key component of agentic infrastructure, selecting suitable models for individual queries to balance response quality and inference cost [4, 12, 36, 47]. With the growing adoption of multi-agent systems (MAS) in agentic web services such as Grok Bot and WorkBuddy, routing must extend beyond model selection to jointly determine model assignments, collaboration modes, agent counts, interaction rounds, and the skills and subtasks assigned to each agent. For service providers handling Web queries across diverse domains and difficulty levels, adaptively selecting MAS con-figurations to jointly optimize reasoning performance and compute cost has become a central research problem. 
+
+> 1arXiv:2610.35690v1 [cs.AI] 26 Oct 2026 First Author et al.
+
+Performance Motivation 
+
+Challenge 1 
+
+Highly Coupled Configuration 
+
+> Conditional Insight Distillation LLM Expert
+
+Challenge 2 
+
+Sparse Routing Reward Signals   
+
+> Scaling Capability Compatibility
+> Perf & Cost
+> Route Trajectory
+> Teacher Model
+> Insight Student’s Token
+> Teacher’s Token
+> RL
+> Cost Perf
+> OPD
+> Task
+
+Accuracy Cost 
+
+Figure 2: Motivation and performance of EvoRouter. Left: Two challenges and our solutions. Right: EvoRouter’s performance. 
+
+Existing MAS routing research primarily improves routing de-cisions through two mechanisms. Parametric policy optimization internalizes execution feedback into router parameters through reinforcement learning or feedback-conditioned distillation, learn-ing policies for model assignment and system orchestration [13, 25, 44, 59]. Explicit experience evolution updates retrievable ex-ecution records, routing rules, or orchestration skills, allowing accumulated experience to guide subsequent decisions without gradient updates to the router [27, 31, 41, 60]. Connecting experi-ence reuse with policy learning is particularly challenging for joint MAS configuration: the benefits of a model, collaboration mode, or resource allocation depend jointly on task requirements and the surrounding configuration choices. Reusable experience must therefore preserve these conditions of applicability, while effective policy learning must translate the relevant knowledge into the ability to plan new configurations. As illustrated in Figure 1, this raises a central open question: How can configuration experience be distilled into reusable knowledge of conditional dependencies and internalized in the router’s pre-execution planning policy to improve the system-level trade-off between accuracy and cost? Addressing this question presents two challenges, as highlighted in Figure 2. (i) Discovering reusable routing principles within a complex, multidimensional configuration space. Jointly select-ing models, collaboration modes, agent counts, interaction rounds, and skills causes a combinatorial explosion in the configuration space, making exhaustive evaluation computationally prohibitive [48]. Moreover, because configuration benefits depend on both the task and the combination of choices, a single execution trajectory reveals only the outcome under a specific configuration [56]. It provides insufficient evidence to identify necessary, redundant, or suboptimal decisions. The router must therefore move beyond learning from isolated outcomes and analyze execution trajectories across tasks and configurations to uncover conditional configura-tion patterns that generalize to subsequent tasks. (ii) Translat-ing post-execution experience into fine-grained supervision for pre-execution routing. Existing reinforcement learning ap-proaches to routing derive reward signals solely from highly sparse feedback on final task success and computational cost [7, 30, 61]. However, a complete MAS configuration involves multiple coupled planning decisions. Terminal rewards provide limited guidance on which decisions are effective, which waste resources, and how individual configuration choices should be adjusted. Even when valuable routing insights can be distilled from historical trajec-tories, they do not automatically translate into effective action selection at specific decision states of the current routing policy. This mismatch between high-dimensional combinatorial decisions and coarse, sparse execution feedback limits the router’s ability to learn efficiently and improve continually from limited execution experience. To address these challenges, we propose EvoRouter , an adaptive multi-agent routing framework built around an insight-guided self-improvement loop. To address the first challenge , we conduct preliminary experiments that systematically examine how config-uration changes affect reasoning performance and computational cost across tasks, revealing task dependence, diminishing marginal returns, and configuration interdependence. We then design an LLM-based expert that distills routing insights by periodically ag-gregating configurations, execution outcomes, and costs across tasks. The expert derives conditional insights into task-specific ca-pability bottlenecks, marginal returns from resource scaling, and interactions among configuration choices. These insights guide exploration according to task characteristics, steering the router toward optimal configurations. To address the second challenge ,we develop a router training method that combines privileged on-policy distillation (OPD) with cost-aware reinforcement learning (RL). OPD transforms configuration insights accumulated across trajectories into dense, token-level rewards informed by routing insights, while RL optimizes the performance–cost trade-off using end-to-end execution outcomes. These complementary training sig-nals address the challenge of learning interdependent multi-agent configuration decisions from sparse execution feedback. Our main contributions are summarized as follows: 
+
+1. Conditional routing insights distillation. We identify task dependence, diminishing marginal returns, and interdependence among MAS configuration choices. We distill cross-trajectory per-formance–cost feedback into configuration insights with explicit applicability conditions to guide exploration. 
+
+2. Insight-guided router post-training. We propose EvoRouter, which internalizes conditional insights into the routing policy through OPD and jointly optimizes execution utility 
+
+> 2EvoRouter: Cost-Efficient Multi-Agent Routing via Insight-Guided On-Policy Distillation
+
+Table 1: Representative learning methods for MAS routing. 
+
+Method Routing scope Learning signal Training mechanism 
+
+RouteLLM [36] Single-model choice Pairwise preferences Supervised learning Router-R1 [61] Multi-round calls Format, outcome, cost Outcome-based RL MasRouter [59] Modes, roles, models Utility–cost reward Policy gradients DAAO [44] Depth, operators, models Success, utility, cost Difficulty calibration MAS-Orchestra [25] Holistic MAS design Task-level rewards Function-calling GRPO Skill-MAS [31] Meta skill Rollout contrasts Nonparametric reflection RSI-Router [27] Subtask models, skills Historical quality–cost traces Skill update + Pareto selection 
+
+EvoRouter (ours) Joint MAS configuration Token-level supervision from insights, execution feedback, compute overhead SFT + RL + Insight-guided OPD Math Comm. Multi-modal                                                   
+
+> QA Know-ledge 025 50 75 100
+> Success Rate (%)
+> 1k 10k 100k
+> Mean MAS FLOPs
+> 10k 30k 100k
+> Mean MAS FLOPs
+> -2 024
+> ΔSuccess Rate , R2 (pp)
+> 10k 30k 100k
+> Mean MAS FLOPs
+> -1 012
+> ΔSuccess Rate , N2 (pp)
+> Full-Connected Debate 64 66 68 70 72 74
+> Success Rate (%)  +2.4 pp +1.4 pp
+> 20k 40k 60k
+> Mean MAS FLOPs (a) Insight 1 (b) Insight 2 (c) Insight 3
+> mα+ IO
+> mβ+ IO
+> mα+ FullConnected
+> mβ+ FullConnected
+> mαmβFullConnected Debate (mα,mα,mα)(mβ,mα,mα)(mα,mβ,mβ)(mβ,mβ,mβ)
+> −79.8% cost Math Comm. Multi-modal
+> QA Know-ledge 025 50 75 100
+> Success Rate (%)
+> 1k 10k 100k
+> Mean MAS FLOPs
+> 10k 30k 100k
+> Mean MAS FLOPs
+> -2 024
+> ΔSuccess Rate , R2 (pp)
+> 10k 30k 100k
+> Mean MAS FLOPs
+> -1 012
+> ΔSuccess Rate , N2 (pp)
+> Full-Connected Debate 64 66 68 70 72 74
+> Success Rate (%)  +2.4 pp +1.4 pp
+> 20k 40k 60k
+> Mean MAS FLOPs
+> −79.8% cost (a) Insight 1 (b) Insight 2 (c) Insight 3
+> mα+ IO
+> mβ+ IO
+> mα+ FullConnected
+> mβ+ FullConnected
+> mαmβFullConnected Debate (mα,mα,mα)(mβ,mα,mα)(mα,mβ,mβ)(mβ,mβ,mβ)
+
+Figure 3: Empirical insights into MAS configuration. (a) Cross-domain sensitivity to different resource scaling; (b) Non-monotonic returns across interaction rounds (left) and agent counts (right). (c) Combinatorial synergy between model composi-tions and collaboration modes. 
+
+with RL, providing fine-grained supervision for routing decisions. 
+
+3. Comprehensive empirical validation. We construct a benchmark covering 21 scenarios across seven domains, demon-strating that EvoRouter achieves better performance, lower cost, and greater robustness than representative baselines. 
+
+## 2 Related Work 
+
+LLM Routing and Multi-Agent Orchestration. LLM rout-ing spans per-query model selection [4, 10–12, 36, 47] and output-budget allocation [54], sequential model invocation [39, 61], and joint MAS configuration [25, 44, 53, 59, 63]. Beyond team design, routers adapt delegation [7, 13], agent or context selection [32, 62], and execution state [28, 41]. Experience-based approaches retain reusable routing knowledge [31, 50, 60] or co-evolve routing with worker capabilities [19]. RSI-Router[27] evolves subtask assign-ments and model-specific skills through Pareto selection. EvoRouter targets pre-execution joint configuration over fixed heterogeneous workers, informed by our analysis of task-dependent scaling and configuration interactions. 
+
+Post-Training for LLMs. LLM post-training commonly com-bines supervised fine-tuning (SFT) on demonstrations with prefer-ence optimization [37, 40]. Reinforcement learning with verifiable rewards further develops reasoning capabilities from outcome feed-back [16]. Complementing reward-based optimization, on-policy distillation provides teacher supervision on student-generated se-quences and can reduce the training–inference distribution mis-match associated with offline distillation [2]. Recent methods enrich this supervision with textual feedback [20], trajectory-derived skills [49, 52], and role-specific coordination feedback [64]. Building on these principles, EvoRouter combines group-relative RL with OPD on student-generated configuration plans, conditioning the teacher on evolving cross-task insights and current execution feedback. The resulting policy operates without privileged feedback at inference. 
+
+## 3 Routing Insights and Problem Definition 3.1 Routing Insights In Multi-Class Tasks 
+
+Efficient MAS routing requires determining which resources to scale, 
+
+to what extent , and how to combine them. Using 𝑚 𝛼 (Qwen3.5-35B-A3B) and 𝑚 𝛽 (Qwen3.5-397B-A17B) as representative backbones, we systematically examine how resource selection, scaling scale, and configuration combinations govern task success and compute cost. Figure 3 highlights three key insights. 
+
+Where to Scale? Different tasks exhibit distinct capability de-mands, leading to task-dependent benefits from resource scaling. As shown in Figure 3(a), switching from 𝑚 𝛽 +IO to 𝑚 𝛼 +FullConnected improves the success rate on Multimodal by 13.1 points, while re-ducing that on QA tasks by 5.0 points. This suggests that scaling decisions should be driven by task demands, prioritizing task-aligned resource configurations (Insight 1). 
+
+How Much to Scale? Increasing resource allocation does not necessarily yield proportional gains. Figure 3(b) shows that different models and collaboration strategies reach peak performance at different interaction rounds or agent counts, beyond which further scaling may increase costs while degrading success rates. Thus, 
+
+> 3First Author et al.
+
+Web Query 
+
+## Training Stage 1  Training Stage 2 
+
+## EvoRouter RSI Loop  MAS Configuration 
+
+EvoRouter 
+
+<analysis> : Task Analysis…… 
+
+<plan> : ➢ Subtask Decomposition 
+
+➢ Collaboration Mode 
+
+➢ LLM & Skills & Rounds Multimodal 
+
+MAS Execution   
+
+> Math
+> Code
+> Knowledge
+> Reasoning
+> Retrieval
+> Designer Coder Reviewer
+> Cross -Task
+> Routing
+> Trajector ies
+
+Insight 
+
+Extraction 
+
+Post -Training based RL & OPD 
+
+Base 
+
+Model 
+
+> Cold Start
+
+SFT 
+
+Model 
+
+Teacher 
+
+Model  
+
+> Sampled
+> Tasks
+
+𝑞  
+
+> Demonstration
+> Trajectories
+
+𝜏   
+
+> Quality
+> Filter
+> 𝑠 𝜏 = 1
+> Format
+> Expert
+> Dataset D𝑆𝐹𝑇
+> ℒ𝑆𝐹𝑇
+
+Supervised Fine -tuning 
+
+MAS 
+
+> Configuration
+> Routing
+
+Execution & Scoring   
+
+> Reward
+> Answer 𝑅 perf − 𝜆 C𝑅 cost
+> RL Loss
+> ℒ𝑅𝐿
+
+Group -Relative Policy              
+
+> Update
+> Training Loop
+> ℒ 𝜃 = ℒ RL 𝜃 + 𝜆 𝐷 ℒOPD 𝜃 + 𝛽ℒ KL 𝜃
+> Joint Optimization Loss
+> OPD Loss
+> ℒOPD Update
+> Insight Reward
+> 𝐷 𝑖,𝑡 = 𝐷 KL 𝑝 𝑖,𝑡 S∥ sg 𝑝 𝑖,𝑡 T
+> 𝑧 𝑖 =𝐽 𝒫 𝑖 𝑜 𝑖 𝑠 𝜏 𝑖
+> Insight -Privileged
+> Insight #1
+> Insight #2
+
+…… 
+
+Insight 
+
+Distillation 
+
+Expert  
+
+> Evolution
+> Route Distillation
+> Perf Cost
+> Trajectories
+> Analysis
+
+Figure 4: EvoRouter’s initialization and evolution loop. 
+
+resource scaling exhibits configuration-dependent saturation points, and the allocation scale should be tailored to the underlying model and collaboration strategy (Insight 2). 
+
+What to Combine? The effectiveness of individual resources depends on their interactions within the overall configuration. Fig-ure 3(c) reveals that the relative performance of model compositions can reverse across collaboration strategies: an all-𝑚 𝛽 configuration outperforms an all-𝑚 𝛼 configuration under FullConnected, whereas the latter achieves higher success rates under Debate while reduc-ing MAS FLOPs by 79.8%. Therefore, routing insights should capture effective resource combinations and the conditions under which they excel (Insight 3). Together, these insights guide subsequent insights distillation from three complementary perspectives: task alignment, scaling saturation, and configuration interactions. Building on these find-ings, we jointly analyze tasks, complete configurations, execution outcomes, and costs to distill accumulated execution insights into condition-aware routing knowledge. 
+
+## 3.2 Problem Definition 
+
+We consider cost-aware multi-agent routing, where a router maps a given task 𝑞 ∼ Q to a tailored MAS configuration P drawn from a broad design space spanning models, skills, subtasks, collaboration modes, and agent counts. The router produces a final answer based on the resulting system execution. Let M, C, and S denote the available pools of models, collabo-ration modes, and skills, respectively. Given these resources, the router constructs a detailed MAS configuration P:
+
+P =
+
+
+
+𝑐, 𝑟, (𝑢 𝑗 , 𝑚 𝑗 , 𝑠 𝑗 , 𝑝 𝑗 ) 𝑛 𝑗 =1
+
+
+
+, (1) where 𝑐 ∈ C specifies the collaboration mode, 𝑟 is the number of interaction rounds within the system, and 𝑛 is the number of agents. Each agent 𝑗 is defined by its identifier 𝑢 𝑗 , model 𝑚 𝑗 ∈ M , skill 
+
+𝑠 𝑗 ∈ S , and assigned subtask 𝑝 𝑗 .The environment instantiates and executes the MAS, returning an execution outcome 𝑜 ∼ E (· | 𝑞, P) to the router, where E (· | 
+
+𝑞, P) denotes the distribution of execution outcomes conditioned on the task and configuration. The router then generates a final answer ˆ 𝑦 for task 𝑞 , forming a complete trajectory 𝜏 . A task-specific verifier (e.g., sandbox tests for code generation or exact-match evaluation for question answering) evaluates the final answer, with 
+
+𝑠 (𝜏 ) ∈ { 0, 1} indicating whether it passes verification. Let 𝐶 (𝜏 ) ≥ 0 denote the execution cost of the routed MAS along trajectory 𝜏 , and let 𝐵 (𝑞 ) > 0 be a reference budget for task 𝑞 . We aim to learn a routing policy that jointly optimizes task success and resource efficiency: 
+
+𝜋 ★ ∈ arg max  
+
+> 𝜋
+
+E 𝑞 ∼Q  
+
+> 𝜏 ∼𝑝 𝜋, E(· | 𝑞, C,S,M )
+
+
+
+𝑈 
+
+
+
+𝑠 (𝜏 ), 𝐶 (𝜏 )
+
+𝐵 (𝑞 ) ; 𝜆 𝐶 
+
+ 
+
+, (2) where 𝑝 𝜋, E denotes the trajectory distribution jointly induced by the routing policy and multi-agent execution, accounting for stochas-ticity in both policy generation and system execution. The utility function 𝑈 balances task success against budget-normalized execu-tion cost, with 𝜆 𝐶 controlling the cost penalty. Its specific form is defined in Section 4.3. 
+
+> 4EvoRouter: Cost-Efficient Multi-Agent Routing via Insight-Guided On-Policy Distillation
+
+## 4 Method 
+
+We parameterize the routing policy as 𝜋 𝜃 and initialize it through SFT. We then collect online trajectories across diverse task cate-gories and employ an insight distillation expert to iteratively extract routing insights, which are internalized into the policy through training. This establishes an iterative evolution loop, sustained by reinforcement learning and on-policy distillation in an online environment, as illustrated in Fig. 4. 
+
+## 4.1 Evolution Loop 
+
+Routing and execution. We construct the router context 𝑥 ,comprising role specifications, task descriptions and available rout-ing resources. The router first analyzes the task and reasons within the <analysis> tag, then generates a structured plan as defined in Eq. (1) within the <plan> tag. A deterministic executor in the environment parses this plan and instantiates the specified MAS. The MAS then executes the plan in the environment, produc-ing execution outcomes that are returned as observations for the router’s subsequent response. The router analyzes these observa-tions within the <analysis> tag and generates the final answer ˆ 𝑦 
+
+within the <answer> tag, forming a two-stage trajectory 𝜏 . Each trajectory records the task description, multi-agent configuration, execution outcomes, and verifier-evaluated final answer. 
+
+Sampling and evolution. We deploy the router in an online environment and sample execution trajectories from a training set spanning diverse capability dimensions. Building on the observa-tions from our preliminary experiments (Section 3.1), we develop an insight distillation expert to analyze these trajectories and continu-ally refine routing insights. The expert integrates newly observed routing patterns from recent online trajectories with accumulated insights, capturing task-dependent preferences for resources and subtask decomposition strategies across different domains, diffi-culty levels, and budgets. This process enables routing knowledge to evolve continuously as new execution insights accumulate, as detailed in Section 4.4. 
+
+## 4.2 Supervised Initialization 
+
+We initialize the routing policy through SFT to establish protocols for task analysis, system planning, and result synthesis. Specifically, a frozen powerful LLM acts as a bootstrap router to collect trajec-tories across training tasks Qsft under context 𝑥 . We retain only demonstrations with valid formats and correct answers to construct 
+
+DSFT . Letting T ( 𝑦 ) index the router-generated tokens in sequence 
+
+𝑦 , the initialization objective minimizes 
+
+LSFT (𝜃 ) = −∑︁ 
+
+> (𝑥,𝑦 ) ∈ D SFT
+
+∑︁ 𝑡 ∈ T ( 𝑦 )
+
+log 𝜋 𝜃 (𝑦 𝑡 | 𝑥, 𝑦 <𝑡 ). (3) Prompt contexts and environment feedback are masked during loss computation. The supervised policy initializes subsequent iterative evolution and provides a frozen reference policy 𝜋 ref .
+
+## 4.3 Cost-Aware Policy Optimization 
+
+Reward curation. For each trajectory 𝜏 , the task verifier assigns an outcome reward 𝑅 perf = 𝑠 (𝜏 ) ∈ { 0, 1}. We measure execution compute 𝐶 (𝜏 ) and impose a cost penalty 𝑅 cost = log 2 (1+𝐶 (𝜏 )/ 𝐵 (𝑞 )) ,calibrated against a task-specific reference budget 𝐵 (𝑞 ). We then instantiate the utility in Eq. (2) as the following reward function 
+
+𝑅 (𝜏 ):
+
+𝑅 (𝜏 ) = 𝑅 perf − 𝜆 𝐶 𝑅 cost , (4) where 𝜆 𝐶 controls cost sensitivity. To strictly separate the reward ranges of successful and failed rollouts, we further cap the weighted cost penalty at 𝑐 max ∈ [ 0, 1) to ensure that successful trajectories receive rewards of at least 1 − 𝑐 max > 0, while unsuccessful trajec-tories receive nonpositive rewards. Details of cost weighting are provided in Appendix A.2. 
+
+Group-relative policy updates. For each task 𝑞 , we sample 
+
+𝐺 rollouts 𝜏 𝑞, 1, . . . , 𝜏 𝑞,𝐺 and compute normalized group advantages 
+
+𝐴 𝑞,𝑖 . Let T𝑞,𝑖 index the router-generated tokens in trajectory 𝜏 𝑞,𝑖 ,conditioned on the preceding interaction history 𝐻 𝑞,𝑖,𝑡 . Sharing the same token masking as SFT, the policy loss is defined as: 
+
+LRL (𝜃 ) = − 1
+
+𝑍 RL ∑︁ 𝑞 𝐺 ∑︁ 
+
+> 𝑖 =1
+
+𝐴 𝑞,𝑖 ∑︁  
+
+> 𝑡 ∈ T 𝑞,𝑖
+
+log 𝜋 𝜃 
+
+ 𝑦 𝑞,𝑖,𝑡 | 𝐻 𝑞,𝑖,𝑡 
+
+ , (5) where 𝑍 RL is the total number of masked response tokens from trajectories with nonzero advantages in the batch. To prevent policy drift, we regularize 𝜋 𝜃 against the frozen reference 𝜋 ref via a token-level KL penalty: 
+
+LKL (𝜃 ) = 1
+
+𝑍 KL ∑︁ 𝑞 𝐺 ∑︁ 
+
+> 𝑖 =1
+
+∑︁ 𝑡 ∈ T 𝑞,𝑖 
+
+𝑟 𝑞,𝑖,𝑡 (𝜃 ) − log 𝑟 𝑞,𝑖,𝑡 (𝜃 ) − 1 , (6) where 𝑟 𝑞,𝑖,𝑡 (𝜃 ) = 𝜋 ref (𝑦 𝑞,𝑖,𝑡 |𝐻 𝑞,𝑖,𝑡 )    
+
+> 𝜋 𝜃 (𝑦 𝑞,𝑖,𝑡 |𝐻 𝑞,𝑖,𝑡 )
+
+denotes the reference-to-policy probability ratio, and 𝑍 KL = Í𝑞,𝑖 |T 𝑞,𝑖 | counts all router response tokens across the batch, including zero-advantage trajectories. 
+
+## 4.4 Insight-Guided On-Policy Distillation 
+
+Recursive insight consolidation. Guided by the analytical framework in Section 3.1, we initialize an insight pool I0 and em-ploy an expert F to periodically distill execution observations into generalizable routing rules with explicit applicability conditions only during training. For the 𝑘 -th insight update using recent roll-out batch B𝑘 , the expert refines the insight set through a three-step procedure: (i) Rule induction: comparing intra-category trajecto-ries across success or failure and cost spectra to derive conditional rules on capability alignment, scaling saturation, and configura-tion interactions; (ii) Precondition refinement: resolving empirical conflicts within I𝑘 by tightening boundaries, such as specifying finer-grained task difficulty and domains; and (iii) Capacity pruning: 
+
+merging redundant entries and enforcing a strict capacity ceiling to curb context inflation. Formally, the update is expressed as: 
+
+I𝑘 +1 = F (I 𝑘 , B𝑘 ) . (7) Distillation steps always condition on the latest insights I. Further details on insight distillation are provided in Appendix A.3. 
+
+Insight-conditioned supervision. For each trajectory 𝜏 𝑖 sam-pled from the student policy, the frozen teacher model 𝜋 𝜙 receives additional privileged information 𝑧 𝑖 = (I , P𝑖 , 𝑜 𝑖 , 𝑠 (𝜏 𝑖 )) , where 𝑜 𝑖 
+
+denotes the MAS execution outcome, while sharing the same con-text 𝑥 𝑖 and prefix 𝑦 𝑖, <𝑡 as the student. Specifically, at each token position 𝑡 in the routing response, let 𝑝 S 
+
+> 𝑖,𝑡
+
+= 𝜋 𝜃 (· | 𝑥 𝑖 , 𝑦 𝑖, <𝑡 ) and 
+
+𝑝 T 
+
+> 𝑖,𝑡
+
+= 𝜋 𝜙 (· | 𝑥 𝑖 , 𝑧 𝑖 , 𝑦 𝑖, <𝑡 ) denote the next-token distributions of the 
+
+> 5
+
+First Author et al. 
+
+Table 2: Overall accuracy (%) on in-domain and out-of-domain benchmarks. The two Average columns report sample-weighted accuracy. Best and second-best scores in each column are shown in bold and underline, respectively. 
+
+In-Domain Out-of-Domain Method Math Commonsense Multimodal QA Knowledge Average Code Reasoning Average 
+
+Vanilla LLMs 
+
+Qwen3.5-35B-A3B 16.15 ±0.77 85.00 ±1.02 29.74 ±0.51 48.46 ±0.89 46.67 ±2.86 46.23 ±0.15 42.29 ±1.14 61.50 ±2.78 52.54 ±0.96 
+
+Qwen3.5-122B-A10B 25.38 ±1.02 84.62 ±1.33 27.69 ±1.54 56.15 ±0.26 48.21 ±0.51 50.23 ±0.71 49.14 ±1.14 68.00 ±2.18 59.20 ±1.22 
+
+DeepSeek-V4-Flash 45.77 ±2.31 70.77 ±0.77 6.67 ±1.36 47.95 ±0.77 31.79 ±2.24 43.46 ±0.43 40.57 ±0.99 57.50 ±3.46 49.60 ±2.31 
+
+Qwen3.5-397B-A17B 36.15 ±1.02 88.85 ±0.67 29.74 ±0.51 57.95 ±0.92 55.90 ±3.55 55.23 ±0.77 50.86 ±0.57 75.00 ±1.32 63.73 ±0.80 
+
+GLM-5 32.31 ±0.67 87.31 ±2.14 21.03 ±1.85 57.18 ±0.44 44.62 ±2.24 50.93 ±1.02 48.57 ±0.00 70.50 ±2.18 60.27 ±1.16 
+
+Single-Agent Routing 
+
+RouteLLM [36] 23.85 ±3.00 85.00 ±1.33 37.44 ±1.36 59.23 ±1.36 44.62 ±1.36 51.85 ±0.54 25.14 ±1.14 68.50 ±1.00 48.27 ±0.92 
+
+GraphRouter [12] 40.00 ±1.68 87.31 ±2.66 50.26 ±0.51 57.44 ±1.03 51.79 ±1.85 58.00 ±1.40 33.71 ±0.57 73.00 ±2.60 54.66 ±1.16 
+
+ICL-Router [47] 35.00 ±0.38 87.69 ±0.67 50.77 ±1.54 54.10 ±0.68 46.15 ±2.35 55.31 ±0.35 35.43 ±0.00 67.50 ±3.61 52.53 ±1.92 
+
+RouterDC [4] 38.46 ±1.39 86.15 ±1.33 45.64 ±0.51 56.92 ±0.68 53.33 ±3.20 56.84 ±0.40 23.43 ±0.99 73.00 ±2.18 49.87 ±0.96 
+
+Single-Agent Multi-Turn Routing 
+
+Router-R1 [61] 46.54 ±2.14 50.38 ±1.39 11.79 ±0.51 37.95 ±0.44 24.10 ±0.00 36.15 ±0.08 24.00 ±0.57 52.00 ±0.87 38.93 ±0.53 
+
+ReCal [56] 40.38 ±1.76 80.00 ±2.00 21.54 ±1.85 38.72 ±0.92 37.95 ±2.35 44.62 ±0.13 26.85 ±0.57 58.50 ±3.46 43.73 ±1.87 
+
+xRouter [39] 36.92 ±2.52 71.15 ±4.44 38.97 ±0.51 37.69 ±1.18 46.67 ±4.89 45.77 ±1.40 46.29 ±0.99 81.00 ±4.27 64.80 ±2.71 
+
+Multi-Agent Routing 
+
+MAS-Orchestra [25] 46.54 ±2.66 89.62 ±1.39 31.28 ±1.85 41.03 ±0.44 58.97 ±2.24 53.08 ±0.31 44.57 ±1.14 86.50 ±2.18 66.93 ±1.33 
+
+OrchMAS [13] 41.15 ±2.34 85.38 ±0.77 31.28 ±0.51 37.44 ±0.77 31.79 ±3.08 46.00 ±0.80 26.28 ±0.57 68.50 ±4.27 48.80 ±2.40 
+
+DAAO [44] 58.46 ±3.15 83.08 ±0.67 32.31 ±0.51 55.90 ±0.44 23.08 ±0.51 53.39 ±0.62 29.14 ±0.57 76.50 ±2.18 54.40 ±0.92 
+
+MasRouter [59] 48.08 ±3.90 88.08 ±2.52 56.41 ±1.85 60.77 ±0.92 50.26 ±1.03 61.46 ±1.50 34.86 ±0.57 84.50 ±2.18 61.33 ±1.16 
+
+RCR-Router [32] 57.31 ±2.04 90.38 ±0.77 29.23 ±0.51 55.90 ±1.18 71.79 ±1.85 61.46 ±0.73 41.14 ±0.57 86.50 ±3.97 65.33 ±2.32 
+
+AgentRouter [62] 42.31 ±2.14 90.38 ±2.04 44.10 ±1.03 58.97 ±1.36 56.41 ±2.66 59.31 ±0.28 28.57 ±0.00 79.00 ±0.87 55.47 ±0.46 
+
+Uno-Orchestra [7] 34.23 ±0.77 85.00 ±1.02 34.36 ±0.89 46.15 ±0.68 52.82 ±0.00 50.77 ±0.28 40.00 ±0.00 73.00 ±1.32 57.60 ±0.71 
+
+EvoRouter (Ours) 
+
+EvoRouter-4B 61.15 ±2.04 88.46 ±0.67 64.10 ±2.71 61.03 ±1.56 72.31 ±2.35 68.69 ±0.95 52.57 ±0.57 94.00 ±1.50 74.67 ±0.96 
+
+EvoRouter-8B 64.62 ±1.02 89.23 ±0.22 69.23 ±0.51 63.59 ±1.07 73.33 ±2.05 71.23 ±0.74 54.29 ±1.44 96.50 ±1.26 76.80 ±0.67 
+
+EvoRouter-LLaMa-8B 63.46 ±1.94 89.23 ±2.62 69.74 ±1.85 62.05 ±1.29 76.92 ±2.07 71.15 ±0.89 59.43 ±0.40 96.00 ±1.77 78.93 ±1.13 
+
+student and teacher, respectively. Following MiniLLM [15], we min-imize the reverse KL divergence over the vocabulary Ω shared by the teacher and student: 
+
+𝐷 𝑖,𝑡 = 𝐷 KL 
+
+
+
+𝑝 S
+
+𝑖,𝑡 sg 𝑝 T
+
+𝑖,𝑡 
+
+ 
+
+=∑︁ 
+
+𝑎 ∈Ω
+
+𝑝 S
+
+𝑖,𝑡 (𝑎 ) log 𝑝 S
+
+𝑖,𝑡 (𝑎 )
+
+sg 𝑝 T
+
+𝑖,𝑡 (𝑎 ) , (8) where 𝐷 KL () denotes the KL divergence, and sg [·] denotes the stop-gradient operator. 
+
+Insight internalization and joint optimization. Distillation is applied to the initial routing response of each trajectory. Let T ana 
+
+𝑖 
+
+and T plan 
+
+𝑖 denote the positions of student-generated content tokens within the <analysis> and <plan> tags, respectively, excluding formatting and environment tokens. The OPD objective minimizes their weighted distillation losses: 
+
+LOPD (𝜃 ) =
+
+Í𝑖 
+
+Í
+
+𝑡 ∈ T plan 
+
+> 𝑖
+
+𝐷 𝑖,𝑡 
+
+Í𝑖 |T plan 
+
+𝑖 | + 𝛼 
+
+Í𝑖 
+
+Í𝑡 ∈ T ana  
+
+> 𝑖
+
+𝐷 𝑖,𝑡 
+
+Í𝑖 |T ana 
+
+𝑖 | , (9) where 𝛼 controls the contribution of the analysis tokens. The final joint training objective is defined as: 
+
+L( 𝜃 ) = LRL (𝜃 ) + 𝜆 𝐷 LOPD (𝜃 ) + 𝛽 LKL (𝜃 ), (10) where 𝜆 𝐷 and 𝛽 are the coefficients for distillation and KL regular-ization, respectively. The updated policy 𝜋 𝜃 continues to generate execution trajectories that inform subsequent insight refinement, closing the recursive feedback loop among execution, insight syn-thesis, and policy internalization. 
+
+## 5 Experiments 5.1 Experimental Setup 
+
+Datasets and metrics. We evaluate EvoRouter across 21 datasets in seven domains: math (MATH [17], GSM8K [6], Omni-MATH-2 [3], Apex Shortlist [8]), commonsense (ARC-Challenge [5], StrategyQA [14], Social IQA [43]), knowledge (MMLU-Pro [51], GPQA-Diamond [42], SuperGPQA [9]), retrieval (NQ [26], Trivi-aQA [24], HotpotQA [55], 2WikiMultiHopQA [18], PopQA [33], MuSiQue [46]), multimodal (ChartQAPro [34], MMMU [57], MMMU-Pro [58]), alongside two out-of-domain tasks: code genera-tion (LiveCodeBench [22]) and logical reasoning (BBH-LD [45]). Table 2 reports verifier-based accuracy detailed in Section 3.2. We measure the per-question computational cost of each MAS using the relative FLOPs metric defined in Appendix B. 
+
+Routing resources. The available LLM pool comprises Qwen3.5-35B-A3B, Qwen3.5-122B-A10B, Qwen3.5-397B-A17B, DeepSeek-V4-Flash, and GLM-5. The collaboration mode pool includes IO, CoT, Reflection, Chain, FullConnected, and Debate. Each task category is additionally equipped with at least six 
+
+6EvoRouter: Cost-Efficient Multi-Agent Routing via Insight-Guided On-Policy Distillation 35 40 45 50 55 60 65 70 75           
+
+> Accuracy (%)
+> 0.5 12510 20 50 100 200
+> Mean MAS FLOPs (×10 3, log scale)
+> Vanilla Sing. Routing Sing. Multi-turn Multi. Routing EvoRouter 35 40 45 50 55 60 65 70 75
+> Accuracy (%)
+> 0.5 12510 20 50 100 200
+> Mean MAS + Router LLM FLOPs (×10 3, log scale)
+> qwen3.5-35b-a3b qwen3.5-122b-a10b deepseek-v4-fl ash qwen3.5-397b-a17b glm-5 RouteLLM GraphRouter ICL-Router RouterDC Router-R1 xRouter ReCal MAS-Orchestra OrchMAS DAAO MasRouter RCR-Router AgentRouter Uno-Orchestra
+> EvoRouter-4B EvoRouter-8B EvoRouter-LLaMa-8B
+> qwen3.5-35b-a3b qwen3.5-122b-a10b deepseek-v4-fl ash qwen3.5-397b-a17b glm-5 RouteLLM GraphRouter ICL-Router RouterDC Router-R1 xRouter ReCal MAS-Orchestra OrchMAS DAAO MasRouter RCR-Router AgentRouter Uno-Orchestra
+> EvoRouter-4B EvoRouter-8B EvoRouter-LLaMa-8B
+
+Figure 5: Left: The Pareto frontier of the evaluated baselines; Right: Mean total LLM inference cost, including router calls. 
+
+relevant skills, such as code verification for coding tasks and information synthesis for QA. All routing methods share the same resources and are provided with identical descriptions of available LLMs, collaboration modes, and skills wherever applicable. 
+
+Baselines. We compare five categories of methods. (I) Vanilla LLMs: Direct inference using individual models from the LLM pool. (II) Single-Agent Routing: RouteLLM [36], GraphRouter [12], ICL-Router [47], and RouterDC [4]. (III) Single-Agent Multi-Turn Routing: Router-R1 [61], ReCal [56], and xRouter [39]. 
+
+(IV) Multi-Agent Routing: MAS-Orchestra [25], OrchMAS [13], DAAO [44], MasRouter [59], RCR-Router [32], AgentRouter [62], and Uno-Orchestra [7]. (V) Ours: EvoRouter-4B, EvoRouter-8B, and EvoRouter-LLaMa-8B. Further details on the baselines are provided in Appendix A.4. 
+
+## 5.2 Performance Analysis 
+
+Accuracy and cross-domain generalization. As shown in Ta-ble 2, all EvoRouter variants outperform competing baselines across four of the five in-domain capability categories, achieving average accuracies of 68.69% for EvoRouter-4B and 71.23% for EvoRouter-8B. This advantage extends to unseen Code and Reasoning domains , where EvoRouter achieves sample-weighted accuracies of 74.67% to 78.93%, surpassing the strongest baseline by 7.74 to 12.00 percentage points. These consistent gains highlight the trans-ferability of EvoRouter’s learned orchestration strategies across diverse capability domains. 
+
+Compute efficiency. The left panel of Figure 5 highlights EvoRouter’s favorable position on the accuracy–cost Pareto frontier. EvoRouter-4B achieves 7.23 percentage points higher accuracy than the strongest baseline RCR-Router while reducing mean MAS cost by 50.95% to 15.28k FLOPs units. Accounting for router overhead, the right panel shows that total inference cost reaches only 18.94k units, remaining 76.5% and 39.2% below MasRouter and RCR-Router, respectively. This confirms that substantial worker-level compute savings translate into end-to-end efficiency gains despite the additional planning overhead. 
+
+Table 3: Component ablations of EvoRouter-4B. 
+
+Training Stage In-Domain Out-of-Domain 
+
+Accuracy Cost Accuracy Cost EvoRouter-4B 68.69 ±0.95 15280.79 ±770 .31 74.67 ±0.96 25952.47 ±2673 .56 
+
+w/o Insights 64.54 ±1.52 18245.46 ±977 .52 70.93 ±2.44 25453.12 ±2075 .82 
+
+w/o OPD 63.23 ±1.31 16467.21 ±852 .09 69.87 ±1.41 24419.74 ±2017 .43 
+
+w/o RL+OPD 59.77 ±0.38 16789.73 ±691 .28 63.20 ±1.16 30158.45 ±2555 .80 
+
+w/o SFT+RL+OPD 53.23 ±0.23 25472.25 ±1278 .80 52.80 ±2.40 19795.09 ±1654 .15 
+
+## 5.3 Framework Analysis 
+
+Ablation study. Table 3 quantifies the contributions of RL, OPD, and distilled Insights. Compared with SFT alone, full EvoRouter-4B improves in-domain and out-of-domain accuracy by 8.92 and 11.47 percentage points while reducing MAS execution costs by 9.0% and 13.9%, respectively. Under matched training iterations, OPD without Insights yields only 1.31- and 1.06-point accuracy gains over RL, whereas insight-guided OPD boosts these gains to 5.46 and 4.80 points. This substantial gap highlights the importance of distilling cross-trajectory insights into actionable supervision for effective routing. 
+
+Evolution dynamics. Figure 6 illustrates how iterative insight-guided policy refinement progressively improves EvoRouter-LLaMa-8B’s performance. Early updates improve success rate by 2.62 points while reducing compute by 16.4%, reflecting more efficient resource selection; Subsequent updates leverage additional compute for further accuracy gains, before later refinements achieve another 1.35-point improvement with 7.4% lower cost. These dynamics demonstrate how insight-guided evolution progres-sively refines the trade-off between accuracy and computational efficiency. Training loss curves for all three backbones are provided in Appendix A.3. 
+
+Sensitivity study. We independently train EvoRouter-4B across 
+
+𝜆 𝐶 ∈ { 0, 0.025 , 0.05 , 0.1, 0.2}. As shown in Figure 7, higher 𝜆 𝐶 steers            
+
+> 7First Author et al. 012345678910
+> Iteration Version
+> 64 68 72
+> Success rate (%)
+> 63.85% 66.47% 68.45% 69.80% 70.65% 71.15% 18,000 20,000 22,000 24,000
+> Mean MAS FLOPs
+> 23,008.42 19,233.63 21,699.95 23,510.08 22,950.05 21,768.73
+> Success rate (%) Mean MAS FLOPs
+
+Figure 6: Training dynamics of EvoRouter-LLaMa-8B. 
+
+the policy toward lower-cost configurations, with varying accu-racy sensitivity across domains. Furthermore, Figure 8 reveals that increasing cost penalties progressively shifts the per-question com-pute distribution toward lower-budget regimes while substantially suppressing the expensive upper tail, ensuring predictable workload expenditure. 12 18 24 48 56 64 Math                        
+
+> 3.0 4.5 84 87 90 Commonsense
+> 612 18 54 60 66 Multimodal
+> 4812 48 56 64 QA
+> 510 15 60 70 Knowledge
+> 510 15 60 66 72 Overall Mean MAS FLOPs (×10 3)Success rate (%)
+> λ= 0 λ= 0.025 λ= 0.05 λ= 0.1 λ= 0.2
+
+Figure 7: Sensitivity of EvoRouter-4B to coefficient 𝜆 𝐶 .λ = 0 λ = 0.025 λ = 0.05 λ = 0.1 λ = 0.2 
+
+> 01k 5k 20k 100k
+> Per-question MAS FLOPs (symlog scale)
+
+Figure 8: Per-question MAS cost distributions of EvoRouter-4B under different cost penalties. 
+
+## 5.4 Generalization Analysis 
+
+Beyond the two out-of-domain datasets reported in Table 2, we fur-ther evaluate zero-shot generalization to unseen routing resources by simultaneously replacing the LLM, collaboration mode, and skill pools while keeping the trained router fixed. Replacement resources are provided in Appendix A.1. As shown in Figure 9, EvoRouter-4B consistently achieves the highest accuracy, outperforming Mas-Router by 3.85 and 7.47 percentage points on in-domain and out-of-domain tasks while reducing MAS compute by 6.7% and 18.5%, respectively. Notably, it also surpasses the strongest out-of-domain baseline by 5.9 points with less than half its compute expenditure. Compared with the independently trained EvoRouter-4B w/o In-sights variant, the full model achieves 5.77 and 11.47 percentage points higher accuracy, with the larger out-of-domain gain high-lighting the role of insight-guided training in transferring orches-tration knowledge across unseen resources and task distributions. 0100 200 300 400 500  
+
+> Mean MAS FLOPs (×10 3)In-Domain Out-of-Domain
+> 020 40 60 80 100
+> Accuracy (%) 73.8
+> 68.1 70.0 64.9 62.2 47.8
+> 84.0
+> 72.5 76.5 78.1 69.3 56.0
+> EvoRouter-4B
+> MasRouter DAAO EvoRouter-4B w/o Insights AgentRouter Uno-Orchestra
+
+Figure 9: Generalization to unseen routing resources. 
+
+## 5.5 Case Study 
+
+To better illustrate the routing mechanism of EvoRouter, we present a representative case on mathematical reasoning in Figure 10, demonstrating how it achieves accurate and cost-effective MAS routing. An illustrative example of the distilled routing insights is provided in Figure 11. 
+
+## 6 Conclusion 
+
+We presented EvoRouter, a framework that learns to jointly con-figure heterogeneous LLM-based MAS from execution experience. Combining cost-aware reinforcement learning with on-policy distil-lation, EvoRouter internalizes cross-task configuration insights and trajectory feedback into its routing policy, enabling deployment without privileged feedback. Across 21 datasets spanning seven domains, EvoRouter achieves higher average accuracy at lower computational cost than the evaluated routing baselines in both in-domain and out-of-domain settings. Our current framework is designed for cloud-based agent services. Future work will extend EvoRouter to resource-constrained edge environments through coordinated cloud–edge routing that accounts for device hetero-geneity and inter-agent communication overhead. 
+
+## References     
+
+> [1] Samira Abnar, Harshay Shah, Dan Busbridge, Alaaeldin El-Nouby, Joshua M. Susskind, and Vimal Thilak. 2025. Parameters vs FLOPs: Scaling Laws for Optimal Sparsity for Mixture-of-Experts Language Models. In Proceedings of the 42nd International Conference on Machine Learning , Vol. 267. PMLR, 204–230. https://proceedings.mlr.press/v267/abnar25a.html [2] Rishabh Agarwal, Nino Vieillard, Yongchao Zhou, Piotr Stanczyk, Sabela Ramos Garea, Matthieu Geist, and Olivier Bachem. 2024. On-Policy Distillation of Language Models: Learning from Self-Generated Mistakes. In International
+> 8
+
+EvoRouter: Cost-Efficient Multi-Agent Routing via Insight-Guided On-Policy Distillation ……For a certain integer 𝑘 , there are exactly 70 positive integers 𝑛 1, 𝑛 2, …, 𝑛 70 , such that: 
+
+𝑘 = 𝑛 13 = 𝑛 23 = ⋯ = 𝑛 70 3
+
+and 𝑘 divides 𝑛𝑖 for all 𝑖 such that 1 ≤ 𝑖 ≤ 70 .Find the maximum value of 𝑛𝑖 𝑘 for 1 ≤ 𝑖 ≤ 70 .
+
+EvoRouter 4B 
+
+Routing 
+
+MAS Configuration 
+
+Modeler Verifier 1 Round 
+
+Chain 
+
+Query 
+
+GLM-5 Skill: MathematicalModeling Convert 𝑛 13 = 𝑘 to bounds on 𝑛 .
+
+Count valid multiples and set thecount to 70. Solve for 𝑘 and find the largest admissibleratio 𝑛 𝑘 .
+
+Modeler 
+
+Qwen3.5-35B-A3B Skill: CriticalReflection 
+
+Verifier 
+
+Review the modeler’s derivation. Check endpoints and multiple counts. Verify 𝑘 and the largest ratio, thenreturn the answer. 
+
+Final Answer: 553 MAS FLOPs 
+
+1 Round 
+
+EvoRouter MasRouter 
+
+17.06K 
+
+89.82K 
+
+−81.00% Cost vs. MasRouter 
+
+Figure 10: A practical case of EvoRouter. 
+
+Conference on Learning Representations , Vol. 2024. 21246–21263. https://openreview.net/forum?id=3zKtaqxLhW [3] Marthe Ballon, Andres Algaba, Brecht F. Verbeken, and Vincent Ginis. 2026. Benchmarks Saturate When The Model Gets Smarter Than The Judge. arXiv:2601.19532 https://arxiv.org/abs/2601.19532 [4] Shuhao Chen, Weisen Jiang, Baijiong Lin, James T. Kwok, and Yu Zhang. 2024. RouterDC: Query-Based Router by Dual Contrastive Learning for Assembling Large Language Models. In Advances in Neural Information Processing Systems ,Vol. 37. 66305–66328. doi:10.52202/079017-2120 [5] Peter Clark, Isaac Cowhey, Oren Etzioni, Tushar Khot, Ashish Sabharwal, Carissa Schoenick, and Oyvind Tafjord. 2018. Think you have Solved Question Answering? Try ARC, the AI2 Reasoning Challenge. arXiv:1803.05457 https://arxiv.org/abs/1803.05457 [6] Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro Nakano, Christopher Hesse, and John Schulman. 2021. Training Verifiers to Solve Math Word Problems. arXiv:2110.14168 https://arxiv.org/abs/2110.14168 [7] Zhiqing Cui, Haotong Xie, Jiahao Yuan, Cheng Yang, Hanqing Wang, Yuxin Wu, Yifan Wu, Siru Zhong, Tao Yu, Yifu Guo, Siyu Zhang, Xinlei Yu, Qibing Ren, and Usman Naseem. 2026. Uno-Orchestra: Parsimonious Agent Routing via Selective Delegation. arXiv:2605.05007 [cs.AI] https://arxiv.org/abs/2605.05007 [8] Jasper Dekoninck, Nikola Jovanović, Tim Gehrunger, Kári Rögnvaldsson, Ivo Petrov, Chenhao Sun, and Martin Vechev. 2026. Beyond Benchmarks: MathArena as an Evaluation Platform for Mathematics with LLMs. In 3rd AI for Math Workshop (AI4Math) at ICML 2026 .https://openreview.net/forum?id=DmPE4byHuN [9] Xeron Du, Yifan Yao, Kaijing Ma, Bingli Wang, Tianyu Zheng, et al. 2025. SuperGPQA: Scaling LLM Evaluation across 285 Graduate Disciplines. In 
+
+Advances in Neural Information Processing Systems , Vol. 38. 125016–125089. doi:10.52202/085713-3766 [10] Reza Farahani, Zoha Azimi, Mario Colosi, and Schahram Dustdar. 2026. LMEdge: QoS-Aware LLM Inference Orchestration on Edge Clusters. In 4th International Workshop on Scalable Compute Continuum (WSCC 2026) .https://arxiv.org/abs/2607.17175 Co-located with Euro-Par 2026. [11] Reza Farahani, Zoha Azimi Ourimi, Mario Colosi, Lauri Lovén, Christian Timmerer, and Schahram Dustdar. 2026. DRLM: Deep Reinforcement Learning-Based LLM Query Orchestration in Edge Environments. In 2026 IEEE Global Communications Conference (GLOBECOM) .https://arxiv.org/abs/2609.00442 Accepted; forthcoming. [12] Tao Feng, Yanzhen Shen, and Jiaxuan You. 2025. GraphRouter: A Graph-based Router for LLM Selections. In The Thirteenth International Conference on Learning Representations . 26186–26203. https://openreview.net/forum?id=eU39PDsZtT [13] Yichao Feng, Haoran Luo, Zhenghong Lin, Yiqun Sun, Pengfei Wei, Lawrence B. Hsieh, and Anh Tuan Luu. 2026. OrchMAS: Orchestrated Reasoning with Multi Collaborative Heterogeneous Scientific Expert Structured Agents. arXiv:2603.03005 [cs.AI] https://arxiv.org/abs/2603.03005 [14] Mor Geva, Daniel Khashabi, Elad Segal, Tushar Khot, Dan Roth, and Jonathan Berant. 2021. Did Aristotle Use a Laptop? A Question Answering Benchmark with Implicit Reasoning Strategies. Transactions of the Association for Computational Linguistics 9 (2021), 346–361. doi:10.1162/tacl_a_00370 [15] Yuxian Gu, Li Dong, Furu Wei, and Minlie Huang. 2024. MiniLLM: Knowledge Distillation of Large Language Models. In International Conference on Learning Representations , Vol. 2024. 32694–32717. https://openreview.net/forum?id=5h0qf7IBZZ [16] Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Peiyi Wang, Qihao Zhu, Runxin Xu, Ruoyu Zhang, Shirong Ma, Xiao Bi, et al. 2025. DeepSeek-R1 incentivizes reasoning in LLMs through reinforcement learning. Nature 645, 8081 (2025), 633–638. doi:10.1038/s41586-025-09422-z [17] Dan Hendrycks, Collin Burns, Saurav Kadavath, Akul Arora, Steven Basart, Eric Tang, Dawn Song, and Jacob Steinhardt. 2021. Measuring Mathematical Problem Solving With the MATH Dataset. In Proceedings of the Neural Information Processing Systems Track on Datasets and Benchmarks , Vol. 1. https://openreview.net/forum?id=7Bywt2mQsCe [18] Xanh Ho, Anh-Khoa Duong Nguyen, Saku Sugawara, and Akiko Aizawa. 2020. Constructing A Multi-hop QA Dataset for Comprehensive Evaluation of Reasoning Steps. In Proceedings of the 28th International Conference on Computational Linguistics . International Committee on Computational Linguistics, 6609–6625. doi:10.18653/v1/2020.coling-main.580 [19] Jiatan Huang, Zheyuan Zhang, Kaiwen Shi, Yanfang Ye, and Chuxu Zhang. 2026. EvolveRouter: Co-Evolving Routing and Prompt for Multi-Agent Question Answering. arXiv:2604.05149 [cs.CL] https://arxiv.org/abs/2604.05149 [20] Jonas Hübotter, Frederike Lübeck, Lejs Deen Behric, Anton Baumann, Marco Bagatella, Daniel Marta, Ido Hakimi, Idan Shenfeld, Thomas Kleine Buening, Carlos Guestrin, and Andreas Krause. 2026. Reinforcement Learning via Self-Distillation. In Proceedings of the 43rd International Conference on Machine Learning , Vol. 306. PMLR, 48677–48721. https://proceedings.mlr.press/v306/hubotter26a.html [21] Adriano Izzi, Jerin George Mathew, Flavia Monti, Donatella Firmani, Francesco Leotta, Federica Mandreoli, and Massimo Mecella. 2025. Data Service Composition in Cyber-Physical Systems Adopting LLMs. In 2025 IEEE International Conference on Web Services (ICWS) . IEEE, 625–636. doi:10.1109/ICWS67624.2025.00085 [22] Naman Jain, King Han, Alex Gu, Wen-Ding Li, Fanjia Yan, Tianjun Zhang, Sida I. Wang, Armando Solar-Lezama, Koushik Sen, and Ion Stoica. 2025. LiveCodeBench: Holistic and Contamination Free Evaluation of Large Language Models for Code. In The Thirteenth International Conference on Learning Representations . https://openreview.net/forum?id=chfJJYC3iL [23] Yinsicheng Jiang, Yao Fu, Yeqi Huang, Ping Nie, Zhan Lu, Leyang Xue, Congjie He, Man-Kit Sit, Jilong Xue, Li Dong, Ziming Miao, DaYou Du, Tairan Xu, Kai Zou, Edoardo Maria Ponti, and Luo Mai. 2025. MoE-CAP: Benchmarking Cost, Accuracy and Performance of Sparse Mixture-of-Experts Systems. In Advances in Neural Information Processing Systems , Vol. 38. 90197–90223. doi:10.52202/085713-2717 [24] Mandar Joshi, Eunsol Choi, Daniel Weld, and Luke Zettlemoyer. 2017. TriviaQA: A Large Scale Distantly Supervised Challenge Dataset for Reading Comprehension. In Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) . 1601–1611. doi:10.18653/v1/P17-1147 [25] Zixuan Ke, Yifei Ming, Austin Xu, Ryan Chin, Xuan-Phi Nguyen, Prathyusha Jwalapuram, Jiayu Wang, Semih Yavuz, Caiming Xiong, and Shafiq Joty. 2026. MAS-Orchestra: Understanding and Improving Multi-Agent Reasoning Through Holistic Orchestration and Controlled Benchmarks. In Proceedings of the 43rd International Conference on Machine Learning , Vol. 306. PMLR, 56527–56570. https://proceedings.mlr.press/v306/ke26c.html [26] Tom Kwiatkowski, Jennimaria Palomaki, Olivia Redfield, Michael Collins, Ankur Parikh, Chris Alberti, Danielle Epstein, Illia Polosukhin, Jacob Devlin, Kenton Lee, Kristina Toutanova, Llion Jones, Matthew Kelcey, Ming-Wei Chang, Andrew M. Dai, Jakob Uszkoreit, Quoc Le, and Slav Petrov. 2019. Natural Questions: A Benchmark for Question Answering Research. Transactions of the Association for Computational Linguistics 7 (2019), 452–466. doi:10.1162/tacl_a_00276 [27] Hao Li, Hangfan Zhang, Zhiyao Cui, Chunjiang Mu, Yiqun Zhang, Bo Zhang, Danyang Jia, and Shuyue Hu. 2026. RSI-Router: Evolving Subtask-Level LLM Routing and Skills for Cost-Efficient Agents. arXiv:2609.34712 https://arxiv.org/abs/2609.34712 [28] Songyuan Li, Ahmed M. Abdelmoniem, and Shiqiang Wang. 2026. ProgRouter: Online Progress-Guided Orchestration for Multi-Agent LLM Workflows under 9First Author et al. 
+
+Quality-Cost Tradeoffs. In Findings of the Association for Computational Linguistics: EMNLP 2026 . 3272–3287. https://aclanthology.org/2026.findings-emnlp.156/ [29] Xiaoxi Li, Wenxiang Jiao, Jiarui Jin, Guanting Dong, Jiajie Jin, Yinuo Wang, Hao Wang, Yutao Zhu, Ji-Rong Wen, Yuan Lu, and Zhicheng Dou. 2026. DeepAgent: A General Reasoning Agent with Scalable Toolsets. In Proceedings of the ACM Web Conference 2026 . Association for Computing Machinery, 2219–2230. doi:10.1145/3774904.3792460 [30] Siteng Liao, Yuzhu Liang, Hengzhong Rao, Xizhao Luo, and Tian Wang. 2026. AlphaRouter: Token-level Routing Between SLM and LLM with Reinforcement Learning and Tree Search. In Proceedings of the 43rd International Conference on Machine Learning , Vol. 306. PMLR, 73805–73824. https://proceedings.mlr.press/v306/liao26c.html [31] Hehai Lin, Qi Yang, and Chengwei Qin. 2026. Skill-MAS: Evolving Meta-Skill for Automatic Multi-Agent Systems. In Findings of the Association for Computational Linguistics: EMNLP 2026 . 33685–33718. https://aclanthology.org/2026.findings-emnlp.1582/ [32] Jun Liu, Pu Zhao, Zhenglun Kong, Wenbin Zhang, Peiyan Dong, Fan Yang, Changdi Yang, Wuzhe Fan, Tianqin Li, Hao Tang, Geng Yuan, Wei Niu, Joannah Nanjekye, Xue Lin, Dong Huang, and Yanzhi Wang. 2026. RCR-Router: Role-Conditioned Context Routing for Resource-Efficient Multi-Agent LLM Systems. In Findings of the Association for Computational Linguistics: EMNLP 2026 . 8938–8963. https://aclanthology.org/2026.findings-emnlp.425/ [33] Alex Mallen, Akari Asai, Victor Zhong, Rajarshi Das, Daniel Khashabi, and Hannaneh Hajishirzi. 2023. When Not to Trust Language Models: Investigating Effectiveness of Parametric and Non-Parametric Memories. In Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) . 9802–9822. doi:10.18653/v1/2023.acl-long.546 [34] Ahmed Masry, Mohammed Saidul Islam, Mahir Ahmed, Aayush Bajaj, Firoz Kabir, Aaryaman Kartha, Md Tahmid Rahman Laskar, Mizanur Rahman, Shadikur Rahman, Mehrad Shahmohammadi, Megh Thakkar, Md Rizwan Parvez, Enamul Hoque, and Shafiq Joty. 2025. ChartQAPro: A More Diverse and Challenging Benchmark for Chart Question Answering. In Findings of the Association for Computational Linguistics: ACL 2025 . 19123–19151. doi:10.18653/v1/2025.findings-acl.978 [35] Yasmin Moslem and John D Kelleher. 2026. Dynamic model routing and cascading for efficient LLM inference: A survey. arXiv preprint arXiv:2603.04445 
+
+(2026). [36] Isaac Ong, Amjad Almahairi, Vincent Wu, Wei-Lin Chiang, Tianhao Wu, Joseph E. Gonzalez, M Waleed Kadous, and Ion Stoica. 2025. RouteLLM: Learning to Route LLMs from Preference Data. In The Thirteenth International Conference on Learning Representations . 34433–34448. https://openreview.net/forum?id=8sSqNntaMr [37] Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll Wainwright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, et al. 2022. Training language models to follow instructions with human feedback. In Advances in Neural Information Processing Systems , Vol. 35. 27730–27744. doi:10.52202/068431-2011 [38] Robin D. Pesl, Jerin G. Mathew, Massimo Mecella, and Marco Aiello. 2025. Advanced System Integration: Analyzing OpenAPI Chunking for Retrieval-Augmented Generation. In Advanced Information Systems Engineering (Lecture Notes in Computer Science, Vol. 15702) . Springer, 130–148. doi:10.1007/978-3-031-94571-7_8 [39] Cheng Qian, Zuxin Liu, Shirley Kokane, Akshara Prabhakar, Jielin Qiu, Haolin Chen, Zhiwei Liu, Heng Ji, Weiran Yao, Shelby Heinecke, Silvio Savarese, Caiming Xiong, and Huan Wang. 2025. xRouter: Training Cost-Aware LLMs Orchestration System via Reinforcement Learning. arXiv:2510.08439 [cs.LG] https://arxiv.org/abs/2510.08439 [40] Rafael Rafailov, Archit Sharma, Eric Mitchell, Christopher D Manning, Stefano Ermon, and Chelsea Finn. 2023. Direct Preference Optimization: Your Language Model is Secretly a Reward Model. In Advances in Neural Information Processing Systems , Vol. 36. 53728–53741. doi:10.52202/075280-2338 [41] Rakibul Hasan Rajib, Mengxin Zheng, and Qian Lou. 2026. Learning What to Retain: Gated-Memory Routing for Efficient Collaboration in Multi-Agent LLM Systems. In Proceedings of the 2026 Conference on Empirical Methods in Natural Language Processing . 39594–39611. https://aclanthology.org/2026.emnlp-main.1735/ [42] David Rein, Betty Li Hou, Asa Cooper Stickland, Jackson Petty, Richard Yuanzhe Pang, Julien Dirani, Julian Michael, and Samuel R. Bowman. 2024. GPQA: A Graduate-Level Google-Proof Q&A Benchmark. In First Conference on Language Modeling . https://openreview.net/forum?id=Ti67584b98 [43] Maarten Sap, Hannah Rashkin, Derek Chen, Ronan Le Bras, and Yejin Choi. 2019. Social IQa: Commonsense Reasoning about Social Interactions. In 
+
+Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP) . 4463–4473. doi:10.18653/v1/D19-1454 [44] Jinwei Su, Qizhen Lan, Yinghui Xia, Lifan Sun, Weiyou Tian, Tianyu Shi, and Lewei He. 2026. Difficulty-Aware Agentic Orchestration for Query-Specific Multi-Agent Workflows. In Proceedings of the ACM Web Conference 2026 .Association for Computing Machinery, 2060–2070. doi:10.1145/3774904.3792240 [45] Mirac Suzgun, Nathan Scales, Nathanael Schärli, Sebastian Gehrmann, Yi Tay, Hyung Won Chung, Aakanksha Chowdhery, Quoc Le, Ed Chi, Denny Zhou, and Jason Wei. 2023. Challenging BIG-Bench Tasks and Whether Chain-of-Thought Can Solve Them. In Findings of the Association for Computational Linguistics: ACL 2023 . 13003–13051. doi:10.18653/v1/2023.findings-acl.824 [46] Harsh Trivedi, Niranjan Balasubramanian, Tushar Khot, and Ashish Sabharwal. 2022. MuSiQue: Multihop Questions via Single-hop Question Composition. 
+
+Transactions of the Association for Computational Linguistics 10 (2022), 539–554. doi:10.1162/tacl_a_00475 [47] Chenxu Wang, Hao Li, Yiqun Zhang, Linyao Chen, Jianhao Chen, Ping Jian, Qiaosheng Zhang, and Shuyue Hu. 2026. ICL-Router: In-Context Learned Model Representations for LLM Routing. In Proceedings of the AAAI Conference on Artificial Intelligence , Vol. 40. 33413–33421. doi:10.1609/aaai.v40i39.40628 [48] Fali Wang, Hui Liu, Zhenwei Dai, Jingying Zeng, Zhiwei Zhang, Zongyu Wu, Chen Luo, Zhen Li, Xianfeng Tang, Qi He, and Suhang Wang. 2025. AgentTTS: Large Language Model Agent for Test-time Compute-optimal Scaling Strategy in Complex Tasks. In Advances in Neural Information Processing Systems , Vol. 38. 98396–98433. doi:10.52202/085713-3288 [49] Hao Wang, Guozhi Wang, Han Xiao, Yufeng Zhou, Yue Pan, Jichao Wang, Ke Xu, Yafei Wen, Xiaohu Ruan, Xiaoxin Chen, and Honggang Qi. 2026. Skill-SD: Skill-Conditioned Self-Distillation for Multi-turn LLM Agents. In The Fortieth Annual Conference on Neural Information Processing Systems .https://openreview.net/forum?id=ZeThM3k7x0 Accepted; forthcoming. [50] Jiayu Wang, Yifei Ming, Zixuan Ke, Shafiq Joty, Aws Albarghouthi, and Frederic Sala. 2026. SkillOrchestra: Learning to Route Agents via Skill Transfer. In The Fortieth Annual Conference on Neural Information Processing Systems .https://openreview.net/forum?id=5B5fOqwuhG Accepted; forthcoming. [51] Yubo Wang, Xueguang Ma, Ge Zhang, Yuansheng Ni, Abhranil Chandra, Shiguang Guo, Weiming Ren, Aaran Arulraj, Xuan He, Ziyan Jiang, Tianle Li, Max Ku, Kai Wang, Alex Zhuang, Rongqi Fan, Xiang Yue, and Wenhu Chen. 2024. MMLU-Pro: A More Robust and Challenging Multi-Task Language Understanding Benchmark. In Advances in Neural Information Processing Systems , Vol. 37. 95266–95290. doi:10.52202/079017-3018 [52] Jinyang Wu, Shuo Yang, Zhengxi Lu, Fan Zhang, Yuhao Shen, Lang Feng, Haoran Luo, Zheng Lian, Shuai Zhang, Zhengqi Wen, and Jianhua Tao. 2026. SEED: Self-Evolving On-Policy Distillation for Agentic Reinforcement Learning. arXiv:2607.14777 https://arxiv.org/abs/2607.14777 [53] Yitao Xiao, Shaoyong Guo, Guoming Yang, Qingnan Wang, Yinlin Ren, Xuesong Qiu, and Qi Feng. 2026. RouterHGC: Optimized Router for LLM-based Multi-Agent Systems via Heterogeneous Graph Contrastive Learning. In 
+
+Findings of the Association for Computational Linguistics: ACL 2026 . 31759–31789. doi:10.18653/v1/2026.findings-acl.1589 [54] Jiaqi Xue, Qian Lou, Jiarong Xing, and Heng Huang. 2026. R2-Router: A New Paradigm for LLM Routing with Reasoning. In Proceedings of the 43rd International Conference on Machine Learning , Vol. 306. PMLR, 143255–143268. https://proceedings.mlr.press/v306/xue26h.html [55] Zhilin Yang, Peng Qi, Saizheng Zhang, Yoshua Bengio, William Cohen, Ruslan Salakhutdinov, and Christopher D. Manning. 2018. HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering. In Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing . 2369–2380. doi:10.18653/v1/D18-1259 [56] Qihang Yu, Hanwen Tong, Zhengqi Zhang, Bo Zheng, Feng Wei, Shengyu Zhang, Zemin Liu, and Fei Wu. 2026. ReCal: Reward Calibration for RL-based LLM Routing. arXiv:2606.12479 [cs.LG] https://arxiv.org/abs/2606.12479 [57] Xiang Yue, Yuansheng Ni, Kai Zhang, Tianyu Zheng, Ruoqi Liu, Ge Zhang, Samuel Stevens, Dongfu Jiang, Weiming Ren, Yuxuan Sun, Cong Wei, Botao Yu, Ruibin Yuan, Renliang Sun, Ming Yin, Boyuan Zheng, Zhenzhu Yang, Yibo Liu, Wenhao Huang, Huan Sun, Yu Su, and Wenhu Chen. 2024. MMMU: A Massive Multi-discipline Multimodal Understanding and Reasoning Benchmark for Expert AGI. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) . 9556–9567. doi:10.1109/CVPR52733.2024.00913 [58] Xiang Yue, Tianyu Zheng, Yuansheng Ni, Yubo Wang, Kai Zhang, Shengbang Tong, Yuxuan Sun, Botao Yu, Ge Zhang, Huan Sun, Yu Su, Wenhu Chen, and Graham Neubig. 2025. MMMU-Pro: A More Robust Multi-discipline Multimodal Understanding Benchmark. In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) . 15134–15186. doi:10.18653/v1/2025.acl-long.736 [59] Yanwei Yue, Guibin Zhang, Boyang Liu, Guancheng Wan, Kun Wang, Dawei Cheng, and Yiyan Qi. 2025. MasRouter: Learning to Route LLMs for Multi-Agent Systems. In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) . 15549–15572. doi:10.18653/v1/2025.acl-long.757 [60] Guibin Zhang, Haiyang Yu, Kaiming Yang, Bingli Wu, Fei Huang, Yongbin Li, and Shuicheng Yan. 2026. EvoRoute: Experience-Driven Self-Routing LLM Agent Systems. In Proceedings of the 64th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) . 38213–38225. 10 EvoRouter: Cost-Efficient Multi-Agent Routing via Insight-Guided On-Policy Distillation       
+
+> doi:10.18653/v1/2026.acl-long.1771 [61] Haozhen Zhang, Tao Feng, and Jiaxuan You. 2025. Router-R1: Teaching LLMs Multi-Round Routing and Aggregation via Reinforcement Learning. In Advances in Neural Information Processing Systems , Vol. 38. 141233–141265. doi:10.52202/085713-4719 [62] Zheyuan Zhang, Kaiwen Shi, Zhengqing Yuan, Zehong Wang, Tianyi Ma, Keerthiram Murugesan, Vincent Galassi, Chuxu Zhang, and Yanfang Ye. 2026. AgentRouter: A Knowledge-Graph-Guided LLM Router for Collaborative Multi-Agent Question Answering. In Proceedings of the 64th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) . 788–809. doi:10.18653/v1/2026.acl-long.33 [63] Di Zhao, Longhui Ma, Siwei Wang, Miao Wang, and Yi Kong. 2026. SC-MAS: Constructing Cost-Efficient Multi-Agent Systems with Edge-Level Heterogeneous Collaboration. arXiv:2601.09434 https://arxiv.org/abs/2601.09434 [64] Qiyong Zhong, Mao Zheng, Mingyang Song, Houcheng Jiang, Jiajie Su, Huwei Ji, Li Zhang, and Junfeng Fang. 2026. MAS-OPD: On-Policy Distillation for Multi-agent Systems. arXiv:2609.34234 https://arxiv.org/abs/2609.34234
+
+## A Experimental Details A.1 Resource 
+
+All LLMs in the pool use temperature 1.0 and maximum output length 1,024 tokens (4,096 for code tasks). For multimodal tasks, models lacking multimodal support receive a fixed placeholder declaring image invisibility, forcing them to answer solely based on text. In generalization experiments (Section 5.4), the model pool comprises Qwen3.8-Flash, Kimi-K2.8-Preview, and Qwen3.8-Max; the collaboration mode pool comprises Self-Consistency and Hier-archical; and the skill pool contains skills unused elsewhere. Details of the collaboration modes are as follows: 
+
+• IO : A single agent answers in a single turn. 
+
+• CoT : A single agent reasons step-by-step across multiple turns before delivering the final answer. 
+
+• Reflection : A single agent iteratively reflects on its previ-ous response to generate a revised answer. 
+
+• Self-Consistency : A single agent is invoked multiple times independently. A subsequent invocation then inspects all candidate answers, evaluates consistency, resolves discrep-ancies, and aggregates the final result. 
+
+• Chain : Agents are activated sequentially, each receiving its predecessor’s output. When an agent exhausts its allocated reasoning turns, the next agent is triggered. 
+
+• FullConnected : All agents are activated concurrently, re-ceiving peers’ responses from the prior turn. Final-turn responses are routed to the router to synthesize the answer. 
+
+• Debate : All agents run concurrently, critiquing peers or re-butting critiques in subsequent turns. Final-turn responses are routed to the router for answer synthesis. 
+
+• Hierarchical : The initial agent plans task decomposition and scheduling, intermediate agents execute independently in parallel, and the final agent synthesizes findings. Turn limits govern reasoning turns per agent. Certain collaboration modes impose cross-configuration con-straints. For example, if the router pairs CoT with two agents, the MAS plan is rejected (as CoT admits at most one agent) and marked incorrect. 
+
+## A.2 Dataset 
+
+We construct a dataset comprising 12,800 questions across five domains, as described in Section 5.1. The dataset is partitioned into 10,500 training, 1,000 development, and 1,300 test questions. For out-of-domain evaluation, we use 175 questions from the Live-CodeBench [22] and 200 from the BBH-LD [45]. For each training task domain, we set a shared budget in our cost units. We calibrate it from pre-collected successful traces by computing the 25th percentile of trace costs for each question, taking the median across questions in the domain, and adding a 15% margin, with a minimum budget of 512. Budgets vary across domains (as well as trace collections); for example, the budget for the math tasks is 12,374.00, and 5,722.02 for commonsense tasks. 
+
+## A.3 Training 
+
+We evaluate three router backbones: Qwen3-4B, Qwen3-8B, and Llama-3.1-8B, yielding EvoRouter-4B, EvoRouter-8B, and EvoRouter-LLaMa-8B, respectively, through our iterative training framework. All experiments run on 8 NVIDIA A100 80GB GPUs. Task sets across SFT, RL, and evaluation are mutually disjoint. For supervised initialization, DeepSeek-V4-Pro serves as a boot-strap router to collect trajectories, yielding 2,000 filtered instances to fine-tune each backbone for 2 epochs. In subsequent training, we use a batch size of 8 with 16 rollouts per question and a learning rate of 3 × 10 −6, setting 𝛽 = 0.001, 𝑐 max = 0.1, 𝜆 𝐷 = 0.03, and 
+
+𝛼 = 0.25. For on-policy distillation, Qwen3-32B and Llama-3.1-70B serve as teachers for the Qwen and Llama backbones, respectively. DeepSeek-V4-Pro also acts as the insight distillation expert, leverag-ing its context window and reasoning capabilities to analyze dozens of trajectories simultaneously, but does not directly supervise the student. Finally, we cap insight capacity at |I| ≤ 8 and total length at 6,144 characters to limit context overhead. Example Insights from EvoRouter’s Evolution Loop 
+
+Task dependency. Missing or ambiguous facts need models with retrieval or stronger knowledge; . . . 
+
+Diminishing marginal returns. For simple arithmetic, accu-racy saturates with one capable worker and one round; . . . 
+
+Combinatorial dependency. Use Chain for chart calculations, pairing a multimodal extraction worker with a numerical solver consuming verified readings; . . . 
+
+Figure 11: Example insights distilled during EvoRouter’s evo-lution. 
+
+## A.4 Evaluation 
+
+Across all evaluations, we report accuracy averaged over three independent runs, rounding the mean number of correct predictions to the nearest integer before normalizing by the total number of test instances. For baselines without native model selection, we fix the backbone to GLM-5, the model with the largest active parameter in our pool, to ensure strong reasoning capability across tasks. The baselines evaluated in Table 2 are summarized below: 
+
+• Vanilla LLMs : Directly use the corresponding LLM to gen-erate responses in a single-turn interaction.                     
+
+> 11 First Author et al. 0.0 0.1 0.2
+> (a) Qwen3-4B
+> 0.00 0.05 0.10 (b) Qwen3-8B
+> 020 40 60 80 100
+> Training Step
+> 0.00 0.06 0.12
+> (c) Llama-3.1-8B
+> Total Loss 012345678910
+> Iteration Version
+> 65.0 67.5 70.0 72.5
+> Success rate (%)
+> 63.85% 65.79% 67.25% 68.39% 69.24% 69.88% 70.35% 70.68% 70.91% 71.06% 71.15%
+> (d) Iteration on Llama-3.1-8B
+> Success rate (%) Mean MAS FLOPs
+> 20,000 24,000 28,000 32,000
+> Mean MAS FLOPs
+> 23,008.42 21,137.68 19,233.63 20,683.47 21,699.95 24,716.83 23,510.08 26,386.29 28,250.54 29,641.56 31,184.47
+
+Figure 12: Training losses. 
+
+• RouteLLM [36]: A classifier-based binary routing method that chooses between GLM-5 and Qwen3.5-35B-A3B for each query based on the predicted win rate of the stronger model against a fixed threshold. 
+
+• GraphRouter [12]: Models relations among tasks, queries, and candidate LLMs with a heterogeneous graph, employ-ing a graph neural network to select the suitable model. 
+
+• ICL-Router [47]: Constructs capability representations of candidate models from historical performance and routes each query to the model predicted to be the best. 
+
+• RouterDC [4]: A dual contrastive learning based routing approach that selects an LLM based on the similarity be-tween the query and candidate capability vectors. 
+
+• Router-R1 [61]: An RL-based agentic routing method where the router actively dispatches sub-tasks to candi-date models during reasoning and aggregates returned information to synthesize the final answer. 
+
+• ReCal [56]: An RL-based agentic routing method follow-ing routing behaviors similar to Router-R1 [61], enhancing policy optimization under multi-task and multi-objective settings via reward decomposition and calibration. 
+
+• xRouter [39]: A multi-turn routing method that allows the router to answer directly, invoke candidate models, or select an existing model response as the final answer. 
+
+• MAS-Orchestra [25]: Encapsulates diverse collaborative reasoning patterns into callable modules coordinated by an orchestrator, using GLM-5 as the LLM backbone. 
+
+• OrchMAS [13]: Dynamically instantiates agent roles and task prompts while advancing problem-solving via runtime agent feedback, adopting GLM-5 as the backbone. 
+
+• DAAO [44]: Dynamically selects reasoning operators and their LLM backbones based on predicted problem difficulty, constructing an adaptive hierarchical collaborative work-flow for each query. 
+
+• MasRouter [59]: Employs cascaded controllers to select collaboration modes, agent counts, roles, and LLM back-bones, instantiating tailored MAS per query. 
+
+• RCR-Router [32]: Allocates shared memory to agents based on task-role relevance, where all agents are backed by GLM-5 and iteratively analyze and answer queries ac-cording to a predefined topology. 
+
+• AgentRouter [62]: Employs a knowledge graph to charac-terize relationships among queries, entities, and candidate agents, using a GNN to compute a weighted aggregation of responses across model-strategy combinations. 
+
+• Uno-Orchestra [7]: An agentic orchestration method based on SFT and RL that dispatches subtasks to com-patible model-primitive pairs, iteratively delegating or synthesizing the answer based on execution feedback. 
+
+## B Derivation of Inference Computational Cost 
+
+Measuring computational overhead via commercial API pricing often fails to reflect actual resource consumption, as pricing fluctu-ates across service providers and over time. For clarity and concise-ness, we instead model a standard decoder-only Mixture-of-Experts model 𝑚 with 𝐿 layers and hidden dimension 𝐷 , where each layer activates 𝑘 equally sized routed experts. Let 𝑃 sh denote the pa-rameter count of the always-active backbone matrices—including attention projections, routers, and shared experts—and 𝑃 exp denote that of a single routed expert. The active matrix parameter count per token is then 𝐴 𝑚 = 𝑃 sh + 𝐿𝑘𝑃 exp , as unselected experts incur no matrix operations [1, 23]. Counting one multiplication and one addition as one FLOP each, parameter matrix operations incur a dominant cost of 2 𝐴 𝑚 FLOPs per token. Under standard multi-head causal attention, attending to 𝑡 positions requires an additional 4 𝐿𝐷𝑡 FLOPs for query-key dot products and attention-weighted value aggregation [48]. For a model invocation with input length 𝑛 in , output length 𝑛 out , and total sequence length 𝑁 = 𝑛 in + 𝑛 out , let 𝐹 𝑚 denote the total compu-tational cost and R𝑚 capture all remaining operations. Assuming KV caching within each request and counting causal attention pairs, we obtain: 
+
+𝐹 𝑚 ≈ 2𝐴 𝑚 𝑁 + 4𝐿𝐷 
+
+> 𝑁
+
+∑︁  
+
+> 𝑡 =1
+
+𝑡 + R 𝑚 
+
+= 2𝐴 𝑚 𝑁 + 2𝐿𝐷𝑁 (𝑁 + 1) + R 𝑚 .
+
+(11) Since parameter matrix operations dominate overall computation (exceeding 95% of total FLOPs in our experiments), we omit both the attention interaction term and R𝑚 , yielding the FLOPs proxy 
+
+b𝐹 𝑚 = 2𝐴 𝑚 (𝑛 in + 𝑛 out ). Taking the active parameter count of the smallest model in our LLM pool, Qwen3.5-35B-A3B ( 𝐴 0 = 3 × 10 9), as the reference baseline, we define 2 𝐴 0 FLOPs as one cost unit. Let I𝑊 (𝜏 ) denote the index set of worker calls along trajectory 𝜏 ,where the 𝑗 -th call invokes model 𝑚 𝑗 with input length 𝑛 in  
+
+> 𝑗
+
+, output length 𝑛 out  
+
+> 𝑗
+
+, and estimated cost b𝐹 𝑗 . The normalized trajectory cost is then defined as: 
+
+𝐶 (𝜏 ) :=
+
+Í𝑗 ∈ I 𝑊 (𝜏 ) b𝐹 𝑗 
+
+2𝐴 0
+
+=∑︁    
+
+> 𝑗 ∈ I 𝑊 (𝜏 )
+
+𝐴 𝑚 𝑗 
+
+𝐴 0
+
+ 𝑛 in  
+
+> 𝑗
+
++ 𝑛 out 
+
+> 𝑗
+
+.
+
+(12) In practice, we approximate 𝐴 𝑚 using the active parameter counts reported by model providers. For dense models, this equals the total parameter count, since all weights participate in each au-toregressive forward pass. Active parameter counts for all evaluated models are summarized in Table 4. 
+
+> 12
+
+EvoRouter: Cost-Efficient Multi-Agent Routing via Insight-Guided On-Policy Distillation 
+
+Table 4: Active parameter counts of the models. For dense models ( ∗), the total parameter count is reported. ‡ denotes models used only in Section 5.4. 
+
+Model Act. Params (B) Model Act. Params (B) Qwen3.5-35B-A3B 3 DeepSeek-V4-Flash 13 Qwen3-4B ∗ 4 Qwen3.5-397B-A17B 17 Qwen3.8-Flash ‡ 6 Kimi-K2.8-Preview ‡ 32 Qwen3-8B ∗ 8 GLM-5 40 Llama-3.1-8B ∗ 8 Qwen3.8-Max ‡ 95 Qwen3.5-122B-A10B 10 
+
+13

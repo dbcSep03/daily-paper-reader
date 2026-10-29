@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-09-30 ~ 2026-10-29</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-29</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 25 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 18 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>14</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>7</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>11</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-29 03:34:36 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-29 23:25:19 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,9 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>本期扫完 25 篇文献（精读 14 篇、速读 11 篇），重点集中在 Agentic RL 与长上下文训练的交叉地带。</p>
-<p>最值得关注两个 9.0 分工作：TrajLong 用智能体与长上下文监督的联合设计做 mid-training，SynCo 则以多智能体强化学习驱动的数据合成协同训练让模型自进化；速读区 T2SPO、RewardWeaver 等 8 分工作同属“轨迹到步骤”的奖励优化主线。</p>
-<p>普通读者建议先读 TrajLong 与 SynCo 的摘要和实验设置，再沿“从模仿到奖励发现”的脉络看 8 分梯队，快速建立该方向的整体地图。</p>
+<p>今日筛选出18篇AI智能体论文，精读7篇、速读11篇，重点聚焦长程智能体的策略优化与强化学习蒸馏中的冲突问题。最值得看的是《One Act, Many Masks》提出的效果边际策略优化（9.0分），以及《CORD》用冲突感知优化联合处理智能体强化学习与蒸馏（9.0分）。普通读者可以先读这两篇精读文章的摘要与实验部分，再按兴趣选读多智能体协作方向的三篇速读论文。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -80,12 +78,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">14 篇</strong>
+    <strong class="dpr-home-dashboard-count">7 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="TrajLong: Co-Designing Agentic and Long-Context Supervision for Mid-Training">TrajLong: Co-Designing Agentic and Long-Context Supervision for Mid-Training</span></li><li><span class="dpr-home-dashboard-paper-title" title="SynCo: Data Synthesis Co-Training for Self-Evolving LLMs via Multi-Agent Reinforcement Learning">SynCo: Data Synthesis Co-Training for Self-Evolving LLMs via Multi-Agent Reinforcement Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="Adapting English Quality Classifiers for Multilingual LLM Pretraining Data Selection">Adapting English Quality Classifiers for Multilingual LLM Pretraining Data Selection</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="One Act, Many Masks: Effect-Marginal Policy Optimization for Long-Horizon Agents">One Act, Many Masks: Effect-Marginal Policy Optimization for Long-Horizon Agents</span></li><li><span class="dpr-home-dashboard-paper-title" title="CORD: Conflict-Aware Optimization for Joint RL and Distillation in Agents">CORD: Conflict-Aware Optimization for Joint RL and Distillation in Agents</span></li><li><span class="dpr-home-dashboard-paper-title" title="IQuest-Q1: Advancing Foundation Capabilities for Agentic CLI Systems">IQuest-Q1: Advancing Foundation Capabilities for Agentic CLI Systems</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">agentic-rl <strong>14</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">agentic-rl <strong>7</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -96,7 +94,7 @@
     <strong class="dpr-home-dashboard-count">11 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="From Imitation to Reward Discovery: On-Policy Warmup for Agentic RL">From Imitation to Reward Discovery: On-Policy Warmup for Agentic RL</span></li><li><span class="dpr-home-dashboard-paper-title" title="T2SPO: Trajectory-to-Step Policy Optimization for Agentic Reinforcement Learning">T2SPO: Trajectory-to-Step Policy Optimization for Agentic Reinforcement Learning</span></li><li><span class="dpr-home-dashboard-paper-title" title="RewardWeaver: Long-Horizon Interactive Learning for Language Agents via Self-Evolving Reward Adaptation">RewardWeaver: Long-Horizon Interactive Learning for Language Agents via Self-Evolving Reward Adaptation</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Training LLMs for Multi-Agent Collaboration with Verifiable Information Rewards">Training LLMs for Multi-Agent Collaboration with Verifiable Information Rewards</span></li><li><span class="dpr-home-dashboard-paper-title" title="Co-Evolving Acting and Forecasting for Language Agents">Co-Evolving Acting and Forecasting for Language Agents</span></li><li><span class="dpr-home-dashboard-paper-title" title="World of SWECraft: Agent Collaboration at Scale via Simulated Software Worlds">World of SWECraft: Agent Collaboration at Scale via Simulated Software Worlds</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">agentic-rl <strong>11</strong></span></div>
 </section>

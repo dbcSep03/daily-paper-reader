@@ -1,0 +1,490 @@
+Title: Frontier-OPD: Discovering the Edge of Agent Capability and Teaching Agents to Go Beyond
+
+URL Source: https://arxiv.org/pdf/2610.32802v1
+
+Published Time: Mon, 26 Oct 2026 01:23:00 GMT
+
+Number of Pages: 17
+
+Markdown Content:
+# Frontier-OPD: Discovering the Edge of Agent Capability and Teaching Agents to Go Beyond 
+
+Zheng Jiang , Yiming Chen , Houde Qian , Ling Li , Chaoyang Li , Lifeng Sun †
+
+Tsinghua University | †Corresponding author 
+
+On-policy distillation aligns teacher feedback with a student’s current behavior, yet acquiring useful supervision for multi-turn agents requires identifying both where guidance is needed and whether the student can sustain the interaction afterward. We introduce Frontier-OPD , which addresses this problem through the student’s learning frontier : decision situations that remain challenging but admit useful autonomous continuation after brief teacher guidance. To estimate this frontier, Frontier-OPD organizes on-policy experience into a shared-state trajectory graph, where trajectory-balanced aggregation of teacher–student disagreement identifies distinct intervention candidates while preserving the histories needed for replay. Short teacher bridges are then assessed by comparing agreement over the bridge and ensuing student continuation with an equally long segment of the original trajectory, providing a behavioral proxy for guidance that the current student can build on. Accepted teacher responses augment ordinary distillation data, and fresh rollouts renew the frontier estimate as the policy changes. Experiments on ALFWorld, WebShop, and ScienceWorld report higher mean autonomous performance than the compared distillation baselines across the evaluated student scales and teacher configurations, with ablations indicating complementary effects of candidate selection and guidance filtering. In one ALFWorld timing setting, the additional collection cost is offset by a shorter time to a target success rate.  
+
+> Code:
+
+https://github.com/jiangz20/FrontierOPD  
+
+> Contact:
+
+jz24@mails.tsinghua.edu.cn , sunlf@tsinghua.edu.cn 
+
+# 1 Introduction 
+
+Multi-turn agents interact with their environments through sequences of decisions whose consequences determine the observations and choices that follow (Yao et al., 2023), making autonomous task completion dependent on coordinated behavior across the entire interaction. Distilling this ability therefore requires supervision that remains relevant to the histories induced by the student’s own policy, a concern closely related to distribution shift in interactive imitation learning (Ross et al., 2011). On-policy distillation (OPD) addresses this concern by querying a teacher on student-generated responses (Agarwal et al., 2024); however, aligning feedback with current behavior leaves open the question of which additional teacher guidance is most appropriate for the student to learn from next. Teacher–student disagreement alone provides an incomplete basis for answering this question, because the need to correct a decision and the student’s ability to use that correction are distinct considerations. Where the student already behaves reliably, additional guidance may offer limited benefit; where its behavior differs substantially from the teacher’s, an intervention may still leave it facing subsequent decisions that exceed its current capabilities. Consider a student that can complete a placement task once shown a particular object manipulation: a short demonstration at that decision may provide usable guidance, whereas an intervention leading to an unfamiliar procedure may leave the student unable to sustain the interaction. Effective supervision acquisition thus requires identifying learning needs that can be addressed through guidance compatible with the student’s subsequent autonomous behavior. We characterize these opportunities as the student’s learning frontier : decision situations that it has not reliably mastered, but from which brief teacher guidance can enable useful autonomous continuation. This frontier is relative to the current policy and concerns the suitability of a learning opportunity, rather than simply whether an environment state has been visited. Because a familiar state may still require an unfamiliar decision, while a newly encountered state need not represent an acquired skill, experience coverage alone arXiv:2610.32802v1 [cs.CL] 23 Oct 2026 Qwen3-32B teacher → Qwen3-1.7B student 
+
+> ALFWorld SR
+> 020 40 60 8.2 Stu. 47.8 Tea. 22.1 OPD 31.1 F2B 34.6 B2F 33.8 G-OPD 40 FTB 45.5 Ours
+> Success Rate (%)
+> WebShop SR
+> 020 40 60 31.3 Stu. 52 Tea. 33.7 OPD 39.3 F2B 41.3 B2F 43.7 G-OPD 57.7 FTB 58.3 Ours
+> Success Rate (%)
+> ScienceWorld SR
+> 0510 15 20 1.8 Stu. 17.6 Tea. 6.2 OPD 8.5 F2B 7.9 B2F 8.8 G-OPD 10.2 FTB 14.5 Ours
+> Success Rate (%)
+
+Figure 1 Motivation for Frontier-OPD. Repeated student–teacher disagreement is treated as evidence of a potential learning need; a teacher bridge may be useful when it enables the student to continue; their overlap is operationalized as the learning frontier used for targeted distillation. The shared results strip reports success rate (highlighting the student, teacher, and Frontier-OPD outcomes. 
+
+cannot determine which guidance the student should receive. As learning changes both its behavior and its ability to continue from teacher interventions, the frontier must be reassessed accordingly. Estimating this frontier entails two coupled challenges, illustrated in Figure 1. Identifying learning needs 
+
+requires relating individual responses to the decision situations in which they arise: an isolated large teacher–student gap may not represent a persistent weakness, and repeated visits within one attempt can disproportionately influence the evidence. The representation must consequently consolidate behavior across shared situations while preserving the histories that condition individual actions. Assessing the usability of guidance , in turn, requires evidence from the student’s behavior after control is returned, since the quality of the teacher’s action does not by itself establish whether the student can continue productively from the resulting history. Recent agentic distillation methods address complementary aspects of supervision acquisition: TCOD varies student execution depth through temporal curricula (Wang et al., 2026), Guided-OPD schedules teacher participation across turns (Li et al., 2026), and FutureBridge-OPD validates localized guidance through subsequent student continuations (Chen et al., 2026). Building on continuation-based validation, we investigate how decision situations should be selected for intervention and how that selection can be coupled to an assessment of the resulting guidance. The learning-frontier perspective connects these two decisions through the evolving needs and capabilities of the student. We introduce Frontier-OPD , which operationalizes and tracks a proxy for the learning frontier by combining shared-state evidence aggregation with history-specific intervention and validation. Student trajectories are organized into a graph whose shared nodes align observed decision situations, allowing trajectory-balanced aggregation of disagreement to rank distinct frontier candidates without allocating multiple candidate slots to repeated visits at the same node. Each candidate is replayed from a concrete history, after which a short teacher bridge is assessed by comparing agreement over the bridge and ensuing student continuation with an equally long original segment. These behavioral proxies guide the acquisition of teacher responses for distillation, while fresh student rollouts renew the candidate pool and scores as the policy changes. 2Our contributions are threefold: • We formulate a learning-frontier perspective on agentic OPD that connects evidence of unmet learning needs with the student’s ability to continue from brief teacher guidance. • We develop Frontier-OPD, which combines trajectory-balanced selection of shared-state candidates with history-specific replay and matched-window validation to adapt supervision acquisition to the current student. • We evaluate the approach on ALFWorld, WebShop, and ScienceWorld across student scales and teacher configurations, reporting higher mean autonomous performance in the evaluated comparisons and examining the selection and validation procedure through ablations, budget sensitivity, and training-time comparisons. 
+
+# 2 Related Work 
+
+On-Policy Distillation for Multi-Turn Agents. Knowledge distillation transfers teacher predictions to a student (Hinton et al., 2015), while on-policy approaches align supervision with student-generated responses (Agarwal et al., 2024) and support reverse-KL optimization for generative models (Gu et al., 2024). In multi-turn environments, the student’s actions also determine the histories on which later feedback is obtained, making experience construction an important part of the training procedure. Drawing on curriculum principles that adapt learning opportunities to progress (Graves et al., 2017; Florensa et al., 2017), TCOD regulates student execution depth (Wang et al., 2026), whereas Guided-OPD schedules teacher participation within rollouts (Li et al., 2026). Frontier-OPD retains student-driven collection while organizing observed decision situations as a shared reference for acquiring additional supervision. 
+
+Selective Teacher Guidance and Validation. Beyond constructing training trajectories, interactive learning must determine where expert guidance is warranted and how its usefulness should be assessed. DAgger collects expert labels under learner-induced state distributions (Ross et al., 2011), while ThriftyDAgger uses novelty and risk to allocate interventions under a budget (Hoque et al., 2022); in agentic distillation, FutureBridge-OPD assesses short teacher bridges through subsequent student continuations (Chen et al., 2026). These approaches motivate complementary considerations of intervention need and downstream behavior. Our learning-frontier perspective connects them through trajectory-balanced aggregation of disagreement at shared states and matched-window validation of history-specific guidance, adapting the supervision selected for training to both the student’s observed behavior and its continuation after teacher intervention. 
+
+# 3 Method 
+
+Frontier-OPD estimates the learning frontier through two complementary operations: aggregating teacher– student disagreement to identify candidate learning needs, and validating short teacher interventions through the student’s subsequent behavior (Figure 2). A shared-state trajectory graph provides the reference for organizing behavioral evidence, while the original decision histories are retained so that each candidate can be replayed and evaluated in its own context. This distinction allows supervision to be allocated at the level of a shared decision situation without replacing the history on which the student and teacher condition their responses. Let πθk and πT denote the student at collection iteration k and the teacher, respectively. At turn t, the agent conditions on interaction history ht and generates response yt specifying environment action at; shared state identities are used for evidence aggregation and ranking, whereas the full histories determine intervention replay and validation. 
+
+3.1 Representing Learning Needs in Student Experience 
+
+Student experience. For task x, we collect M trajectories Rk(x) = {τ ik}Mi=1 by sampling student responses on-policy from prescribed starting histories. These histories consist of the scheduled reference prefix when an 3Figure 2 Overview of Frontier-OPD. Trajectory-balanced disagreement aggregation ranks shared-state frontier candidates, each of which supplies a concrete history for teacher intervention. Matched-window validation assesses the bridge and subsequent student behavior before accepted teacher responses enter distillation, after which fresh rollouts renew the frontier estimate. 
+
+expert-prefix curriculum is active (Wang et al., 2026), or the task’s initial state otherwise, with the same initialization and history-construction rules maintained within each controlled comparison. 
+
+Empirical trajectory graph. To align behavioral evidence across visits, we construct a task-specific directed graph Gk(x) = ( Vk, Ek) by mapping each observation oit and its available-action information Ait to a state key 
+
+vit = ϕ(oit, Ait), where ϕ hashes their normalized representations. The resulting vertices and action-labeled edges are 
+
+Vk = [
+
+> i,t
+
+{vit},
+
+Ek = [
+
+> i,t
+
+{(vit, a it, v it+1 )}. (1) Shared keys merge repeated observations within and across trajectories, while the recorded transitions preserve observed connectivity, yielding an empirical representation of behavioral coverage under an approximate observational identity. Since a shared node can be reached through different histories, each decision occurrence 
+
+c = ( i, t ) retains its original context, response, and replay prefix; the recorded sequences and shared keys therefore provide an implicit graph without collapsing the contexts used for generation. State identity determines the grouping used in node-score aggregation and whether a teacher transition reaches a previously observed state, whereas graph adjacency does not enter the ranking rule. 
+
+Sampled signed disagreement. For response token yj under context (h, y <j ), define the recorded student– teacher log-probability gap as 
+
+gk(h, y, j ) = log πθk (yj | h, y <j )
+
+− log πT(yj | h, y <j ). (2) 4For occurrence c = ( i, t ), we use sampled signed disagreement (Chen et al., 2026) as the occurrence-level statistic: 
+
+dk(c) = 1
+
+|yit| 
+
+> |yit|
+
+X
+
+> j=1
+
+gk(hit, y it, j ). (3) Because higher values indicate that the student assigns a higher log-probability to the sampled response than the teacher does, this signed, response-level statistic provides a learning-need proxy that can be aggregated across eligible visits before selecting intervention candidates. 
+
+3.2 Selecting Learning-Frontier Candidates 
+
+Only eligible decision occurrences contribute to candidate ranking. Writing Qik for their set in trajectory i,eligibility requires valid actions through the candidate, a replayable prefix, a state key, aligned nonempty student and teacher token scores, finite dk(c), and at least K + H recorded response turns starting at c. The final requirement ensures that a reference segment is available for a teacher bridge of at most K turns followed by a student-validation horizon of H turns. 
+
+Trajectory-balanced node scores. For node v, define its eligible visits in trajectory i and the set of contributing trajectories as 
+
+Qik(v) = {(i, t ) ∈ Q ik : vit = v},
+
+Ik(v) = {i : |Q ik(v)| > 0}. (4) We give each contributing trajectory equal total weight and distribute that weight equally among its eligible visits to v:
+
+sk(v) = X 
+
+> i∈I k(v)
+
+X 
+
+> c∈Q ik(v)
+
+wk(c, v ) dk(c),wk(c, v ) = 1
+
+|I k(v)| |Q ik(v)| .
+
+(5) Equation equation 5 first averages disagreements within each contributing trajectory and then averages those trajectory means, so repeated visits can change a trajectory’s estimate without increasing its total weight at the node. Trajectories with no eligible visit contribute no weight, and response length does not affect visit weights; this avoids allowing a looping trajectory to dominate solely through its visit count, while retaining nodes supported by only one eligible occurrence. 
+
+Distinct frontier candidates and replay representatives. Among eligible nodes Uk = {v ∈ V k : |I k(v)| > 0},we apply an optional threshold δ to the aggregated score and select at most B distinct candidates: 
+
+Fk = TopB sk
+
+ {v ∈ U k : sk(v) ≥ δ}. (6) These frontier candidates are prioritized by the learning-need proxy before their guidance has been tested; to associate each selected node with a concrete intervention context, we choose its highest-disagreement eligible occurrence as the replay representative: 
+
+c∗
+
+> k
+
+(v) = arg max   
+
+> c∈S
+> iQik(v)
+
+dk(c),
+
+Ck = {c∗
+
+> k
+
+(v) : v ∈ F k}.
+
+(7) Occurrence ties follow collection order (trajectory, then turn), and node-score ties follow the first eligible visit. Because the budget applies to distinct nodes rather than trajectories, several representatives may come from the same trajectory, but repeated visits to one node cannot consume multiple candidate slots. For each c ∈ C k, the environment is reset and the original prefix—including the expert prefix when present and the preceding student actions—is replayed before the teacher generates a short bridge from the saved decision context. Teacher control ends after at most K turns, at the first state key outside Vk, or upon environment termination, giving a realized length Lc ≤ K. Validation requires a nonterminal handoff to the student; with the default K = 1 , both graph-internal and graph-external handoffs are eligible, so graph exit is not an acceptance requirement. 53.3 Continuation-Validated Teacher Bridges 
+
+Whereas candidate ranking identifies decision situations at which to test guidance, validation assesses the resulting intervention after the student resumes control. Following the continuation-based rationale of Chen et al. (2026), we generate H student response turns after the teacher bridge and compare the joint window against a matched segment of the original trajectory. For this assessment, we use the negative absolute token log-probability gap, 
+
+ak(h, y ) = − 1
+
+|y|
+
+> |y|
+
+X
+
+> j=1
+
+|gk(h, y, j )|. (8) so larger values indicate closer agreement on the evaluated response, unlike the signed statistic used for candidate localization. Window-level agreement Ak(W ) is the arithmetic mean of ak(h, y ) over the response turns in W , with both models scoring each response—including teacher-generated bridge responses—under its own context. Normalizing within responses and then averaging uniformly across turns prevents response length from determining its contribution to the window score. The new window W new  
+
+> c
+
+contains the realized teacher bridge and its student continuation, while W old  
+
+> c
+
+comprises the original Lc + H response turns beginning at the same occurrence. Reusing the recorded reference scores yields a comparison that preserves the task and intervention prefix while matching the number of response turns, with agreement gain defined as 
+
+∆k(c) = Ak(W new  
+
+> c
+
+) − Ak(W old  
+
+> c
+
+). (9) Let Vk(c) indicate successful prefix replay, a nonterminal teacher handoff, a complete valid H-turn student continuation, and an equally long reference window with defined agreement scores. The accepted candidate set is 
+
+Bk = {c ∈ C k : Vk(c) = 1 , ∆k(c) ≥ η}. (10) With the default η = 0 , the filter retains agreement-preserving or agreement-improving windows and contributes every accepted teacher bridge to the supervision pool, while the newly generated student continuations serve only as validation evidence. This criterion refines the candidate set using a proxy for usable guidance; because it evaluates the joint window, acceptance does not establish an improvement in the continuation alone, task success, or learning after an update. 
+
+3.4 Distillation and Learning-Frontier Renewal 
+
+Let Dstu  
+
+> k
+
+contain ordinary student response experiences and Dbr  
+
+> k
+
+contain teacher response experiences from accepted bridges, each retaining its model context, response tokens, and recorded student and teacher token log-probabilities. For an experience e with response tokens ye, 1: Le , the workflow stores the behavior-model log probability ℓstu  
+
+> e,j
+
+and the teacher log probability ℓT 
+
+> e,j
+
+for every response token. For ordinary rollouts, the behavior model is the sampling student; for an accepted bridge, the teacher samples the response and the student is evaluated on those teacher-sampled tokens. The multi-turn OPD trainer uses the token-level OPD advantage bAe,j = ℓT 
+
+> e,j
+
+− ℓstu  
+
+> e,j
+
+(11) with the configured coefficient κ = 1 .0 in the actor update. The bridge responses therefore change which contexts and tokens enter the on-policy distillation update, but do not introduce a separate bridge loss or a reward-weighted objective; their stored reward is unused by multi_turn_opd . The newly generated student continuations used for validation are not added to the training pool. Both sources enter the same distillation update: 
+
+Dk = Dstu  
+
+> k
+
+⊎ D br  
+
+> k
+
+,θk+1 = OPDUpdate( θk; Dk). (12) Here ⊎ concatenates experience multisets without collapsing repeated occurrences, and OPDUpdate denotes the multi-turn OPD actor update (Agarwal et al., 2024) with the same optimizer for both sources. We use four repeated rollout samples per task, AdamW with learning rate 10 −6, default (β1, β 2) = (0 .9, 0.999) , weight 6decay 10 −2, and gradient clipping at 1.0. Their relative contributions depend on the accepted data and experience sampling. Subsequent on-policy rollouts reconstruct the graph and renew its scores and replay representatives, allowing the learning-frontier estimate to adapt to changes in both the student’s behavior and its continuation from teacher guidance. The resulting policy is evaluated autonomously from the task’s initial state, without teacher intervention or reference-prefix replay.    
+
+> ALFWorld WebShop ScienceWorld Method
+
+SR ↑ Score ↑ SR ↑ Score ↑ SR ↑ 
+
+> Qwen3-32B teacher
+
+→ Qwen3-1.7B student 
+
+Student (zero-shot) 8.2 40.5 31.3 8.3 1.8 Teacher (zero-shot) 47.8 54.0 52.0 45.1 17.6 OPD 22 .1 ± 2.8 35 .2 ± 2.0 33 .7 ± 2.9 27 .5 ± 1.5 6.2 ± 1.0
+
+TCOD-F2B 31 .1 ± 3.0 41 .3 ± 1.9 39 .3 ± 1.5 29 .8 ± 0.8 8.5 ± 0.9
+
+TCOD-B2F 34 .6 ± 3.1 43 .6 ± 3.2 41 .3 ± 3.1 28 .4 ± 1.2 7.9 ± 0.6
+
+Guided-OPD 33 .8 ± 5.1 46 .4 ± 10 .5 43 .7 ± 9.5 30 .2 ± 1.8 8.8 ± 1.1
+
+FutureBridge-OPD 40 .0 ± 3.1 59 .0 ± 1.6 57 .7 ± 1.5 32 .6 ± 1.0 10 .2 ± 0.7 
+
+> Frontier-OPD (ours)
+
+45 .5 ± 2.0 59 .6 ± 1.2 58 .3 ± 1.5 40 .0 ± 2.4 14 .5 ± 0.5 
+
+> Qwen3-32B teacher
+
+→ Qwen3-4B student 
+
+Student (zero-shot) 21.1 33.0 29.3 23.5 8.5 Teacher (zero-shot) 47.8 54.0 52.0 45.1 17.6 OPD 42 .8 ± 4.5 43 .8 ± 1.6 40 .7 ± 2.3 29 .8 ± 0.3 8.2 ± 0.9
+
+TCOD-F2B 47 .0 ± 4.9 49 .6 ± 7.2 46 .3 ± 6.4 33 .5 ± 0.6 12 .1 ± 2.2
+
+TCOD-B2F 40 .3 ± 4.7 50 .8 ± 1.4 47 .3 ± 2.9 32 .6 ± 1.9 11 .2 ± 0.7
+
+Guided-OPD 47 .5 ± 8.7 48 .5 ± 5.5 47 .7 ± 5.7 34 .8 ± 1.6 12 .8 ± 1.8
+
+FutureBridge-OPD 48 .5 ± 2.0 54 .2 ± 1.2 51 .7 ± 1.5 38 .2 ± 1.1 13 .5 ± 0.8 
+
+> Frontier-OPD (ours)
+
+49 .5 ± 1.9 54 .8 ± 1.0 52 .3 ± 1.2 41 .8 ± 1.5 16 .2 ± 0.6 
+
+> Table 1
+
+Performance comparison with Qwen3-32B as teacher and Qwen3-1.7B or Qwen3-4B as student. Trained-policy results are mean ± sample standard deviation over three seeds. Boldface marks the highest mean among trained students within each configuration; blue shading highlights Frontier-OPD. 
+
+# 4 Experiments 
+
+We evaluate whether supervision selected through the learning-frontier procedure improves autonomous task performance, how candidate selection and guidance filtering contribute, and how the collection budgets affect performance and training time. 
+
+4.1 Experimental Setup 
+
+Benchmarks and metrics. We evaluate Frontier-OPD on ALFWorld for household interaction (Shridhar et al., 2021), WebShop for grounded web interaction (Yao et al., 2022), and ScienceWorld for interactive scientific tasks (Wang et al., 2022), reporting success rate (SR) and, where available, task score. All evaluations use held-out task instances on which the student executes independently from the environment’s initial state, following the protocol in Appendix A. 
+
+Models and comparisons. The main comparison uses Qwen3-32B as teacher with Qwen3-1.7B and Qwen3-4B students (Yang et al., 2025), supplemented by an RL-trained Qwen3-8B teacher (Qwen3-8B-RL) with the same student scales to examine transfer across teacher configurations (Section 4.3). We compare against OPD (Agarwal et al., 2024), TCOD-F2B and TCOD-B2F (Wang et al., 2026), Guided-OPD (Li et al., 2026), and FutureBridge-OPD (Chen et al., 2026), with zero-shot student and teacher policies providing reference performance. Within each controlled comparison, we fix initialization, training tasks, reference-prefix 7curriculum, prompts, decoding, and optimization settings; the reference Frontier-OPD configuration uses 
+
+M = 4 , B = 4 , K = 1 , H = 3 , and η = 0 .
+
+Reporting protocol. For trained policies, Tables 1, 2, and 3 report mean ± sample standard deviation over three seeds, while the sensitivity figures show the reported success rates. All metrics use a 0–100 scale with higher values indicating better performance, and success-rate differences are expressed in percentage points. Comparisons refer to the reported means, without inferring statistical significance from the three-seed summaries alone. 
+
+4.2 Overall Task Performance 
+
+With a Qwen3-32B teacher, Frontier-OPD has the highest reported mean among trained students on every reported metric at both student scales (Table 1). This pattern is consistent with the supervision-acquisition procedure being useful across the evaluated domains, although the three-seed summaries do not establish statistical significance. The larger gaps relative to the compared baselines on ALFWorld and ScienceWorld for the smaller student are consistent with targeted guidance being useful when autonomous execution remains difficult, while the persistent but varying gains for the larger student are consistent with dependence on the environment and teacher–student configuration. The comparison with FutureBridge-OPD is more modest on WebShop, where the small differences in task score and success rate are consistent with gains in both partial progress and task completion but warrant a more cautious interpretation than the ScienceWorld results. Some trained students also outperform the zero-shot teacher, consistent with the value of environment-specific adaptation; because the teacher is unadapted in this comparison, however, these results do not establish superiority under equal adaptation budgets.                                                                                                                                            
+
+> Qwen3-1.7B student Qwen3-4B student ALFWorld WebShop ALFWorld WebShop Method SR ↑Score ↑SR ↑SR ↑Score ↑SR ↑
+> Student (zero-shot) 8.2 40.5 31.3 21.1 33.0 29.3 Teacher (zero-shot) 82.1 64.0 62.3 82.1 64.0 62.3 OPD 55 .2±4.260 .5±2.758 .3±2.167 .9±3.964 .1±2.864 .3±2.1
+> TCOD-F2B 57 .7±2.260 .1±2.459 .3±2.166 .9±0.963 .8±2.864 .3±2.1
+> TCOD-B2F 56 .5±2.858 .8±2.057 .7±1.569 .4±1.562 .9±1.761 .3±1.5
+> Guided-OPD 60 .2±3.560 .9±4.157 .0±4.472 .1±3.463 .7±4.261 .7±5.0
+> FutureBridge-OPD 61 .4±1.760 .2±1.158 .7±1.570 .6±1.963 .2±0.862 .7±1.5
+> Frontier-OPD (ours) 65 .9±3.063 .4±1.561 .7±1.274 .6±2.666 .7±1.565 .3±1.2
+> Table 2 Teacher-configuration comparison with Qwen3-8B-RL teacher and Qwen3-1.7B or Qwen3-4B students. Trained-policy results are mean ±sample standard deviation over three seeds. Boldface marks the highest mean among trained students within each configuration; blue shading highlights Frontier-OPD.
+
+4.3 Teacher Configuration 
+
+To examine whether the results depend on a particular teacher, we repeat the comparison on ALFWorld and WebShop using Qwen3-8B-RL with both student scales, following the setting of Chen et al. (2026). Methods within each configuration share the teacher checkpoint, student initialization, and evaluation protocol, although the change in both teacher size and training history relative to Table 1 means that this experiment assesses transfer across configurations rather than isolating the effect of RL training. Frontier-OPD retains the highest reported mean among trained students across all reported metrics (Table 2), despite changes in the relative ordering of the baselines with student size and environment. Together with the Qwen3-32B results, this consistency is compatible with the usefulness of selective, continuation-validated guidance across the evaluated teacher–student pairings, but does not establish performance outside these configurations. 84.4 Core Component Ablations 
+
+We examine the contributions of candidate selection, bridge supervision, and gain filtering on ALFWorld and WebShop with a Qwen3-8B-RL teacher and Qwen3-4B or Qwen3-1.7B students (Table 3). All variants share the ordinary rollout count, student initialization, reference-prefix curriculum, and update budget, with M = 4 ,
+
+B = 4 , K = 1 , H = 3 , and η = 0 defining the full configuration for both student scales.                                                                                                                 
+
+> Qwen3-1.7B student Qwen3-4B student Variant ALFWorld WebShop ALFWorld WebShop SR ↑Score ↑SR ↑SR ↑Score ↑SR ↑
+> Student (zero-shot) 8.2 40.5 31.3 21.1 33.0 29.3 Teacher (zero-shot) 82.1 64.0 62.3 82.1 64.0 62.3 w/o bridge data 62 .2±3.058 .4±1.558 .4±1.670 .9±1.361 .7±1.262 .0±1.6
+> Random selection 58 .7±3.556 .0±1.856 .7±1.567 .4±2.359 .3±1.760 .3±1.4
+> w/o gain filtering 63 .7±3.260 .5±1.259 .7±1.872 .4±3.463 .8±0.863 .3±2.1
+> Frontier-OPD (full) 65 .9±3.063 .4±1.561 .7±1.274 .6±2.666 .7±1.565 .3±1.2
+> Table 3 Core component ablations with a Qwen3-8B-RL teacher and Qwen3-1.7B or Qwen3-4B students on ALFWorld and WebShop. The full configuration uses M= 4 ,B= 4 ,K= 1 ,H= 3 , and η= 0 . Trained-policy results are mean
+> ±sample standard deviation over three seeds; higher is better.
+
+The w/o bridge data variant retains ordinary student experience but excludes accepted teacher responses from the training pool, testing whether the additional supervision contributes beyond the base rollout data. 
+
+Random selection replaces trajectory-balanced node selection with uniform sampling without replacement from pooled eligible occurrences under the same candidate budget, whereas w/o gain filtering retains every branch satisfying the shared replay, action-validity, and continuation-completeness requirements. The full method achieves the highest reported mean across all reported metrics for both student scales. Random selection produces the largest degradation on both benchmarks, suggesting that the allocation of the intervention budget matters. Removing bridge data also weakens performance, while accepting all valid bridges remains inferior to the full method despite outperforming random selection; these patterns are consistent with complementary effects of acquiring targeted teacher responses and filtering the resulting guidance before distillation. The comparisons evaluate the complete selection and filtering procedures: random selection changes both ranking and the allocation unit (occurrences versus distinct nodes), and the filtering ablation removes the joint-window acceptance rule, so neither isolates graph structure or individual terms of the agreement criterion. 
+
+4.5 Sensitivity to Intervention and Trajectory Budgets 
+
+Both sweeps use Qwen3-8B-RL → Qwen3-4B on ALFWorld with K = 1 , H = 3 , and η = 0 , keeping initialization, training tasks, and optimization settings fixed within each sweep. When the candidate-attempt budget increases at a fixed trajectory count (Figure 3(a)), performance initially increases and then enters a flatter region. This pattern is consistent with diminishing returns to additional intervention attempts over the tested range, without establishing that all useful learning opportunities have been exhausted. Increasing the sampled trajectory count at a fixed intervention budget instead produces an upward trend over the evaluated range (Figure 3(b)). Since additional trajectories enlarge both the candidate pool and the ordinary distillation dataset, this trend cannot be attributed to more accurate frontier estimation alone; it nevertheless suggests that expanding student experience can remain useful after additional intervention attempts yield limited gains. These sweeps characterize the tested budget range rather than a universal optimum. 9(a) Candidate attempts (b) Sampled trajectories          
+
+> fixed M= 4 fixed B= 2
+> 50 55 60 65 70 75 80
+> 70.9
+> 1
+> 72.4
+> 2
+> 74.6
+> 4
+> 74.6
+> 6
+> 70.1
+> 2
+> 72.4
+> 4
+> 74.6
+> 6
+> 76.1
+> 8
+> Candidate attempts BSampled trajectories M
+> ALFWorld success rate (%) Figure 3
+
+Sensitivity analysis on ALFWorld with a Qwen3-8B-RL teacher and Qwen3-4B student. (a) Candidate-attempt budget B with M = 4 . (b) Sampled trajectory count M with B = 2 . Both studies use K = 1 , H = 3 ,and η = 0 . Bars show success rates; the shared vertical axis spans 50–80%. (a) Step time (b) Time to 55%    
+
+> seconds minutes
+> 010 20 30 40 020 40 60 80 19.26
+> OPD
+> 12.38
+> TCOD
+> 20.44
+> FTB-OPD
+> 37.85
+> Ours
+> 74
+> OPD
+> 58
+> TCOD
+> 67
+> FTB-OPD
+> 46
+> Ours
+> Method Method
+> Figure 4
+
+Training efficiency on ALFWorld with a Qwen3-8B-RL teacher and Qwen3-4B student on four NVIDIA B300 GPUs. (a) Average wall-clock time per training step. (b) Elapsed time to reach a 55% solve rate. Lower is better for both metrics. FTB-OPD denotes FutureBridge-OPD; the figure labels Frontier-OPD as “Ours”. 
+
+4.6 Training Efficiency 
+
+We measure training efficiency on four NVIDIA B300 GPUs using a Qwen3-8B-RL teacher and Qwen3-4B student on ALFWorld, distinguishing the average cost of a training step from the elapsed time required to reach a common 55% solve rate (Figure 4). Although Frontier-OPD incurs the highest per-step cost because of its additional collection and validation work, it reaches this target in the least elapsed time in this measurement. The result is consistent with a time-to-target advantage in this setting, while leaving open how the tradeoff changes at other success thresholds or hardware scales. 
+
+# 5 Conclusion 
+
+We presented Frontier-OPD, a framework that organizes supervision acquisition around the student’s learning frontier by jointly considering where guidance is needed and whether the current policy can build on it. Trajectory-balanced aggregation identifies candidate decision situations from shared-state experience, while matched-window validation screens short teacher bridges before their responses enter on-policy distillation. By renewing this selection process with fresh student rollouts, the method adapts supervision to the evolving policy and yields higher reported mean autonomous performance across the evaluated comparisons on three interactive benchmarks. These results motivate further investigation of learning-frontier dynamics, particularly through direct measurements of whether situations that initially require teacher guidance become independently solvable after training. 
+
+# Limitations 
+
+Our learning-frontier estimate relies on behavioral proxies whose relation to acquired capability remains imperfect: high disagreement need not indicate a missing skill, and non-decreasing agreement over a joint bridge-and-continuation window guarantees neither better continuation alone nor subsequent mastery. Although the experiments measure autonomous task performance, they do not directly trace skill acquisition at selected nodes or establish monotonic expansion of the learning frontier. The estimate is also conditioned on sampled experience and an observation-based state abstraction, which can merge histories with different learning needs and admits nodes with only one eligible visit. Shared state identity influences candidate ranking, but graph adjacency does not enter the score; moreover, because the random-selection ablation changes both ranking and the allocation unit, it cannot isolate the benefit of state aggregation. Practical applicability depends on replayable environments and access to teacher token probabilities, while the measured timing advantage is limited to one target success rate on ALFWorld and may vary with the performance threshold and hardware scale. The reported trained-policy comparisons use three 10 seeds and sample standard deviations; they do not establish statistical significance or robustness to additional seeds. The Qwen3-32B and Qwen3-8B-RL experiments also change teacher size and training history, so their results should not be read as an isolated teacher-scaling or RL-training comparison. Finally, all evidence comes from three benchmark environments and does not establish generalization to unrestricted real-world agents. 
+
+# References 
+
+Rishabh Agarwal, Nino Vieillard, Yongchao Zhou, Piotr Stanczyk, Sabela Ramos Garea, Matthieu Geist, and Olivier Bachem. On-policy distillation of language models: Learning from self-generated mistakes. In The Twelfth International Conference on Learning Representations , 2024. https://proceedings.iclr.cc/paper_files/paper/2024/ hash/5be69a584901a26c521c2b51e40a4c20-Abstract-Conference.html. Samy Bengio, Oriol Vinyals, Navdeep Jaitly, and Noam Shazeer. Scheduled sampling for sequence prediction with recurrent neural networks. In Advances in Neural Information Processing Systems , volume 28. Curran Associates, Inc., 2015. https://proceedings.neurips.cc/paper/2015/hash/e995f98d56967d946471af29d7bf99f1-Abstract.html. Chishui Chen, Yaoyou Fan, Te Sun, Yi Yang, Chenghao Sun, Delin Mao, Hongbo Qiao, Zuowei Zhang, Junxi Wang, Chenxing Sun, Yangen Hu, Lu Pan, Xuyang Liu, and Linfeng Zhang. Look ahead before you distill: Future trajectory validation of teacher guidance for agentic on-policy distillation, 2026. https://arxiv.org/abs/2608.01953. Carlos Florensa, David Held, Markus Wulfmeier, Michael Zhang, and Pieter Abbeel. Reverse curriculum generation for reinforcement learning. In Proceedings of the 1st Annual Conference on Robot Learning , volume 78 of Proceedings of Machine Learning Research , pages 482–495. PMLR, 2017. https://proceedings.mlr.press/v78/florensa17a.html. Alex Graves, Marc G. Bellemare, Jacob Menick, Rémi Munos, and Koray Kavukcuoglu. Automated curriculum learning for neural networks. In Proceedings of the 34th International Conference on Machine Learning , volume 70 of Proceedings of Machine Learning Research , pages 1311–1320. PMLR, 2017. https://proceedings.mlr.press/v70/ graves17a.html. Yuxian Gu, Li Dong, Furu Wei, and Minlie Huang. MiniLLM: Knowledge distillation of large language models. In The Twelfth International Conference on Learning Representations , 2024. https://proceedings.iclr.cc/paper_files/paper/ 2024/hash/8ac015d409635f196f9e3e9dcfb9a94e-Abstract-Conference.html. Geoffrey Hinton, Oriol Vinyals, and Jeff Dean. Distilling the knowledge in a neural network, 2015. https://arxiv.org/ abs/1503.02531. Ryan Hoque, Ashwin Balakrishna, Ellen Novoseller, Albert Wilcox, Daniel S. Brown, and Ken Goldberg. ThriftyDAgger: Budget-aware novelty and risk gating for interactive imitation learning. In Proceedings of the 5th Conference on Robot Learning , volume 164 of Proceedings of Machine Learning Research , pages 598–608. PMLR, 2022. https: //proceedings.mlr.press/v164/hoque22a.html. Yoon Kim and Alexander M. Rush. Sequence-level knowledge distillation. In Proceedings of the 2016 Conference on Empirical Methods in Natural Language Processing , pages 1317–1327. Association for Computational Linguistics, 2016. doi: 10.18653/v1/D16-1139. https://aclanthology.org/D16-1139/. Gengsheng Li, Mao Zheng, Mingyang Song, Ruiqi Liu, Tianyu Yang, Jie Sun, Qiyong Zhong, Haiyun Guo, Junfeng Fang, Dan Zhang, and Jinqiao Wang. On-policy distillation with curriculum turn-level guidance for multi-turn agents, 2026. https://arxiv.org/abs/2606.15912. Xiao Liu, Hao Yu, Hanchen Zhang, Yifan Xu, Xuanyu Lei, Hanyu Lai, Yu Gu, Hangliang Ding, Kaiwen Men, Kejuan Yang, Shudan Zhang, Xiang Deng, Aohan Zeng, Zhengxiao Du, Chenhui Zhang, Sheng Shen, Tianjun Zhang, Yu Su, Huan Sun, Minlie Huang, Yuxiao Dong, and Jie Tang. AgentBench: Evaluating LLMs as agents. In The Twelfth International Conference on Learning Representations , 2024. https://proceedings.iclr.cc/paper_files/paper/2024/ hash/e9df36b21ff4ee211a8b71ee8b7e9f57-Abstract-Conference.html. Stephane Ross, Geoffrey Gordon, and Drew Bagnell. A reduction of imitation learning and structured prediction to no-regret online learning. In Proceedings of the Fourteenth International Conference on Artificial Intelligence and Statistics , volume 15 of Proceedings of Machine Learning Research , pages 627–635. PMLR, 2011. https: //proceedings.mlr.press/v15/ross11a.html. Noah Shinn, Federico Cassano, Ashwin Gopinath, Karthik Narasimhan, and Shunyu Yao. Reflexion: language agents with verbal reinforcement learning. In A. Oh, T. Naumann, A. Globerson, K. Saenko, M. Hardt, and S. Levine, editors, Advances in Neural Information Processing Systems , volume 36, pages 8634–8652. Curran 
+
+11 Associates, Inc., 2023. doi: 10.52202/075280-0377. https://proceedings.neurips.cc/paper_files/paper/2023/file/ 1b44b878bb782e6954cd888628510e90-Paper-Conference.pdf. Mohit Shridhar, Xingdi Yuan, Marc-Alexandre Côté, Yonatan Bisk, Adam Trischler, and Matthew Hausknecht. ALFWorld: Aligning text and embodied environments for interactive learning. In International Conference on Learning Representations , 2021. https://arxiv.org/abs/2010.03768. Jiaqi Wang, Wenhao Zhang, Weijie Shi, Yaliang Li, and James Cheng. TCOD: Exploring temporal curriculum in on-policy distillation for multi-turn autonomous agents, 2026. https://arxiv.org/abs/2604.24005. Ruoyao Wang, Peter Jansen, Marc-Alexandre Côté, and Prithviraj Ammanabrolu. ScienceWorld: Is your agent smarter than a 5th grader? In Yoav Goldberg, Zornitsa Kozareva, and Yue Zhang, editors, Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing , pages 11279–11298, Abu Dhabi, United Arab Emirates, December 2022. Association for Computational Linguistics. doi: 10.18653/v1/2022.emnlp-main.775. https://aclanthology.org/2022.emnlp-main.775/. An Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang Gao, et al. Qwen3 technical report, 2025. https://arxiv.org/abs/2505.09388. Shunyu Yao, Howard Chen, John Yang, and Karthik Narasimhan. Webshop: Towards scalable real-world web interaction with grounded language agents. In S. Koyejo, S. Mohamed, A. Agarwal, D. Belgrave, K. Cho, and A. Oh, editors, Advances in Neural Information Processing Systems , volume 35, pages 20744–20757. Curran Associates, Inc., 2022. doi: 10.52202/068431-1508. https://proceedings.neurips.cc/paper_files/paper/2022/file/ 82ad13ec01f9fe44c01cb91814fd7b8c-Paper-Conference.pdf. Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan, and Yuan Cao. ReAct: Synergizing reasoning and acting in language models. In The Eleventh International Conference on Learning Representations ,2023. https://arxiv.org/abs/2210.03629. Shuyan Zhou, Frank F Xu, Hao Zhu, Xuhui Zhou, Robert Lo, Abishek Sridhar, Xianyi Cheng, Tianyue Ou, Yonatan Bisk, Daniel Fried, Uri Alon, and Graham Neubig. WebArena: A realistic web environment for building autonomous agents. In International Conference on Learning Representations , volume 2024, pages 15585–15606, 2024. https:// proceedings.iclr.cc/paper_files/paper/2024/hash/4410c0711e9154a7a2d26f9b3816d1ef-Abstract-Conference.html. 
+
+12 Appendix 
+
+# A Evaluation Protocol 
+
+Students are evaluated on held-out task instances from the environment’s initial state, without teacher intervention or reference-prefix replay, using the same task identifiers, action parser, prompts, history construction, and decoding configuration within each controlled comparison. Checkpoint selection is fixed before test evaluation, and each run retains its configuration, seed, checkpoint identifier, and per-task records, with task errors distinguished from unsuccessful but valid episodes. 
+
+Teacher configurations. The main comparison in Table 1 uses a Qwen3-32B teacher, whereas Table 2 uses Qwen3-8B-RL, both with Qwen3-1.7B and Qwen3-4B students. The core ablations, budget-sensitivity studies, and training-efficiency comparison use Qwen3-8B-RL → Qwen3-4B, with a shared teacher checkpoint within each controlled comparison and checkpoint identifiers and RL-training provenance retained in the experimental records. The concrete benchmark configurations used by the workflows are summarized in Table 4. Training uses the train split and has no separate validation split; test evaluation is performed sequentially on the held-out split. The reported three-seed aggregates use the same configuration for every method within a comparison, while the rollout configuration uses seed 42. Evaluation starts from the environment’s initial state and uses temperature 0.4; training rollouts and teacher rescoring use temperature 1.0. Qwen3 thinking mode is disabled throughout. The linear backward-to- forward checkpoint schedule uses five training steps per prefix shift, and the final reported checkpoint is step 200.  
+
+> Table 4
+
+Benchmark-specific evaluation and training settings used by the Frontier-OPD workflows.                                                 
+
+> Setting ALFWorld WebShop ScienceWorld Environment turn limit 30 15 30 Maximum prompt tokens 10,240 10,240 10,240 Maximum response tokens 512 512 512 Training temperature 1.0 1.0 1.0 Evaluation temperature 0.4 0.4 0.4 Evaluation task-set budget 134 steps 100 steps 1,308 steps Rollout model seed 42 42 42 Auxiliary model seed 42 42 42 Prefix curriculum linear B2F linear B2F linear B2F Prefix shift interval 5 steps 5 steps 5 steps Optimizer AdamW AdamW AdamW Learning rate 10 −610 −610 −6
+> Training steps 200 200 200 Collection batch size 416 4Training batch size 32 64 32
+
+# B Frontier-OPD Algorithm 
+
+Algorithm 1 summarizes supervision acquisition for a batch of tasks using the notation of Section 3. All sampling and scoring within an iteration use the same student policy πθk , with graphs and candidate pools constructed separately for each task before accepted experiences are aggregated for the update. The candidate budget is allocated to distinct graph nodes, each supplying exactly one eligible replay repre-sentative, although several nodes may select representatives from the same trajectory. Every intervention is replayed independently from its original prefix, so an accepted bridge does not alter another candidate’s reference; newly generated student continuations are used exclusively for validation and are excluded from the training pool. 13 Algorithm 1: Frontier-OPD Input: student πθ0 , teacher πT, training tasks, budgets M, B, K, H , acceptance margin η. 
+
+> Output:
+
+distilled student πθ .1 for collection iteration k = 0 , 1, . . . do 
+
+2 Initialize Dstu  
+
+> k
+
+← ∅ and Dbr  
+
+> k
+
+← ∅ .3 for task x in the current batch do 
+
+4 Sample M student trajectories from the prescribed starting histories. 5 Store ordinary student responses in Dstu  
+
+> k
+
+; retain contexts, actions, and both models’ token log-probabilities. 6 Construct Gk(x) from shared state keys and observed transitions. 7 Group eligible visits by node and trajectory; compute sk(v) using trajectory-balanced weights in equation 5. 8 Select top-B distinct nodes Fk by sk(v) after the node threshold; set Ck = {c∗
+
+> k
+
+(v) : v ∈ F k}.9 for representative c ∈ C k do 
+
+10 Restore the original task and replay the prefix preceding c; skip the candidate if replay fails. 11 Execute the teacher from the saved context for at most K turns, stopping at graph exit or environment termination. 12 Let Lc be the realized bridge length; reject invalid bridges or terminal teacher handoffs. 13 Resume the student for H turns; reject candidates without a complete valid continuation and a matched reference window. 14 Form W new  
+
+> c
+
+from the bridge and continuation; take W old  
+
+> c
+
+from the original Lc + H response turns. 15 Compute ∆k(c) ← Ak(W new  
+
+> c
+
+) − Ak(W old  
+
+> c
+
+).16 if ∆k(c) ≥ η then add all teacher bridge responses to Dbr  
+
+> k
+
+.17 end for 
+
+18 end for 
+
+19 θk+1 ← OPDUpdate( θk; Dstu  
+
+> k
+
+⊎ D br  
+
+> k
+
+).20 end for 
+
+14 C Implementation Details 
+
+State abstraction and decision identity. State keys combine normalized observations with available-action information, using deterministic normalization and ordering to avoid creating distinct keys from incidental formatting differences. Action information consists of admissible commands in ALFWorld, search availability and clickable elements in WebShop, and valid action–object combinations in ScienceWorld. Although the key determines node-score aggregation and graph membership, each occurrence retains its original context, response, and replay prefix, allowing disagreements from distinct histories to contribute to a shared-node estimate without replacing the model input. This observational abstraction need not distinguish every latent environment state. 
+
+Candidate eligibility and ranking. An eligible occurrence must have valid actions through the candidate, a replayable prefix, a state key, aligned nonempty token-score arrays, finite disagreement, and enough original responses for the K + H reference horizon. Equation equation 5 is implemented by first averaging eligible disagreements within each trajectory at a node and then averaging over contributing trajectories, so neither visit count nor token count determines a trajectory’s total weight. For example, three visits with score 10 from one trajectory and one visit with score 0 from another yield a node score of 5 rather than 7.5. Negative scores remain valid, and the optional minimum-disagreement threshold is applied only after aggregation, before the selector takes at most B distinct nodes and assigns each its highest-disagreement eligible replay representative. There is no per-trajectory candidate quota; occurrence ties follow trajectory/turn order, while node-score ties follow the first eligible encounter. 
+
+Replay and handoff. Before each intervention, the environment is restored and the recorded student actions are replayed, preceded by the reference prefix when a curriculum is active, after which teacher generation uses the saved decision context. A bridge lasts at most K response turns and may stop earlier at graph exit, but terminal handoffs are excluded because validation requires subsequent student behavior. At the default K = 1 ,both graph-internal and graph-external handoffs remain eligible, meaning that shared-node aggregation still affects intervention selection even though graph novelty is not an acceptance condition. 
+
+Agreement computation. Both models score the same tokens under each response’s own context, including teacher-generated bridge responses, with agreement computed as the negative mean absolute log-probability gap within a response and then averaged uniformly across turns. This normalization prevents longer responses from receiving greater weight solely because of their length, while matching Lc + H turns on each branch uses the realized bridge length Lc rather than its upper bound K. Reference scores are reused from the collected trajectory, and acceptance requires all validity conditions in equation 10 together with a gain of at least η,including equality when η = 0 .
+
+Training data and renewal. Ordinary student responses are retained regardless of bridge acceptance, and all responses in accepted teacher bridges enter the same distillation pool, with repeated occurrences preserved rather than collapsed by graph identity. Excluding the validation continuations separates the behavioral evidence used to select supervision from the additional supervision itself. Subsequent rollouts reconstruct the graph and candidate scores, adapting the supervision distribution to the updated policy without presuming that every accepted candidate has become mastered. 
+
+Default settings. The default configuration uses M = 4 , B = 4 distinct nodes, K = 1 , H = 3 , and η = 0 ,with frontier_node_weighting=trajectory_balanced and no per-trajectory candidate quota. 
+
+Collection cost. For N collected occurrences and U eligible distinct nodes, graph assembly and trajectory-balanced aggregation require O(N ) time apart from state-key normalization, followed by O(U log U ) sorting to select the first B nodes and O(N + U ) storage in the selector. Beyond ordinary rollouts and prefix replay, validation requires at most B(K + H) additional generation turns per task and the corresponding probability evaluations, whereas at most BK teacher responses enter training. Since rejected candidates consume collection resources without contributing bridge data, collection cost and accepted supervision volume must be considered separately. 15 D Extended Related Work 
+
+Distillation and the supervision distribution. Knowledge distillation transfers predictive information through teacher outputs (Hinton et al., 2015), while sequence-level distillation extends the target to teacher-generated sequences for autoregressive students (Kim and Rush, 2016). These formulations distinguish the supervision target from the distribution of sequences on which it is applied, a distinction central to on-policy distillation’s use of student-generated responses (Agarwal et al., 2024) and MiniLLM’s study of on-policy reverse-KL optimization (Gu et al., 2024). Frontier-OPD addresses the acquisition of additional supervision within interactive trajectories, retaining ordinary student experience while selectively adding short teacher responses. 
+
+Interactive imitation and curricula. Because learner actions determine the states encountered during execu-tion, dataset aggregation collects expert supervision under learner-induced state distributions (Ross et al., 2011), while scheduled sampling addresses a related training–inference mismatch by gradually replacing ground-truth prefix tokens with model-generated ones (Bengio et al., 2015). Agentic OPD extends the setting to language-conditioned environment histories, with TCOD adjusting student execution depth (Wang et al., 2026) and Guided-OPD scheduling teacher participation at individual turns (Li et al., 2026). Frontier-OPD’s aggregation of decision-level disagreement and history-specific validation operate at the level of supervision allocation, allowing both to coexist with curricula that determine the starting histories of student rollouts. 
+
+Feedback in multi-turn agents. Environment observations and linguistic feedback support sequential behavior through approaches such as ReAct’s interleaving of reasoning and actions (Yao et al., 2023) and Reflexion’s use of episodic memory to improve later trials without parameter updates (Shinn et al., 2023). Within distillation, FutureBridge-OPD evaluates guidance through its induced student continuation (Chen et al., 2026), providing the rationale for assessing interventions beyond the teacher’s immediate response. Frontier-OPD combines this perspective with trajectory-balanced candidate ranking: shared observations organize evidence of learning needs, and matched-window agreement determines which teacher responses contribute to the subsequent parameter update. 
+
+Interactive evaluation. AgentBench’s evaluation across diverse interactive environments (Liu et al., 2024) and WebArena’s assessment of functional task completion on reproducible websites (Zhou et al., 2024) emphasize capabilities that extend beyond isolated response quality. ALFWorld, WebShop, and ScienceWorld provide complementary settings for evaluating such grounded sequential behavior (Shridhar et al., 2021; Yao et al., 2022; Wang et al., 2022). Our evaluation measures autonomous execution after training, keeping teacher interventions confined to supervision acquisition and distinguishing task-level performance from the agreement scores used to select that supervision. 
+
+# E Benchmark Descriptions 
+
+ALFWorld. ALFWorld aligns text-based interaction with embodied household tasks (Shridhar et al., 2021); we use its text interface, in which agents receive instructions and observations and act through admissible commands. Coordinating navigation, object interaction, and task-specific conditions makes this setting suitable for examining whether localized guidance improves decisions under changing object and location contexts, with success rate measuring task completion rather than reproduction of a particular demonstration. 
+
+WebShop. WebShop combines real-world product information with natural-language shopping requests (Yao et al., 2022), requiring agents to search, navigate product pages, select options, and complete purchases that satisfy the requested attributes. Task score captures graded fulfillment and success rate captures completion under the evaluation criterion, while page observations and available clickable elements provide the observational identity used to organize revisited states. 
+
+ScienceWorld. ScienceWorld evaluates scientific reasoning through interaction in a text-based simulated world (Wang et al., 2022), where agents must translate goals into executable sequences involving objects, tools, and environmental changes. This setting tests whether local guidance can be followed by further 16 student-controlled procedural reasoning, with task score capturing partial progress and success rate measuring completion of the objective. 
+
+Benchmark selection. The suite spans household manipulation, web information seeking, and scientific procedures, providing domains that share policy-dependent observations but differ in action interfaces, task structure, and feedback. The main comparison covers all three benchmarks, while the RL-teacher comparison and core ablations use ALFWorld and WebShop, and the sensitivity and efficiency studies use ALFWorld. This scope permits evaluation of a common supervision-acquisition method across distinct environments, without establishing generalization to unrestricted real-world settings. 
+
+# F Reproducibility Statement 
+
+Section 3 specifies the selection, replay, validation, and update rules needed to reproduce the method, while Section 4.1 defines the benchmarks, comparisons, and default intervention settings. The ablation and sensitivity sections identify the controlled changes, with evaluation conditions and teacher–student configurations detailed in Appendix A. 17
