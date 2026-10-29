@@ -1,0 +1,409 @@
+{
+  "date": "20260930-20261029",
+  "date_label": "2026-09-30 ~ 2026-10-29",
+  "generated_at": "2026-10-29 03:34:36 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.04973v1",
+      "route": "20260930-20261029/2610.04973v1-trajlong-co-designing-agentic-and-long-context-supervision-for-mid-training",
+      "title": "TrajLong: Co-Designing Agentic and Long-Context Supervision for Mid-Training",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "将智能体轨迹编译为中期训练长上下文监督",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.11345v1",
+      "route": "20260930-20261029/2610.11345v1-synco-data-synthesis-co-training-for-self-evolving-llms-via-multi-agent-reinforcement-learning",
+      "title": "SynCo: Data Synthesis Co-Training for Self-Evolving LLMs via Multi-Agent Reinforcement Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向自演化大模型智能体的智能体数据合成协同训练",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.11585v1",
+      "route": "20260930-20261029/2610.11585v1-adapting-english-quality-classifiers-for-multilingual-llm-pretraining-data-selection",
+      "title": "Adapting English Quality Classifiers for Multilingual LLM Pretraining Data Selection",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "将质量分类器多语言适配用于LLM预训练数据选择",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.14238v1",
+      "route": "20260930-20261029/2610.14238v1-agentic-data-engineering-for-llms-system-design-and-a-controlled-empirical-study",
+      "title": "Agentic Data Engineering for LLMs: System Design and a Controlled Empirical Study",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向大模型训练数据选择、奖励与课程设置的智能体数据工程",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.17670v1",
+      "route": "20260930-20261029/2610.17670v1-cowork-gym-synthesizing-interactive-work-environments-at-scale",
+      "title": "Cowork-Gym: Synthesizing Interactive Work Environments at Scale",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "合成带状态用户模拟器的协作环境用于后训练",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.18067v1",
+      "route": "20260930-20261029/2610.18067v1-workrover-scaling-long-horizon-cowork-agent-training-via-recursive-environment-evolution",
+      "title": "WorkRover: Scaling Long-Horizon Cowork Agent Training Via Recursive Environment Evolution",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "通过递归环境演化训练长时程协作智能体的框架",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.19695v1",
+      "route": "20260930-20261029/2610.19695v1-c3-rethinking-process-supervision-via-confidence-guided-credit-correction-in-multi-turn-reinforcement-learning",
+      "title": "C3: Rethinking Process Supervision via Confidence-Guided Credit Correction in Multi-Turn Reinforcement Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "带工具调用的多轮强化学习智能体与信用校正",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.23181v1",
+      "route": "20260930-20261029/2610.23181v1-tree-aware-posterior-distillation-for-long-horizon-agentic-reinforcement-learning",
+      "title": "Tree-Aware Posterior Distillation for Long-Horizon Agentic Reinforcement Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "长时程智能体多轮强化学习中的信用分配与策略陈旧问题",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.23234v2",
+      "route": "20260930-20261029/2610.23234v2-multiagent-opd-end-to-end-training-of-hierarchical-multi-agent-systems-with-on-policy-distillation",
+      "title": "MultiAgent-OPD: End-to-End Training of Hierarchical Multi-Agent Systems with On-Policy Distillation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "结合强化学习的在策略蒸馏用于分层多智能体训练",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.24960v1",
+      "route": "20260930-20261029/2610.24960v1-coworkenv-synthesizing-training-environments-for-long-horizon-cowork-agents",
+      "title": "CoworkEnv: Synthesizing Training Environments for Long-Horizon Cowork Agents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "为长时程协作智能体合成可执行训练环境与精选数据",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.25034v1",
+      "route": "20260930-20261029/2610.25034v1-beyond-the-teacher-understanding-and-preserving-distillation-overshoot-in-agentic-on-policy-distillation",
+      "title": "Beyond the Teacher: Understanding and Preserving Distillation Overshoot in Agentic On-Policy Distillation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "分析基于学生自生成轨迹的多轮智能体在线蒸馏",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.25693v1",
+      "route": "20260930-20261029/2610.25693v1-toolopd-credit-aware-on-policy-distillation-for-tool-use-agents",
+      "title": "ToolOPD: Credit-Aware On-Policy Distillation for Tool-Use Agents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "在学生自生成工具使用轨迹上做信用感知在线蒸馏",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.25957v1",
+      "route": "20260930-20261029/2610.25957v1-productive-state-space-exploration-for-multi-turn-rl-in-llm-agents",
+      "title": "Productive State-Space Exploration for Multi-turn RL in LLM Agents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "LLM智能体多轮强化学习中的生产性状态空间探索",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.26887v1",
+      "route": "20260930-20261029/2610.26887v1-navalia-advancing-cowork-agents-through-verifiable-task-synthesis-and-long-horizon-post-training",
+      "title": "Navalia: Advancing Cowork Agents through Verifiable Task Synthesis and Long-Horizon Post-Training",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向协作智能体的可验证任务合成与长程后训练",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2609.39436v1",
+      "route": "20260930-20261029/2609.39436v1-from-imitation-to-reward-discovery-on-policy-warmup-for-agentic-rl",
+      "title": "From Imitation to Reward Discovery: On-Policy Warmup for Agentic RL",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "在智能体强化学习前用学生交互轨迹做在线蒸馏预热",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.00388v1",
+      "route": "20260930-20261029/2610.00388v1-t2spo-trajectory-to-step-policy-optimization-for-agentic-reinforcement-learning",
+      "title": "T2SPO: Trajectory-to-Step Policy Optimization for Agentic Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "利用交互轨迹的步级策略优化用于智能体强化学习",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.10120v1",
+      "route": "20260930-20261029/2610.10120v1-rewardweaver-long-horizon-interactive-learning-for-language-agents-via-self-evolving-reward-adaptation",
+      "title": "RewardWeaver: Long-Horizon Interactive Learning for Language Agents via Self-Evolving Reward Adaptation",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向长程多轮语言智能体强化学习的自演化奖励适配",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.13755v1",
+      "route": "20260930-20261029/2610.13755v1-matched-context-group-policy-optimization-for-llm-agent-training",
+      "title": "Matched-Context Group Policy Optimization for LLM Agent Training",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "通过组策略优化为长程智能体轨迹做信用分配",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2609.40221v1",
+      "route": "20260930-20261029/2609.40221v1-phantomenvironments-training-llm-agents-in-fictional-worlds",
+      "title": "PhantomEnvironments: Training LLM Agents in Fictional Worlds",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "用于训练LLM搜索智能体的多轮强化学习环境",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.03286v1",
+      "route": "20260930-20261029/2610.03286v1-venusrl-a-fully-disaggregated-agentic-rl-system-with-priority-scheduling-and-scalable-interaction",
+      "title": "VenusRL: A Fully Disaggregated Agentic RL System with Priority Scheduling and Scalable Interaction",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "支撑LLM智能体与外部工具环境多轮交互的智能体强化学习训练系统",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.05935v1",
+      "route": "20260930-20261029/2610.05935v1-thundersyncrl-lossless-acceleration-of-agentic-reinforcement-learning",
+      "title": "ThunderSyncRL: Lossless Acceleration of Agentic Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向智能体强化学习的无损加速，支持同策略蒸馏且无策略陈旧",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.07332v1",
+      "route": "20260930-20261029/2610.07332v1-structuring-moe-expert-selection-for-agentic-reinforcement-learning",
+      "title": "Structuring MoE Expert Selection for Agentic Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向多轮轨迹的智能体强化学习后训练与专家选择",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.00583v1",
+      "route": "20260930-20261029/2610.00583v1-worse-together-how-performance-breaks-down-in-multi-user-multi-agent-teams",
+      "title": "Worse Together: How Performance Breaks Down in Multi-User Multi-Agent Teams",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "多用户多智能体共享资源下的协作失败",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.01195v1",
+      "route": "20260930-20261029/2610.01195v1-federated-agent-optimization",
+      "title": "Federated Agent Optimization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "分布式智能体通过受控信息交换实现跨组织协同改进",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    },
+    {
+      "paper_id": "2610.01882v1",
+      "route": "20260930-20261029/2610.01882v1-flowing-faster-to-coordinate-one-step-online-multi-agent-flow-policies",
+      "title": "Flowing Faster to Coordinate: One-Step Online Multi-Agent Flow Policies",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "在线多智能体强化学习协调策略",
+      "first_seen_at": "2026-10-29 03:34:36 UTC",
+      "updated_at": "2026-10-29 03:34:36 UTC"
+    }
+  ]
+}

@@ -1,0 +1,1410 @@
+Title: Tree-Aware Posterior Distillation for Long-Horizon Agentic Reinforcement Learning
+
+URL Source: https://arxiv.org/pdf/2610.23181v1
+
+Published Time: Mon, 19 Oct 2026 01:07:26 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+# Tree-Aware Posterior Distillation for Long-Horizon Agentic Reinforcement Learning 
+
+Heming Zou 1,2,* , Qi Wang 1, Yixiu Mao 1, Yun Qu 1, Yuyi Guo 1,2,* , Zeyuan Liu 1,2,* ,Chenglin Li 1, Weijie Liu 2, Saiyong Yang 2, Xiangyang Ji 1
+
+> 1
+
+Tsinghua University, 2Foundation Model Department, Tencent 
+
+> *
+
+Work completed during an internship at Tencent. 
+
+Reinforcement learning with verifiable rewards has become a scalable post-training paradigm for large language models. However, training agents over long-horizon interactions presents two challenges: using only terminal rewards makes turn-level credit assignment sparse and high-variance, while sequential mini-batch updates on a fixed rollout batch introduce policy staleness as the current policy drifts from the behavior policy. Existing approaches obtain denser credit via learned critics, process reward models, or on-policy distillation, but they rely on a value network, step-level annotations, or a stronger external teacher that increase training complexity. Meanwhile, importance sampling and clipping mitigate policy drift, but they do not specify a finite target that stops sequential updates from overshooting. In this work, we introduce TreeOPSD, a critic-free, tree-aware posterior self-distillation framework for long-horizon agentic reinforcement learning. Treating each interaction turn as a tree node, TreeOPSD branches alternative continuations from shared prefixes and recursively backs up terminal rewards into implicit turn-level credit. It then maps each credit to a closed-form, bounded teacher distribution parameterized by the likelihood ratio relative to the frozen behavior policy. Minimizing the divergence between this teacher and the student policy recovers the policy-gradient direction as the tangent at the behavior policy while bounding updates toward a finite target across sequential mini-batches. Empirically, TreeOPSD improves agentic capabilities across several competitive benchmarks and model scales, especially for long-horizon tasks, e.g., raising the average accuracy of Qwen3-30B-A3B-Thinking-2507 by 4.97 points over GRPO on the Deep Research setting. 
+
+Date: October 19, 2026 
+
+Correspondence: Qi Wang (cheemswang@mail.tsinghua.edu.cn) Saiyong Yang (stevesyang@tencent.com) Xiangyang Ji (xyji@tsinghua.edu.cn) www.thuidm.com 
+
+# 1 Introduction 
+
+Reinforcement learning with verifiable rewards (RLVR) (Shao et al., 2024; Guo et al., 2025) has emerged as a central post-training paradigm for large language models (LLMs), using outcome rewards to incentivize reasoning or environment interactions on complex problem-solving tasks. While reasoning-oriented RLVR typically learns from Chain-of-Thought (CoT) rollouts, agentic RL (Yao et al., 2022) extends this paradigm to long-horizon, multi-turn trajectories in which reasoning is interleaved with actions and environment observations. As the interaction horizon grows, a single terminal reward provides increasingly sparse and high-variance supervision across intermediate turns: broadcasting one trajectory-level advantage over the entire rollout over-credits unhelpful actions in successful trajectories and penalizes useful steps in failed ones (Arjona-Medina et al., 2019; Li et al., 2026a). At the same time, updating the policy across sequential mini-batches within each rollout batch induces policy staleness as the current policy departs from the behavior policy (Zheng et al., 2025a). To address the credit assignment problem, actor–critic methods such as Proximal Policy Optimization (PPO) (Schulman et al., 2017) estimate token-level advantages with a learned critic, which is difficult to train accurately and susceptible to value flattening (Li et al., 2026c). Process reward models (PRMs) (Lightman et al., 2024) provide step-level rewards but require process annotations, and summing them as discounted returns is vulnerable to reward hacking (Cheng et al., 2026). On-policy distillation (OPD) (Agarwal et al., 2024; Gu et al., 2024) provides dense token-level supervision on 
+
+1arXiv:2610.23181v1 [cs.LG] 16 Oct 2026 student rollouts at the cost of querying a stronger external teacher. Extending OPD, on-policy self-distillation (OPSD) (Zhao et al., 2026; Kaur et al., 2026) constructs a self-teacher by conditioning the model on privileged context (e.g., reference solutions), which relies on task-specific heuristics and can yield unstable supervision. These limitations leave open how to derive dense intermediate credit directly from terminal verifier rewards. Sampling independent trajectories confounds all turns along each rollout, whereas multi-turn interaction exposes discrete turn-level prefixes as natural branching points. Branching alternative continuations from a shared prefix fixes the preceding history to isolate how subsequent decisions affect terminal outcomes, forming a rollout tree on which recursive backup converts terminal rewards into implicit turn-level credit without auxiliary value or reward models (Ji et al., 2026; Zou et al., 2026a).     
+
+> Figure 1 Target construction: terminal rewards at the blooming (successful) and withered (failed) branch tips are backed up through shared prefixes to define a frozen turn-level teacher along the luminous green path. Dis-tribution matching: starting from the behavior-policy rollout (purple trail), the student policy progressively aligns with this outcome-derived target through posterior distillation.
+
+Sequential mini-batch updates on a fixed rollout batch create a separate optimization challenge. While all rollouts in the batch are sampled from a frozen behavior policy 𝜋 𝜃 old , each update step moves the current policy 𝜋 𝜃 further away, increasing policy staleness for subsequent mini-batches. Policy-gradient methods compensate for this mismatch with importance-sampling ratios, and stabilize training through clipping (Schulman et al., 2017) or ratio regularizers (Zheng et al., 2025a) as those ratios depart from one. However, such controls only constrain the importance ratio while keeping the collection-time credit fixed, so the surrogate still specifies an ascent direction rather than a finite destination (Qu et al., 2026a). We therefore seek an objective that maps tree credit to a finite target and adapts its gradient as 𝜋 𝜃 evolves, halting at the target and reversing sign after overshoot. To this end, we introduce TreeOPSD, a critic-free posterior self-distillation framework for long-horizon agentic RL. TreeOPSD first maps backed-up turn credit into a frozen turn-level teacher distribution relative to the behavior policy, and then minimizes the divergence between this teacher and the current student policy across sequential mini-batches. Geometrically, the tangent of this distillation objective at the behavior policy recovers the exact tree policy-gradient direction, while later mini-batches scale each update by the current student–teacher gap rather than a fixed collection-time credit weight. Figure 1 illustrates this decoupling of target construction and distribution matching. In summary, our main contributions are two-fold: 
+
+1. We derive closed-form, bounded turn-level target distributions via an affine map of backed-up credit relative to the frozen behavior policy. Because this affine map commutes with tree backup, matching the backed-up parent target is gradient-equivalent to aggregating descendant distillation losses. 
+
+2. We formulate a Forward-KL posterior distillation objective whose tangent at the behavior policy recovers the tree policy gradient, while its student–teacher residual vanishes at the target and reverses sign upon overshoot to stabilize sequential mini-batch optimization. Empirically, TreeOPSD improves agentic capabilities across competitive benchmarks and model scales, and it elicits longer-horizon agent behavior with more interaction turns in Deep Research. 
+
+# 2 Preliminaries 
+
+2.1 Agentic reinforcement learning 
+
+We consider an LLM policy 𝜋 𝜃 interacting with an environment in the ReAct setting (Yao et al., 2022). Given a prompt 𝑥 ∼ D , at each turn 1 ≤ 𝑡 ≤ 𝑇 the policy generates an 𝐿 𝑡 -token actor span 𝑎 𝑡 = (𝑎 𝑡 , 1, . . . , 𝑎 𝑡 ,𝐿 𝑡 ). For 
+
+> 2
+
+nonterminal turns ( 𝑡 < 𝑇 ), 𝑎 𝑡 comprises a thought and a tool action, after which the environment transition 𝑃 env 
+
+returns an observation 𝑜 𝑡 and updates the history as H𝑡 := (H 𝑡 −1, 𝑎 𝑡 , 𝑜 𝑡 ) from H0 := 𝑥 . At the terminal turn 𝑇 , the policy emits the final answer 𝑎 𝑇 , yielding H𝑇 := (H 𝑇 −1, 𝑎 𝑇 ). The trajectory distribution factorizes as 
+
+P𝜋 𝜃 (H 𝑇 | 𝑥 ) = 𝜋 𝜃 (𝑎 𝑇 | H 𝑇 −1)
+
+| {z } 
+
+> final answer
+> 𝑇 −1
+
+Ö
+
+> 𝑡 =1
+
+𝜋 𝜃 (𝑎 𝑡 | H 𝑡 −1)𝑃 env (𝑜 𝑡 | H 𝑡 −1, 𝑎 𝑡 )
+
+| {z }
+
+> actor–observation
+
+, (1) where each turn likelihood decomposes autoregressively as 𝜋 𝜃 (𝑎 𝑡 | H 𝑡 −1) = Î𝐿 𝑡  
+
+> 𝑗 =1
+
+𝜋 𝜃 (𝑎 𝑡 , 𝑗 | H 𝑡 −1, 𝑎 𝑡 ,< 𝑗 ). Only policy-generated tokens contribute gradients, while observation tokens from 𝑃 env enter H𝑡 as fixed context and are masked from the policy loss. Given a reward function 𝑅 (H 𝑇 ) and a frozen reference policy 𝜋 ref , the standard KL-regularized agentic RL objective (Ouyang et al., 2022; Shao et al., 2024) with reference weight 𝛽 KL ≥ 0 is max  
+
+> 𝜃
+
+E 𝑥 ∼D H𝑇 ∼P𝜋 𝜃 (· | 𝑥 )
+
+[𝑅 (H 𝑇 )] − 𝛽 KL E𝑥 ∼D 
+
+𝐷 KL 
+
+ P𝜋 𝜃 (· | 𝑥 )∥ P𝜋 ref (· | 𝑥 ) . (2) Following recent advances (Yu et al., 2026; Zou et al., 2026a; Qu et al., 2026a), we focus on rule-based outcome rewards that are binary or sparse ( 𝑅 (H 𝑇 ) ∈ [ 0, 1]) without an explicit reference penalty ( 𝛽 KL = 0), where intermediate turns 𝑡 < 𝑇 receive no direct supervision. 
+
+2.2 Initialize-then-expand rollout trees 
+
+To estimate intermediate turn credit from terminal rewards alone, tree-based policy optimization branches alternative continuations from shared prefixes via an initialize-then-expand sampling scheme (Hou et al., 2025; Ji et al., 2026; Dong et al., 2026; Zong et al., 2026; Zou et al., 2026a). For each prompt 𝑥 , the frozen behavior policy 𝜋 𝜃 old first samples 𝑀 complete trajectories H𝑚,𝑇 𝑚 , where 𝑇 𝑚 is the terminal-turn index of trajectory 𝑚 . From each trajectory 𝑚 ,the sampler uniformly draws a multiset A𝑚 = {𝑡 𝑚, 1, . . . , 𝑡 𝑚, 𝑁 } of 𝑁 nonterminal anchor indices 1 ≤ 𝑡 𝑚,𝑛 < 𝑇 𝑚 (or 
+
+𝑡 𝑚,𝑛 = 0 if 𝑇 𝑚 = 1), and samples one fresh terminal suffix 𝑆 𝑚,𝑛 from each prefix H𝑚,𝑡 𝑚,𝑛 :
+
+H𝑚,𝑇 𝑚 ∼ P𝜋 𝜃 old (· | 𝑥 ), 𝑚 = 1, . . . , 𝑀, 𝑆 𝑚,𝑛 ∼ P𝜋 𝜃 old (· | H 𝑚,𝑡 𝑚,𝑛 ), 𝑡 𝑚,𝑛 ∈ A 𝑚 , 𝑛 = 1, . . . , 𝑁. (3) Retaining the 𝑀 initial rollouts alongside their 𝑀 𝑁 branched continuations yields 𝐾 := 𝑀 (𝑁 + 1) terminal trajectories. Because a uniformly branched continuation starts mid-trajectory, its expected generation cost in tokens or tool calls is roughly half that of a full rollout (Ji et al., 2026; Zou et al., 2026a), so an (𝑀, 𝑁 ) tree matches the expected rollout budget of 𝐺 full trajectories in Group Relative Policy Optimization (GRPO) (Shao et al., 2024) when 𝑀 (1 + 𝑁 /2) ≈ 𝐺 .Merging shared prefixes across the 𝐾 trajectories produces a rollout tree with node set T𝑥 , where shared turns appear once while independently sampled continuations form distinct nodes. Each node 𝑖 ∈ T 𝑥 represents an 𝐿 𝑖 -token actor span 𝑎 𝑖 conditioned on pre-turn history ℎ𝑖 , with token-level context ℎ𝑖, 𝑗 := (ℎ𝑖 , 𝑎 𝑖,< 𝑗 ) for 1 ≤ 𝑗 ≤ 𝐿 𝑖 and sampled child set C𝑖 . Each terminal trajectory 𝑘 ∈ { 1, . . . , 𝐾 } ends at a leaf node 𝑖 𝑘 ∈ T 𝑥 and receives verifier reward 𝑅 𝑘 .
+
+2.3 Tree-based turn credit 
+
+Following common practice in tree-based policy optimization (Hou et al., 2025; Ji et al., 2026; Dong et al., 2026; Zong et al., 2026; Zou et al., 2026a), terminal outcomes on T𝑥 are propagated upward to assign credit to each turn. First, the 𝐾 terminal rewards for prompt 𝑥 are standardized into trajectory advantages 𝐴 𝑘 , as in group-based RLVR: 
+
+𝐴 𝑘 := 𝑅 𝑘 − mean ({ 𝑅 𝑘 ′ }𝐾 𝑘 ′=1)
+
+std ({ 𝑅 𝑘 ′ }𝐾 𝑘 ′=1) , 𝑘 = 1, . . . , 𝐾, (4) 
+
+> 3
+
+using the sample standard deviation (with 𝐴 𝑘 := 0 when all rewards are equal). These leaf advantages are then recursively backed up through T𝑥 using behavior-policy likelihood weights: 
+
+𝜔 𝑖,𝑐 := 𝜋 𝜃 old (𝑎 𝑐 | ℎ𝑐 )
+
+Í𝑐 ′ ∈ C 𝑖 𝜋 𝜃 old (𝑎 𝑐 ′ | ℎ𝑐 ′ ) , 𝑉 𝑖 :=
+
+(𝐴 𝑘 , 𝑖 = 𝑖 𝑘 ,
+
+Í𝑐 ∈ C 𝑖 𝜔 𝑖,𝑐 𝑉 𝑐 , otherwise , (5) where 𝜋 𝜃 old (𝑎 𝑐 | ℎ𝑐 ) is the behavior-policy likelihood of child span 𝑎 𝑐 given the shared post-observation history 
+
+ℎ𝑐 = (ℎ𝑖 , 𝑎 𝑖 , 𝑜 𝑖 ) of parent turn 𝑖 . Because 𝑉 𝑖 already aggregates the outcomes of all branches below turn 𝑖 , each turn 
+
+𝑖 ∈ T 𝑥 enters the gradient once rather than being repeated across the 𝐾 trajectories. With 𝐿 𝑥 := Í𝑖 ∈ T 𝑥 𝐿 𝑖 denoting the total number of unique actor tokens in T𝑥 , the prompt-level tree policy-gradient direction is 
+
+𝑔 tree  
+
+> 𝑥
+
+:= 1
+
+𝐿 𝑥 ∑︁ 𝑖 ∈ T 𝑥 
+
+> 𝐿 𝑖
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑉 𝑖 ∇𝜃 log 𝜋 𝜃 (𝑎 𝑖, 𝑗 | ℎ𝑖, 𝑗 ) 𝜃 =𝜃 old . (6) Eq. 6 assigns the weight 𝑉 𝑖 /𝐿 𝑥 to every policy-generated token in turn 𝑖 , providing the exact tree policy-gradient ascent direction at the behavior policy 𝜋 𝜃 old .
+
+# 3 TreeOPSD 
+
+While the tree policy gradient 𝑔 tree  
+
+> 𝑥
+
+in Eq. 6 is exact at the on-policy point 𝜋 𝜃 = 𝜋 𝜃 old , practical RLVR training partitions each rollout batch into sequential mini-batches. Once earlier mini-batches update 𝜃 , the current policy 𝜋 𝜃 drifts away from the behavior policy 𝜋 𝜃 old that generated the tree. Continuing to apply the collection-time credit 𝑉 𝑖 as a fixed linear weight ignores this off-policy drift and specifies only an initial ascent direction rather than a finite destination (Qu et al., 2026a). Conversely, multiplying token gradients by raw importance ratios 𝜋 𝜃 /𝜋 𝜃 old amplifies variance on long turns (Ionides, 2008; Liu et al., 2018, 2020), while ratio clipping truncates the update without defining a target distribution where optimization should converge (Schulman et al., 2017; Zheng et al., 2025a; Qu et al., 2026a). These limitations arise because linear policy-gradient surrogates entangle credit assignment with policy updating instead of specifying an explicit target distribution. Drawing on Policy Mirror Descent (PMD) and variational policy optimization (Beck & Teboulle, 2003; Abdolmaleki et al., 2018; Vaswani et al., 2022; Qu et al., 2026a), we decouple each iteration into two steps: first solve a KL-regularized proximal improvement problem around 𝜋 𝜃 old to convert backed-up turn credits into a frozen target distribution, and then project the evolving policy 𝜋 𝜃 onto that target across sequential mini-batches. This decoupling addresses both bottlenecks: target construction maps backed-up credits into tree-consistent, bounded targets at every depth, while distribution matching replaces high-variance importance ratios with a convex projection whose gradient vanishes once the student reaches the target. Writing 𝑄 for a candidate target distribution, J ( 𝑄 ) for a proximal objective anchored at 𝜋 𝜃 old , 𝑃 𝜃 for the current student distribution, and 𝐷 (𝑄 ∥𝑃 𝜃 )
+
+for a statistical divergence, the two steps are 
+
+𝑄 ★ = arg max  
+
+> 𝑄
+
+J ( 𝑄 )
+
+| {z }
+
+> target construction
+
+𝜃 ′ = arg min  
+
+> 𝜃
+
+𝐷  𝑄 ★∥𝑃 𝜃 
+
+| {z }
+
+> distribution matching
+
+. (7) Target construction is executed once per rollout tree from 𝜋 𝜃 old , holding 𝑄 ★ fixed across the batch, whereas distribution matching re-evaluates 𝐷 (𝑄 ★∥𝑃 𝜃 ) at every mini-batch step as 𝜋 𝜃 evolves (Figure 2). 
+
+3.1 Behavior-relative turn distributions 
+
+As established in Section 2.3, branching from shared prefixes naturally converts sparse terminal outcomes into dense turn-level credit 𝑉 𝑖 without an external teacher or learned critic. Unlike token-level distillation where an external teacher supplies full-vocabulary distributions at every token, here the supervision signal is a single turn-level scalar 
+
+𝑉 𝑖 attached to the entire realized turn span 𝑎 𝑖 of length 𝐿 𝑖 . To match this turn-level credit granularity, 𝑃 𝜃 at node 𝑖 
+
+must represent how strongly the complete turn 𝑎 𝑖 is reinforced or suppressed relative to the behavior policy 𝜋 𝜃 old that 
+
+> 4Prompt
+
+\(x\) Behavior Policy 
+
+\(\pi_{\theta_{\mathrm{old}}}\) \(V_i\) \(R_1\) ✔ 
+
+> \(R_2\)
+
+✘ 
+
+> \(R_3\)
+
+✔ 
+
+> \(R_4\)
+
+✘ 
+
+> \(R_5\)
+
+✘  
+
+> rollout backup Teacher Construction
+
+\(V_i\) \(q_i=\tfrac{1}{2}+V_i/\tau\) \(\tfrac12\) 
+
+> Policy
+
+\(\pi_\theta\) \(p_{\theta,i}=\sigma(s_{\theta,i})\) \(\tfrac12\) 
+
+> Distribution Matching
+
+# ★ \(q_i\) \(p_{\theta,i}\) \(\Gamma_i=\tau(q_i-p_{\theta,i})\)    
+
+> Update \(\nabla_\theta\mathcal{L}_x\)
+> repeated for \(E\) mini-batches
+
+Figure 2 TreeOPSD framework. The behavior policy 𝜋 𝜃 old generates a shared-prefix rollout tree, and terminal verifier rewards 𝑅 𝑘 
+
+are backed up into turn credits 𝑉 𝑖 . Each credit defines a frozen Bernoulli teacher 𝑞 𝑖 = 12 + 𝑉 𝑖 /𝜏 , and each bar shows one turn against the behavior level 12 (dashed). In each of the 𝐸 sequential mini-batches, the student posterior 𝑝 𝜃 ,𝑖 = 𝜎 (𝑠 𝜃 ,𝑖 ) is recomputed under the current policy 𝜋 𝜃 , and the spring-like ascent weight Γ𝑖 = 𝜏 (𝑞 𝑖 − 𝑝 𝜃 ,𝑖 ) pulls it toward 𝑞 𝑖 , vanishing at the teacher and reversing sign after overshoot. 
+
+sampled it, using only the logged probabilities of the sampled tokens rather than vocabulary-wide behavior logits (Qi et al., 2026). Directly multiplying token likelihood ratios across a multi-token turn compounds off-policy discrepancies exponentially with 𝐿 𝑖 (Liu et al., 2018, 2020), causing severe variance and length bias between short tool calls and long reasoning turns. We therefore parameterize the turn-level policy shift by the per-token average log-likelihood ratio (Meng et al., 2024), or equivalently the geometric-mean likelihood ratio (Zheng et al., 2025b), which normalizes this shift by turn length: 
+
+𝑠 𝜃 ,𝑖 := 1
+
+𝐿 𝑖 𝐿 𝑖 ∑︁ 
+
+> 𝑗 =1
+
+log 𝜋 𝜃 (𝑎 𝑖, 𝑗 | ℎ𝑖, 𝑗 )
+
+𝜋 𝜃 old (𝑎 𝑖, 𝑗 | ℎ𝑖, 𝑗 ) , 𝑟 𝜃 ,𝑖 := 𝑒 𝑠 𝜃 ,𝑖 =
+
+ 𝜋 𝜃 (𝑎 𝑖 | ℎ𝑖 )
+
+𝜋 𝜃 old (𝑎 𝑖 | ℎ𝑖 )
+
+1/𝐿 𝑖 
+
+. (8) At the on-policy point 𝜋 𝜃 = 𝜋 𝜃 old , the log-ratio score is zero and 𝑟 𝜃 ,𝑖 = 1. As 𝜋 𝜃 drifts during sequential updates, 
+
+𝑟 𝜃 ,𝑖 rises above one when turn 𝑖 becomes more likely than under 𝜋 𝜃 old and falls below one when it becomes less likely. Because normalizing 𝑟 𝜃 ,𝑖 over the full continuation space requires an intractable partition function, we follow noise-contrastive and relative density-ratio estimation (Yamada et al., 2013; Goodfellow et al., 2014; Cranmer et al., 2015; Kobayashi, 2021; Chen et al., 2024) and form a two-point conditional distribution between 𝜋 𝜃 and the behavior baseline 𝜋 𝜃 old (whose ratio to itself is 1). Normalizing the pair (𝑟 𝜃 ,𝑖 , 1) with 𝜎 (𝑠 ) := (1 + 𝑒 −𝑠 )−1 yields the binary posterior 
+
+𝑝 𝜃 ,𝑖 := 𝑟 𝜃 ,𝑖 
+
+1 + 𝑟 𝜃 ,𝑖 
+
+= 𝜎 (𝑠 𝜃 ,𝑖 ), 𝑃 𝜃 ,𝑖 := Ber ( 𝑝 𝜃 ,𝑖 ). (9) Normalizing in likelihood-ratio space makes 𝑃 𝜃 ,𝑖 invariant to the raw sequence probability of 𝑎 𝑖 and eliminates any partition function over unsampled continuations. This odds map bijectively converts 𝑠 𝜃 ,𝑖 into a Bernoulli distribution whose log-odds equal 𝑠 𝜃 ,𝑖 , mapping the on-policy anchor 𝑟 𝜃 ,𝑖 = 1 to 𝑝 𝜃 ,𝑖 = 1/2 and reflecting 𝑝 𝜃 ,𝑖 symmetrically around 1 /2 when 𝜋 𝜃 and 𝜋 𝜃 old are swapped. 
+
+3.2 Teacher construction 
+
+Given the student posterior 𝑃 𝜃 ,𝑖 = Ber ( 𝑝 𝜃 ,𝑖 ), we construct a turn-level teacher 𝑄 ★𝑖 = Ber (𝑞 𝑖 ) in the same Bernoulli family. Notice from Eqs. 6 and 8 that the on-policy tree gradient at node 𝑖 is the gradient of the linear surrogate 𝑉 𝑖 𝑠 𝜃 ,𝑖 
+
+(up to the weight 𝐿 𝑖 /𝐿 𝑥 ), while inverting the sigmoid map 𝑝 = 𝜎 (𝑠 ) in Eq. 9 expresses the log-ratio score of any candidate Bernoulli distribution Ber (𝑞 ) as its log-odds 𝑠 (𝑞 ) = 𝜎 −1 (𝑞 ) = log 𝑞  
+
+> 1−𝑞
+
+. Thus, in Bernoulli coordinates, 
+
+5the linear policy-improvement term 𝑉 𝑖 𝑠 takes the exact form 𝑉 𝑖 log 𝑞  
+
+> 1−𝑞
+
+. Following PMD and KL-regularized policy optimization (Ouyang et al., 2022; Abdolmaleki et al., 2018; Vaswani et al., 2022), we regularize this linear improvement with a KL trust-region penalty from the on-policy behavior distribution Ber (1/2) (where 𝑠 = 0) at temperature 𝜏 > 0: 
+
+J𝑖 (Ber (𝑞 )) := 𝑉 𝑖 log 𝑞 
+
+1 − 𝑞 − 𝜏𝐷 KL 
+
+
+
+Ber ( 12 )∥ Ber (𝑞 )
+
+
+
+. (10) Choosing the forward-direction KL penalty from the behavior anchor Ber (1/2) to the candidate teacher Ber (𝑞 ) is key to preserving tree credit across depths. In log-odds coordinates, this KL penalty provides a smooth local quadratic trust region around zero whose derivative is linear in 𝑞 and globally bounded in (− 1/2, 1/2), so the concavity of J𝑖 yields a closed-form teacher probability 𝑞 𝑖 that is affine in 𝑉 𝑖 , together with the target likelihood ratio 𝑟 ★𝑖 (Proposition B.2 in Appendix B.1): 
+
+𝑞 𝑖 := 12 + 𝑉 𝑖 
+
+𝜏 , 𝑟 ★𝑖 := 𝑞 𝑖 
+
+1 − 𝑞 𝑖 
+
+= 𝜏 + 2𝑉 𝑖 
+
+𝜏 − 2𝑉 𝑖 
+
+. (11) Positive credit places the target above the behavior policy ( 𝑞 𝑖 > 1/2, 𝑟 ★𝑖 > 1), negative credit places it below ( 𝑞 𝑖 < 1/2, 
+
+𝑟 ★𝑖 < 1), and zero credit leaves the behavior policy unchanged ( 𝑞 𝑖 = 1/2, 𝑟 ★𝑖 = 1). To ensure that every turn target remains strictly valid and bounded without ad-hoc clipping, we calibrate 𝜏 from the group size 𝐾 . By Samuelson’s inequality (Samuelson, 1968), the standardized terminal advantages in Eq. 4 are bounded by (𝐾 − 1)/ √𝐾 , and the convex tree backup in Eq. 5 preserves this bound at every internal node. Setting 
+
+𝜏 = (𝐾 − 1)/( 𝜌 √𝐾 ) for a target radius 𝜌 ∈ ( 0, 1/2) confines every 𝑞 𝑖 to [1/2 − 𝜌, 1/2 + 𝜌 ] and every target ratio to the depth-independent interval 
+
+𝑟 ★𝑖 ∈
+
+ 1 − 2𝜌 
+
+1 + 2𝜌 , 1 + 2𝜌 
+
+1 − 2𝜌 
+
+
+
+. (12) Moreover, as proved in Appendix B.1 and validated in Section 4.3, the affine teacher in Eq. 11 is the unique symmetric radius-calibrated map that commutes with convex tree backup. 
+
+3.3 Distribution matching and off-policy analysis 
+
+With the teacher 𝑄 ★𝑖 = Ber (𝑞 𝑖 ) frozen at rollout, the second step in Eq. 7 projects the evolving student 𝑃 𝜃 ,𝑖 = Ber ( 𝑝 𝜃 ,𝑖 )
+
+onto 𝑄 ★𝑖 across sequential mini-batches. A principled choice of projection divergence 𝐷 follows directly from the proximal objective in Eq. 10: by Bregman and Fenchel–Young duality (Banerjee et al., 2005; Blondel et al., 2020), the optimality gap between 𝑄 ★𝑖 and any student 𝑃 𝜃 ,𝑖 is exactly the Forward KL divergence J𝑖 (𝑄 ★𝑖 ) − J 𝑖 (𝑃 𝜃 ,𝑖 ) =
+
+𝜏𝐷 KL (𝑄 ★𝑖 ∥𝑃 𝜃 ,𝑖 ) (Agarwal et al., 2024; Qu et al., 2026a). Weighting each turn’s Forward KL by 𝐿 𝑖 /𝐿 𝑥 to match the token normalization in Eq. 6 yields the TreeOPSD loss: 
+
+L𝑥 (𝜃 ) := 𝜏 𝐿 𝑥 ∑︁ 𝑖 ∈ T 𝑥 
+
+𝐿 𝑖 𝐷 KL 
+
+ 𝑄 ★𝑖 ∥𝑃 𝜃 ,𝑖 
+
+ = 1
+
+𝐿 𝑥 ∑︁ 𝑖 ∈ T 𝑥 
+
+𝐿 𝑖 
+
+h
+
+−𝑉 𝑖 𝑠 𝜃 ,𝑖 + 𝜏𝐷 KL 
+
+
+
+Ber ( 12 )∥ 𝑃 𝜃 ,𝑖 
+
+i 
+
++ 𝐶 𝑥 , (13) where 𝐶 𝑥 is independent of 𝜃 . The second expression in Eq. 13 shows why Forward-KL matching stabilizes off-policy updates: every step that reduces the distillation loss L𝑥 (𝜃 ) monotonically increases the tree-weighted proximal RL objective (Appendix B.3), and the loss combines linear credit ascent −𝑉 𝑖 𝑠 𝜃 ,𝑖 with a convex restoring penalty around 
+
+𝜋 𝜃 old that activates only as 𝜋 𝜃 drifts away from the behavior policy. We now establish two structural theorems showing how Eq. 13 preserves exact turn-level credit across the tree (Theorem 1) and corrects off-policy drift across sequential mini-batches (Theorem 2). 
+
+Theorem 1 (Tree-consistent targets and descendant loss aggregation) . Let E𝑘 |𝑖 denote the expectation over terminal leaves 𝑖 𝑘 below turn 𝑖 under the recursive backup weights in Eq. 5. For any student probability 𝑝 𝜃 ,𝑖 ∈ ( 0, 1),the leaf-level Forward KL losses decompose as 
+
+E𝑘 |𝑖 
+
+𝐷 KL 
+
+ Ber (𝑞 𝑖 𝑘 )∥ Ber ( 𝑝 𝜃 ,𝑖 ) = E𝑘 |𝑖 
+
+𝐷 KL 
+
+ Ber (𝑞 𝑖 𝑘 )∥ Ber (𝑞 𝑖 ) + 𝐷 KL 
+
+ Ber (𝑞 𝑖 )∥ Ber ( 𝑝 𝜃 ,𝑖 ) . (14) 
+
+Because the first term on the right-hand side is independent of 𝜃 , matching the single backed-up parent teacher 
+
+𝑄 ★𝑖 = Ber (𝑞 𝑖 ) yields the exact same gradient on turn 𝑖 as aggregating the distillation losses of all descendant leaves            
+
+> 6Vu=
+> X
+> c
+> !cVc⟹qu=
+> X
+> c
+> !cqc
+> !1!2!3
+> qi=12+Vi
+> ¿
+> )backup and target mapping commute
+
+(a) Tree-consistent targets   
+
+> q1q2q3
+
+qu   
+
+> Turn score s
+> Surrogate loss
+> same tangent at behavior finite target s⋆
+
+(b) Same tangent, finite destination   
+
+> Fixed tree PG TreeOPSD
+> Optimization progress Student probability  p = ¾(s)
+> target q⋆
+> overshoot: residual reverses from behavior Fixed tree PG
+
+(c) Finite-target self-correction Figure 3 From backed-up credit to a finite, self-correcting target. (a) The affine credit-to-target map commutes with likelihood-weighted tree backup, so the teacher 𝑞 𝑢 at a shared turn equals the weighted average of its child teachers. (b) In log-ratio score space 𝑠 𝜃 ,𝑖 , TreeOPSD and fixed tree policy gradient share the same tangent at the behavior policy ( 𝑠 = 0), but only TreeOPSD has a finite minimizer 𝑠 ★ = log 𝑟 ★. (c) The student probability 𝑝 𝜃 ,𝑖 = 𝜎 (𝑠 𝜃 ,𝑖 ) converges toward the target 𝑞 ★ from either side because the residual reverses sign after overshoot, whereas fixed credit keeps pushing in the initial direction. 
+
+below 𝑖 . Equivalently, the affine map 𝑞 𝑖 = 1/2 + 𝑉 𝑖 /𝜏 commutes with tree backup and coincides with the Forward-KL barycenter (Banerjee et al., 2005) of its child teachers: 
+
+𝑞 𝑖 = 12 + 𝑉 𝑖 
+
+𝜏 =∑︁ 
+
+> 𝑐 ∈ C 𝑖
+
+𝜔 𝑖,𝑐 𝑞 𝑐 = arg min 
+
+> 𝑞 ∈ ( 0,1)
+
+∑︁ 𝑐 ∈ C 𝑖 
+
+𝜔 𝑖,𝑐 𝐷 KL (Ber (𝑞 𝑐 )∥ Ber (𝑞 )) . (15) Theorem 1 guarantees lossless credit compression on the rollout tree: the parent target 𝑞 𝑖 is identical whether descendant credits are mapped before backup or the backed-up credit 𝑉 𝑖 is mapped afterward (Figure 3(a)), allowing Eq. 13 to score each unique turn once without repeating shared prefixes across leaves. Proofs are given in Appendix B.1–B.2. 
+
+Theorem 2 (On-policy tangent and off-policy drift correction) . For every token 𝑗 in turn 𝑖 ∈ T 𝑥 , differentiating Eq. 13 with respect to log 𝜋 𝜃 (𝑎 𝑖, 𝑗 | ℎ𝑖, 𝑗 ) yields 
+
+𝜕 L𝑥 
+
+𝜕 log 𝜋 𝜃 (𝑎 𝑖, 𝑗 | ℎ𝑖, 𝑗 ) = 𝜏 𝐿 𝑥 
+
+( 𝑝 𝜃 ,𝑖 − 𝑞 𝑖 ) = − 1
+
+𝐿 𝑥 
+
+
+
+𝑉 𝑖 − 𝜏 
+
+
+
+𝑝 𝜃 ,𝑖 − 12
+
+ 
+
+. (16) 
+
+Here the bracketed ascent weight Γ𝑖 (𝑠 𝜃 ,𝑖 ) subtracts an off-policy drift correction from the on-policy credit 𝑉 𝑖 .Expressed in terms of the current and target likelihood ratios 𝑟 𝜃 ,𝑖 and 𝑟 ★𝑖 , it takes the self-normalized form 
+
+Γ𝑖 (𝑠 𝜃 ,𝑖 ) := 𝑉 𝑖 − 𝜏 
+
+
+
+𝑝 𝜃 ,𝑖 − 12
+
+
+
+= 𝜏 𝑟 ★𝑖 − 𝑟 𝜃 ,𝑖 
+
+(1 + 𝑟 ★𝑖 )( 1 + 𝑟 𝜃 ,𝑖 ) . (17) 
+
+Across sequential mini-batch updates, the ascent gradient −∇ 𝜃 L𝑥 (𝜃 ) satisfies three properties: 
+
+(i) Exact on-policy tangent: At the behavior policy 𝜋 𝜃 = 𝜋 𝜃 old , we have 𝑟 𝜃 ,𝑖 = 1 and 𝑝 𝜃 ,𝑖 = 1/2, so the drift correction vanishes and −∇ 𝜃 L𝑥 (𝜃 old ) = 𝑔 tree  
+
+> 𝑥
+
+exactly recovers Eq. 6. 
+
+(ii) Bounded additive drift cancellation: As 𝜋 𝜃 drifts away from 𝜋 𝜃 old on subsequent mini-batches, the additive correction −𝜏 ( 𝑝 𝜃 ,𝑖 − 1/2) counteracts the policy shift, remaining Lipschitz in 𝑠 𝜃 ,𝑖 and uniformly bounded for all 𝑟 𝜃 ,𝑖 ∈ ( 0, ∞) without the exponential variance of multiplicative importance ratios (Ionides, 2008; Liu et al., 2018). 
+
+(iii) Finite-target equilibrium and sign reversal: Γ𝑖 (𝑠 𝜃 ,𝑖 ) vanishes once 𝑟 𝜃 ,𝑖 reaches 𝑟 ★𝑖 and reverses sign if earlier mini-batches push the turn past 𝑟 ★𝑖 , whereas fixed-credit updates keep 𝑉 𝑖 unchanged regardless of drift. 
+
+Figures 3(b)–(c) illustrate these dynamics, and Appendix B.3 proves Theorem 2 along with scalar contraction and parameter-level drift bounds between TreeOPSD and fixed-credit updates. 
+
+7Algorithm 1: TreeOPSD training 
+
+Input: Prompt dataset D; initial policy 𝜋 𝜃 ; prompt batch size 𝐵 ; initial-rollout count 𝑀 ; branch count 𝑁 ;optimizer-block count 𝐸 ; target radius 𝜌 .
+
+Output: Updated policy 𝜋 𝜃 .
+
+foreach training iteration do 
+
+Freeze 𝜋 𝜃 old ← stopgrad (𝜋 𝜃 );Sample B ⊂ D with |B| = 𝐵 and partition into disjoint mini-batches B = Ð𝐸 𝑒 =1 B𝑒 ;Set 𝐾 = 𝑀 (𝑁 + 1) and 𝜏 = (𝐾 − 1)/( 𝜌 √𝐾 );
+
+// Construct rollout trees and turn teachers 
+
+foreach prompt 𝑥 ∈ B do 
+
+Sample and retain 𝑀 complete rollouts H𝑚,𝑇 𝑚 from 𝜋 𝜃 old (· | 𝑥 );
+
+foreach retained rollout 𝑚 = 1, . . . , 𝑀 do 
+
+Draw a multiset A𝑚 = {𝑡 𝑚, 1, . . . , 𝑡 𝑚, 𝑁 } of 𝑁 branch anchors from rollout 𝑚 ;
+
+foreach 𝑡 𝑚,𝑛 ∈ A 𝑚 do 
+
+Sample one fresh terminal suffix 𝑆 𝑚,𝑛 from prefix H𝑚,𝑡 𝑚,𝑛 ;Merge shared prefixes into T𝑥 and score its 𝐾 terminal trajectories; Standardize terminal rewards once to 𝐴 𝑘 and back up all 𝑉 𝑖 by Eq. 5; Set 𝑞 𝑖 = 1/2 + 𝑉 𝑖 /𝜏 for every 𝑖 ∈ T 𝑥 ;
+
+// Match the evolving student policy to the frozen teachers 
+
+for 𝑒 = 1 to 𝐸 do foreach prompt 𝑥 ∈ B 𝑒 do foreach unique turn 𝑖 ∈ T 𝑥 do 
+
+Recompute 𝑠 𝜃 ,𝑖 and 𝑝 𝜃 ,𝑖 = 𝜎 (𝑠 𝜃 ,𝑖 ) under the current policy 𝜋 𝜃 ;Assign loss-gradient weight 𝜏 ( 𝑝 𝜃 ,𝑖 − 𝑞 𝑖 )/ 𝐿 𝑥 to every actor token in turn 𝑖 ;Backpropagate the prompt-averaged token gradients and take one optimizer step on 𝜃 ;
+
+3.4 Practical optimization 
+
+Algorithm 1 implements Eq. 7 in two stages per training iteration. We first freeze the behavior policy 𝜋 𝜃 old , sample a batch B of 𝐵 prompts, and partition it into 𝐸 disjoint mini-batches B = Ð𝐸 𝑒 =1 B𝑒 , corresponding to 𝐸 sequential optimizer blocks. In the target-construction stage, we generate the (𝑀, 𝑁 ) rollout tree T𝑥 , compute backed-up credits 𝑉 𝑖 , and set the frozen teachers 𝑞 𝑖 = 1/2 + 𝑉 𝑖 /𝜏 for all 𝑥 ∈ B . In the distribution-matching stage, each block 
+
+𝑒 = 1, . . . , 𝐸 evaluates its mini-batch B𝑒 under the current policy 𝜋 𝜃 , recomputes the off-policy scores 𝑠 𝜃 ,𝑖 and posteriors 𝑝 𝜃 ,𝑖 , and backpropagates the token loss-gradient weights 𝜏 ( 𝑝 𝜃 ,𝑖 − 𝑞 𝑖 )/ 𝐿 𝑥 = −Γ𝑖 (𝑠 𝜃 ,𝑖 )/ 𝐿 𝑥 to update 𝜃 .
+
+# 4 Experiments 
+
+4.1 Experimental setup 
+
+Datasets and models. We evaluate TreeOPSD on two representative multi-turn settings. (1) Multi-Hop QA: trains on the HotpotQA (Hotpot) training split (Yang et al., 2018) and evaluates on its validation split, 2WikiMultiHopQA (2Wiki) (Ho et al., 2020), MuSiQue (Trivedi et al., 2022), and Bamboogle (Press et al., 2023) with a local E5 retrieval server (Wang et al., 2022) built over a Wikipedia dump (Karpukhin et al., 2020). (2) Deep Research: trains on the 6,102 unique questions released with OpenResearcher (Li et al., 2026d) and evaluates on BrowseComp-Plus (BC+) (Chen et al., 2025b) with closed-corpus retrieval, then tests open-web transfer on BrowseComp (BC) (Wei et al., 2025), GAIA (Mialon et al., 2024), and xbench-DeepSearch (xbench) (Chen et al., 2025a). Main experiments use Qwen3-4B-Thinking-2507 and Qwen3-30B-A3B-Thinking-2507 (Yang et al., 2025a).                                                                                                                   
+
+> 8Table 1 Performance comparison on Multi-Hop QA and Deep Research. We train on HotpotQA and OpenResearcher, and evaluate Qwen3-4B-Thinking-2507 and Qwen3-30B-A3B-Thinking-2507 on four test sets for each scenario. TreeOPSD consistently outperforms competitive baselines on average. The best results are indicated in bold .
+> Method Multi-Hop QA Deep Research Hotpot 2Wiki MuSiQue Bamboogle Avg BC+ BC GAIA xbench Avg Qwen3-4B-Thinking-2507 ReAct 31.61 29.63 9.68 25.60 24.13 4.70 1.97 15.53 13.00 8.80
+> GRPO 46.93 48.62 21.93 56.00 43.37 10.00 2.29 18.45 18.00 12.18
+> GSPO 46.55 49.10 21.76 55.20 43.15 9.88 2.37 18.45 18.00 12.17
+> TreePO 47.25 49.90 22.05 54.40 43.40 11.08 2.76 19.42 19.00 13.07
+> TreeOPSD 48.16 52.00 22.76 53.60 44.13 13.98 3.48 21.36 23.00 15.45 Qwen3-30B-A3B-Thinking-2507 ReAct 41.49 42.89 17.87 46.40 37.16 7.23 3.63 30.10 18.00 14.74
+> GRPO 47.25 52.13 23.83 56.00 44.80 10.36 4.50 31.07 19.00 16.23
+> GSPO 47.70 52.50 24.00 55.20 44.85 11.08 4.74 32.04 18.00 16.47
+> TreePO 48.10 51.80 24.29 56.00 45.05 12.29 5.06 33.01 20.00 17.59
+> TreeOPSD 48.89 50.88 24.74 59.20 45.93 17.47 6.40 34.95 26.00 21.20
+
+Baselines. We compare TreeOPSD with four baselines. (1) ReAct (Yao et al., 2022): evaluates the base model in the same multi-turn agent and tool scaffold. (2) GRPO (Shao et al., 2024): normalizes terminal rewards over complete rollouts from each prompt. (3) GSPO (Zheng et al., 2025b): replaces token-level importance ratios with a sequence-level ratio while retaining group-relative terminal advantages. (4) TreePO : uses the same initialize-then-expand trees, likelihood-weighted turn credits 𝑉 𝑖 , prompt normalization, and optimizer blocks as TreeOPSD, but applies the fixed ascent coefficient 𝑉 𝑖 /𝐿 𝑥 throughout optimization instead of matching a finite posterior target. GRPO and GSPO use 
+
+𝐺 = 8 rollouts per prompt, and both tree methods use 𝑀 = 4 initial rollouts and 𝑁 = 2 continuations per initial rollout to match that budget under expectation. 
+
+Metrics. We report exact match (EM) in both settings. “Avg” is the unweighted mean over HotpotQA, 2WikiMul-tiHopQA, MuSiQue, and Bamboogle for Multi-Hop QA, and over BrowseComp-Plus, BrowseComp, GAIA, and xbench-DeepSearch for Deep Research. We evaluate every five updates through step 80 on Multi-Hop QA and step 70 on BrowseComp-Plus. Appendix E gives the data splits, rewards, training settings, and evaluation protocol. 
+
+4.2 Main results 
+
+Table 1 and Figure 4 show TreeOPSD with the highest Multi-Hop QA and Deep Research averages at both scales. TreePO is trained on the same initialize-then-expand trees, the same credits 𝑉 𝑖 , and the same optimizer blocks, so the two methods differ only in how that credit is used. TreePO keeps the collection-time coefficient 𝑉 𝑖 /𝐿 𝑥 on every later block. TreeOPSD matches a frozen turn teacher and recomputes the residual as 𝜋 𝜃 moves. TreeOPSD improves both Multi-Hop QA and Deep Research, with a larger gain on the longer-horizon Deep Research setting, where it raises the average over TreePO from 13.07 to 15.45 for Qwen3-4B and from 17.59 to 21.20 for Qwen3-30B-A3B. On that longer horizon, later blocks more often update a policy that has already left 𝜋 𝜃 old . A finite teacher can stop or reverse at that point, while a fixed credit keeps the original sign. The same policies remain ahead on BrowseComp, GAIA, and xbench, which use open-web search rather than the training corpus. Appendix D.3 also shows the performance gain under the same training time. 
+
+4.3 Pointwise credit and the posterior map 
+
+Pointwise and listwise credit. Listwise updates center credit inside the sampled group, which removes the value shared by every child. TreeOPSD uses that child backup 𝑉 𝑐 as pointwise turn credit, so two useful children can both rise relative to the behavior policy. Figure 5 keeps the initialize-then-expand trees and optimizer blocks of TreeOPSD.     
+
+> 940 50 60 70 80
+> Training Steps
+> 40 41 42 43 44 45
+> Test Accuracy
+
+Multi-Hop QA, 4B      
+
+> 020 40 60 80
+> Training Steps
+> 36 39 42 45 48
+
+Multi-Hop QA, 30B-A3B     
+
+> 10 30 50 70
+> Training Steps
+> 0510 15
+
+BrowseComp-Plus, 4B    
+
+> 10 30 50 70
+> Training Steps
+> 510 15 20
+
+BrowseComp-Plus, 30B-A3B  
+
+> TreeOPSD GRPO
+
+Figure 4 Test accuracy during training. The four panels report TreeOPSD and GRPO with Qwen3-4B-Thinking-2507 and Qwen3-30B-A3B-Thinking-2507 on the Multi-Hop QA average (HotpotQA, 2WikiMultiHopQA, MuSiQue, and Bamboogle) and on BrowseComp-Plus. Higher curves indicate stronger final policies under identical sampling budgets. 0 2 4 6 8
+
+> Optimizer step
+> 0.6 0.7 0.8 0.9
+> Probability of useful turns
+
+(a) Pointwise vs. listwise    
+
+> Pointwise Listwise
+> 010 20 30
+> Training Steps
+> 0246810
+> Test Accuracy
+
+(b) Pointwise credit     
+
+> Pointwise Listwise
+> 02468
+> Optimizer step
+> 0.5 0.6 0.7 0.8
+> Student probability
+
+(c) Odds vs. logistic map    
+
+> Odds map Logistic map Target
+> 010 20 30
+> Training Steps
+> 0246810
+> Test Accuracy
+
+(d) Odds map 
+
+> Odds map Logistic map
+
+Figure 5 Pointwise credit and the posterior map. (a) Two useful children share a parent backup. Pointwise credit is 𝑉 𝑐 , and listwise credit is the group-relative 𝑉 𝑐 − 𝑉 𝑖 . (b) BrowseComp-Plus with Qwen3-4B-Thinking-2507. The pointwise curve is the TreeOPSD run from Figure 4(c). (c) The odds map and a scaled logistic map agree at the first update, and the student then stops at the odds teacher. (d) The odds map against the logistic map on that split. In (b) and (d), higher curves indicate stronger final policies under identical sampling budgets. 
+
+Panels (a) and (b) replace 𝑉 𝑐 with the group-relative credit 𝑉 𝑐 − 𝑉 𝑖 . These centered credits average to zero under the backup weights, so the same two useful children can receive opposite updates. Panel (a) has a parent with two useful children. Matching 𝑉 𝑐 raises both, while 𝑉 𝑐 − 𝑉 𝑖 leaves their total probability near the behavior policy. Panel (b) trains both on BrowseComp-Plus with Qwen3-4B-Thinking-2507, and the pointwise curve lies above the listwise control. 
+
+Odds and logistic teachers. Panels (c) and (d) keep 𝑉 𝑐 and change how it becomes a Bernoulli teacher. Eq. 9 uses the odds map 𝑝 = 𝑟 /( 1 + 𝑟 ), and the matching teacher 𝑞 = 1/2 + 𝑉 /𝜏 is affine in 𝑉 . A parent teacher is then the weighted mean of its child teachers, so tree backup and target construction commute. The logistic map 𝑞 = 𝜎 (𝑉 /𝜏 ′)
+
+is also a Bernoulli teacher. Its scale 𝜏 ′ can match the first tree-policy-gradient update, but its parent teacher is then not the weighted mean of its child teachers. Appendix D.2 plots the probability of useful turns against their shared credit 
+
+𝑚 , and the parent-gradient error when the teacher is not affine in 𝑉 . Panel (d) trains both on BrowseComp-Plus, and the odds map lies above the logistic control. 
+
+4.4 Rollout allocation and target-radius sensitivity 
+
+Rollout allocation. Table 2(a) varies the initialize-then-expand split at the default target radius, comparing independent trajectories with prefix continuations from visited histories. The rows (8, 0), (4, 2), and (2, 6) match GRPO’s expected sampling cost, and (4, 0) and (2, 2) use half of that budget. TreeOPSD recovers tree policy gradient at the behavior policy, so the flat (8, 0) tree is the closest first-order control to GRPO, and the two methods stay close on Multi-Hop QA. Moving the same budget onto prefix continuations at (4, 2) raises both averages, and it also outperforms the more continuation-heavy (2, 6) split. At half budget, (2, 2) improves over flat (4, 0), and on Deep Research it matches 
+
+10 Table 2 Rollout allocation and target-radius sensitivity. Unweighted four-benchmark averages on Multi-Hop QA and Deep Research with Qwen3-4B-Thinking-2507. Panel (a) varies the initialize-then-expand split at 𝜌 = 0.25, and panel (b) varies the target radius at (𝑀, 𝑁 ) = (4, 2). The gray row is the default setting used in Table 1 and shared by both panels.                                     
+
+> (a) Rollout allocation (b) Target radius
+> (𝑀, 𝑁 )Multi-Hop QA Deep Research 𝜌 Multi-Hop QA Deep Research
+> (8,0)43.66 11.28 0.10 43.79 14.62
+> (4,0)42.98 10.05 0.20 44.01 15.06
+> (4,2)44.13 15.45 0.25 44.13 15.45
+> (2,6)44.07 14.97 0.30 43.95 14.88
+> (2,2)43.25 11.33 0.40 43.81 14.69
+
+full-budget (8, 0), so a moderate number of prefix continuations is a better use of that budget than extra independent trajectories or a continuation-heavy split. 
+
+Target radius. Table 2(b) keeps the default tree and varies 𝜌 , which sets how far each frozen Bernoulli teacher may move from 1 /2. The first optimizer block does not depend on 𝜌 , because the distillation gradient recovers tree policy gradient at the behavior policy. Later blocks close the gap to a teacher whose distance from 12 is set by 𝜌 , so the sweep measures those later updates. Both averages peak at the default radius, and Deep Research moves more with 𝜌 than Multi-Hop QA, but accuracy remains close to that peak across the full radius sweep. 
+
+# 5 Conclusion 
+
+We presented TreeOPSD, a critic-free posterior self-distillation framework for long-horizon agentic RLVR. It backs sparse terminal rewards into implicit turn-level credit on a shared-prefix tree and mitigates policy drift by matching a finite behavior-relative teacher with Forward KL. The affine target commutes with tree backup, and the distillation gradient recovers tree policy gradient at the behavior policy, then stops or reverses after overshoot, so a rollout batch supports sequential updates without a learned critic, process labels, or an external teacher. TreeOPSD improves over matched-budget baselines at both scales on Multi-Hop QA and Deep Research, and the gain is much larger on the longer-horizon setting. 
+
+# References 
+
+Abbas Abdolmaleki, Jost Tobias Springenberg, Yuval Tassa, Remi Munos, Nicolas Heess, and Martin Riedmiller. Maximum a posteriori policy optimisation. arXiv preprint arXiv:1806.06920 , 2018. Rishabh Agarwal, Nino Vieillard, Yongchao Zhou, Piotr Stanczyk, Sabela Ramos Garea, Matthieu Geist, and Olivier Bachem. On-policy distillation of language models: Learning from self-generated mistakes. In International Conference on Learning Representations , volume 2024, pp. 21246–21263, 2024. Jose A Arjona-Medina, Michael Gillhofer, Michael Widrich, Thomas Unterthiner, Johannes Brandstetter, and Sepp Hochreiter. Rudder: Return decomposition for delayed rewards. Advances in Neural Information Processing Systems , 32, 2019. Reza Asad, Reza Babanezhad, Issam Laradji, Nicolas Le Roux, and Sharan Vaswani. Fast convergence of softmax policy mirror ascent. arXiv preprint arXiv:2411.12042 , 2025. Sanghwan Bae, Jiwoo Hong, Min Young Lee, Hanbyul Kim, JeongYeon Nam, and Donghyun Kwak. Online difficulty filtering for reasoning oriented reinforcement learning. In Proceedings of the 19th Conference of the European Chapter of the Association for Computational Linguistics (Volume 1: Long Papers) , pp. 700–719, 2026. Arindam Banerjee, Srujana Merugu, Inderjit S Dhillon, and Joydeep Ghosh. Clustering with bregman divergences. Journal of machine learning research , 6(Oct):1705–1749, 2005. Amir Beck and Marc Teboulle. Mirror descent and nonlinear projected subgradient methods for convex optimization. Operations Research Letters , 31(3):167–175, 2003. 
+
+> 11
+
+Mathieu Blondel, André FT Martins, and Vlad Niculae. Learning with fenchel-young losses. Journal of Machine Learning Research , 21(35):1–69, 2020. Huayu Chen, Guande He, Lifan Yuan, Ganqu Cui, Hang Su, and Jun Zhu. Noise contrastive alignment of language models with explicit rewards. Advances in neural information processing systems , 37:117784–117812, 2024. Kaiyuan Chen, Yixin Ren, Yang Liu, Xiaobo Hu, Haotong Tian, Tianbao Xie, Fangfu Liu, Haoye Zhang, Hongzhang Liu, Yuan Gong, et al. xbench: Tracking agents productivity scaling with profession-aligned real-world evaluations. arXiv preprint arXiv:2506.13651 , 2025a. Zijian Chen, Xueguang Ma, Shengyao Zhuang, Ping Nie, Kai Zou, Andrew Liu, Joshua Green, Kshama Patel, Ruoxi Meng, Mingyi Su, et al. Browsecomp-plus: A more fair and transparent evaluation benchmark of deep-research agent. arXiv preprint arXiv:2508.06600 , 2025b. Jie Cheng, Gang Xiong, Ruixi Qiao, Lijun Li, Chao Guo, Junle Wang, Yisheng Lv, and Fei-Yue Wang. Stop summation: Min-form credit assignment is all process reward model needs for reasoning. Advances in Neural Information Processing Systems , 38: 131646–131671, 2026. Kyle Cranmer, Juan Pavez, and Gilles Louppe. Approximating likelihood ratios with calibrated discriminative classifiers. arXiv preprint arXiv:1506.02169 , 2015. Guanting Dong, Hangyu Mao, Kai Ma, Licheng Bao, Yifei Chen, Zhongyuan Wang, Zhongxia Chen, Jiazhen Du, Huiyang Wang, Fuzheng Zhang, et al. Agentic reinforced policy optimization. In International Conference on Learning Representations , volume 2026, pp. 16981–17017, 2026. Lang Feng, Zhenghai Xue, Tingcong Liu, and Bo An. Group-in-group policy optimization for llm agent training. Advances in Neural Information Processing Systems , 38:46375–46408, 2025. Xidong Feng, Ziyu Wan, Muning Wen, Stephen Marcus McAleer, Ying Wen, Weinan Zhang, and Jun Wang. Alphazero-like tree-search can guide large language model decoding and training. arXiv preprint arXiv:2309.17179 , 2023. Zhaolin Gao, Joongwon Kim, Wen Sun, Thorsten Joachims, Sid Wang, Richard Yuanzhe Pang, and Liang Tan. Prompt curriculum learning for efficient llm post-training. arXiv preprint arXiv:2510.01135 , 2025. Ian J Goodfellow, Jean Pouget-Abadie, Mehdi Mirza, Bing Xu, David Warde-Farley, Sherjil Ozair, Aaron Courville, and Yoshua Bengio. Generative adversarial nets. Advances in neural information processing systems , 27, 2014. Yuxian Gu, Li Dong, Furu Wei, and Minlie Huang. Minillm: Knowledge distillation of large language models. In International Conference on Learning Representations , volume 2024, pp. 32694–32717, 2024. Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Peiyi Wang, Qihao Zhu, Runxin Xu, Ruoyu Zhang, Shirong Ma, Xiao Bi, et al. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948 ,2025. Xanh Ho, Anh-Khoa Duong Nguyen, Saku Sugawara, and Akiko Aizawa. Constructing a multi-hop qa dataset for comprehensive evaluation of reasoning steps. In Proceedings of the 28th International Conference on Computational Linguistics , pp. 6609–6625, 2020. Zhenyu Hou, Ziniu Hu, Yujiang Li, Rui Lu, Jie Tang, and Yuxiao Dong. Treerl: Llm reinforcement learning with on-policy tree search. In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) ,pp. 12355–12369, 2025. Edward J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, Weizhu Chen, et al. Lora: Low-rank adaptation of large language models. ICLR , 1(2):3, 2022. Edward L Ionides. Truncated importance sampling. Journal of Computational and Graphical Statistics , 17(2):295–311, 2008. Yuxiang Ji, Ziyu Ma, Yong Wang, Guanhua Chen, Xiangxiang Chu, and Liaoni Wu. Tree search for llm agent reinforcement learning. In International Conference on Learning Representations , volume 2026, pp. 87362–87388, 2026. Bowen Jin, Hansi Zeng, Zhenrui Yue, Jinsung Yoon, Sercan Arik, Dong Wang, Hamed Zamani, and Jiawei Han. Search-r1: Training llms to reason and leverage search engines with reinforcement learning. arXiv preprint arXiv:2503.09516 , 2025. Vladimir Karpukhin, Barlas Oguz, Sewon Min, Patrick Lewis, Ledell Wu, Sergey Edunov, Danqi Chen, and Wen-tau Yih. Dense passage retrieval for open-domain question answering. In Proceedings of the 2020 conference on empirical methods in natural language processing (EMNLP) , pp. 6769–6781, 2020. Simran Kaur, Narutatsu Ri, Yinghui He, Liam Fowl, and Sanjeev Arora. Rethinking on-policy self-distillation for thinking models. 
+
+arXiv preprint arXiv:2607.05184 , 2026. 
+
+> 12
+
+Amirhossein Kazemnejad, Milad Aghajohari, Eva Portelance, Alessandro Sordoni, Siva Reddy, Aaron Courville, and Nicolas Le Roux. Vineppo: Refining credit assignment in rl training of llms. arXiv preprint arXiv:2410.01679 , 2025. James Kirkpatrick, Razvan Pascanu, Neil Rabinowitz, Joel Veness, Guillaume Desjardins, Andrei A Rusu, Kieran Milan, John Quan, Tiago Ramalho, Agnieszka Grabska-Barwinska, et al. Overcoming catastrophic forgetting in neural networks. Proceedings of the national academy of sciences , 114(13):3521–3526, 2017. Taisuke Kobayashi. Proximal policy optimization with relative pearson divergence. In 2021 IEEE International Conference on Robotics and Automation (ICRA) , pp. 8416–8421. IEEE, 2021. Xin Lai, Zhuotao Tian, Yukang Chen, Senqiao Yang, Xiangru Peng, and Jiaya Jia. Step-dpo: Step-wise preference optimization for long-chain reasoning of llms. arXiv preprint arXiv:2406.18629 , 2024. Jiazheng Li, Yawei Wang, Qiaojing Yan, Yijun Tian, Zhichao Xu, Huan Song, Panpan Xu, and Lin Lee Cheong. Salt: Step-level advantage assignment for long-horizon agents via trajectory graph. In Findings of the Association for Computational Linguistics: EACL 2026 , pp. 4709–4725, 2026a. Ruilin Li, Heming Zou, Xiufeng Yan, Zheming Liang, Jie Yang, Chenliang Li, and Xue Yang. Enhancing pretrained model-based continual representation learning via guided random projection. arXiv preprint arXiv:2603.19145 , 2026b. Xuefeng Li, Haoyang Zou, and Pengfei Liu. Limr: Less is more for rl scaling. arXiv preprint arXiv:2502.11886 , 2025a. Yizhuo Li, Jianhao Yan, Yun Luo, Zhi Wang, Futing Wang, Rong-Xi Tan, Kanghui Tian, Ganqu Cui, Ning Ding, Peilin Zhao, et al. Rethinking critic learning in ppo: Understanding and mitigating value flattening. arXiv preprint arXiv:2609.18708 , 2026c. Zhizhong Li and Derek Hoiem. Learning without forgetting. IEEE transactions on pattern analysis and machine intelligence , 40 (12):2935–2947, 2017. Zhuofeng Li, Dongfu Jiang, Xueguang Ma, Haoxiang Zhang, Ping Nie, Yuyu Zhang, Kai Zou, Jianwen Xie, Yu Zhang, and Wenhu Chen. Openresearcher: A fully open pipeline for long-horizon deep research trajectory synthesis. arXiv preprint arXiv:2603.20278 , 2026d. Ziniu Li, Congliang Chen, Tianyun Yang, Tian Ding, Ruoyu Sun, Ge Zhang, Wenhao Huang, and Zhi-Quan Luo. Knapsack rl: Unlocking exploration of llms via optimizing budget allocation. arXiv preprint arXiv:2509.25849 , 2025b. Hunter Lightman, Vineet Kosaraju, Yuri Burda, Harrison Edwards, Bowen Baker, Teddy Lee, Jan Leike, John Schulman, Ilya Sutskever, and Karl Cobbe. Let’s verify step by step. In International Conference on Learning Representations , volume 2024, pp. 39578–39601, 2024. Qiang Liu, Lihong Li, Ziyang Tang, and Dengyong Zhou. Breaking the curse of horizon: Infinite-horizon off-policy estimation. 
+
+Advances in neural information processing systems , 31, 2018. Yao Liu, Pierre-Luc Bacon, and Emma Brunskill. Understanding the curse of horizon in off-policy evaluation via conditional importance sampling. In International Conference on Machine Learning , pp. 6184–6193. PMLR, 2020. Mao-Lin Luo, Zhe-Xu Wang, Zi-Hao Zhou, Bo Ye, Jian Zhao, Min-Ling Zhang, and Tong Wei. Rl forgets! towards continual policy optimization. arXiv preprint arXiv:2607.04364 , 2026. Yixiu Mao, Yun Qu, Qi Wang, Heming Zou, and Xiangyang Ji. Dynamics-predictive sampling for active rl finetuning of large reasoning models. arXiv preprint arXiv:2603.10887 , 2026a. Yixiu Mao, Yun Qu, Qi Wang, Heming Zou, and Xiangyang Ji. Rlvr without ineffective samples: Group prioritized off-policy optimization for llm reasoning. arXiv preprint arXiv:2606.01281 , 2026b. Yu Meng, Mengzhou Xia, and Danqi Chen. Simpo: Simple preference optimization with a reference-free reward. Advances in Neural Information Processing Systems , 37:124198–124235, 2024. Grégoire Mialon, Clémentine Fourrier, Thomas Wolf, Yann LeCun, and Thomas Scialom. Gaia: a benchmark for general ai assistants. In International Conference on Learning Representations , volume 2024, pp. 9025–9049, 2024. Andrew Y Ng, Daishi Harada, and Stuart Russell. Policy invariance under reward transformations: Theory and application to reward shaping. In Icml , volume 99, pp. 278–287. Citeseer, 1999. Xuan-Phi Nguyen, Shrey Pandit, Yiran Zhao, Anurag Koul, Zeyu Liu, and Shafiq Joty. Privileged likelihood is not automatically value: Three checks for token credit in on-policy self-distillation. arXiv preprint arXiv:2608.09263 , 2026. Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll Wainwright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, et al. Training language models to follow instructions with human feedback. Advances in neural information processing systems , 35:27730–27744, 2022. Ru Peng, Heming Zou, Haobo Wang, Yawen Zeng, Zenan Huang, and Junbo Zhao. Energy-based automated model evaluation. In 
+
+International Conference on Learning Representations , volume 2024, pp. 22026–22064, 2024. 
+
+> 13
+
+Ofir Press, Muru Zhang, Sewon Min, Ludwig Schmidt, Noah A Smith, and Mike Lewis. Measuring and narrowing the compositionality gap in language models. In Findings of the Association for Computational Linguistics: EMNLP 2023 , pp. 5687–5711, 2023. Penghui Qi, Xiangxin Zhou, Zichen Liu, Tianyu Pang, Chao Du, Min Lin, and Wee Sun Lee. Rethinking the trust region in llm reinforcement learning. arXiv preprint arXiv:2602.04879 , 2026. Yun Qu, Qi Wang, Yixiu Mao, Vincent Tao Hu, Björn Ommer, and Xiangyang Ji. Can prompt difficulty be online predicted for accelerating rl finetuning of reasoning models?, 2025. URL https://arxiv.org/abs/2507.04632 .Yun Qu, Qi Wang, Yixiu Mao, Heming Zou, Yuhang Jiang, Yingyue Li, Wutong Xu, Lizhou Cai, Weijie Liu, Clive Bai, et al. Listwise policy optimization: Group-based rlvr as target-projection on the llm response simplex. arXiv preprint arXiv:2605.06139 ,2026a. Yun Qu, Qi Wang, Yixiu Mao, Heming Zou, Yuhang Jiang, Weijie Liu, Clive Bai, Kai Yang, Yangkun Chen, Saiyong Yang, et al. Small generalizable prompt predictive models can steer efficient rl post-training of large reasoning models. arXiv preprint arXiv:2602.01970 , 2026b. Rafael Rafailov, Archit Sharma, Eric Mitchell, Christopher D Manning, Stefano Ermon, and Chelsea Finn. Direct preference optimization: Your language model is secretly a reward model. Advances in neural information processing systems , 36: 53728–53741, 2023. Paul A Samuelson. How deviant can you be? Journal of the American Statistical Association , 63(324):1522–1525, 1968. John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347 , 2017. Amrith Setlur, Chirag Nagpal, Adam Fisch, Xinyang Geng, Jacob Eisenstein, Rishabh Agarwal, Alekh Agarwal, Jonathan Berant, and Aviral Kumar. Rewarding progress: Scaling automated process verifiers for llm reasoning. In International Conference on Learning Representations , volume 2025, pp. 60808–60838, 2025. Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, Mingchuan Zhang, YK Li, Yang Wu, et al. Deepseekmath: Pushing the limits of mathematical reasoning in open language models. arXiv preprint arXiv:2402.03300 ,2024. Idan Shenfeld, Jyothish Pari, and Pulkit Agrawal. Rl’s razor: Why online reinforcement learning forgets less. In International Conference on Learning Representations , volume 2026, pp. 59839–59864, 2026. Richard S Sutton, Andrew G Barto, and Andrew Barto. Reinforcement learning: An introduction , volume 1. MIT press Cambridge, 1998. Leitian Tao, Baolin Peng, Wenlin Yao, Tao Ge, Hao Cheng, Mike Hang Wang, Jianfeng Gao, and Sharon Li. Trace: Turn-level reward assignment via credit estimation for long-horizon agents. arXiv preprint arXiv:2607.13988 , 2026. Harsh Trivedi, Niranjan Balasubramanian, Tushar Khot, and Ashish Sabharwal. musique: Multihop questions via single-hop question composition. Transactions of the Association for Computational Linguistics , 10:539–554, 2022. Jonathan Uesato, Nate Kushman, Ramana Kumar, Francis Song, Noah Siegel, Lisa Wang, Antonia Creswell, Geoffrey Irving, and Irina Higgins. Solving math word problems with process-and outcome-based feedback. arXiv preprint arXiv:2211.14275 , 2022. Sharan Vaswani, Olivier Bachem, Simone Totaro, Robert Müller, Shivam Garg, Matthieu Geist, Marlos C Machado, Pablo Samuel Castro, and Nicolas Le Roux. A general class of surrogate functions for stable and efficient reinforcement learning. arXiv preprint arXiv:2108.05828 , 2022. Liang Wang, Nan Yang, Xiaolong Huang, Binxing Jiao, Linjun Yang, Daxin Jiang, Rangan Majumder, and Furu Wei. Text embeddings by weakly-supervised contrastive pre-training. arXiv preprint arXiv:2212.03533 , 2022. Peiyi Wang, Lei Li, Zhihong Shao, Runxin Xu, Damai Dai, Yifei Li, Deli Chen, Yu Wu, and Zhifang Sui. Math-shepherd: Verify and reinforce llms step-by-step without human annotations. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pp. 9426–9439, 2024. Yiping Wang, Qing Yang, Zhiyuan Zeng, Liliang Ren, Liyuan Liu, Baolin Peng, Hao Cheng, Xuehai He, Kuan Wang, Jianfeng Gao, et al. Reinforcement learning for reasoning in large language models with one training example. arXiv preprint arXiv:2504.20571 ,2025. Jason Wei, Zhiqing Sun, Spencer Papay, Scott McKinney, Jeffrey Han, Isa Fulford, Hyung Won Chung, Alex Tachard Passos, William Fedus, and Amelia Glaese. Browsecomp: A simple yet challenging benchmark for browsing agents. arXiv preprint arXiv:2504.12516 , 2025. Makoto Yamada, Taiji Suzuki, Takafumi Kanamori, Hirotaka Hachiya, and Masashi Sugiyama. Relative density-ratio estimation for robust distribution comparison. Neural computation , 25(5):1324–1370, 2013. 
+
+> 14
+
+An Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang Gao, Chengen Huang, Chenxu Lv, et al. Qwen3 technical report. arXiv preprint arXiv:2505.09388 , 2025a. Zhicheng Yang, Zhijiang Guo, Yinya Huang, Xiaodan Liang, Yiwei Wang, and Jing Tang. Treerpo: Tree relative policy optimization. 
+
+arXiv preprint arXiv:2506.05183 , 2025b. Zhilin Yang, Peng Qi, Saizheng Zhang, Yoshua Bengio, William Cohen, Ruslan Salakhutdinov, and Christopher D Manning. Hotpotqa: A dataset for diverse, explainable multi-hop question answering. In Proceedings of the 2018 conference on empirical methods in natural language processing , pp. 2369–2380, 2018. Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan, and Yuan Cao. React: Synergizing reasoning and acting in language models. arXiv preprint arXiv:2210.03629 , 2022. Shunyu Yao, Dian Yu, Jeffrey Zhao, Izhak Shafran, Tom Griffiths, Yuan Cao, and Karthik Narasimhan. Tree of thoughts: Deliberate problem solving with large language models. Advances in neural information processing systems , 36:11809–11822, 2023. Zhiyuan Yao, Yi-Kai Zhang, Yuxin Chen, Yueqing Sun, Zishan Xu, Yu Yang, Tianhao Hu, Qi Gu, Hui Su, and Xunliang Cai. Coba-rl: Capability-oriented budget allocation for reinforcement learning in llms. arXiv preprint arXiv:2602.03048 , 2026. Yixin Ye, Zhen Huang, Yang Xiao, Ethan Chern, Shijie Xia, and Pengfei Liu. Limo: Less is more for reasoning. arXiv preprint arXiv:2502.03387 , 2025. Qiying Yu, Zheng Zhang, Ruofei Zhu, Yufeng Yuan, Xiaochen Zuo, Yu Yue, Weinan Dai, Tiantian Fan, Gaohong Liu, Lingjun Liu, et al. Dapo: An open-source llm reinforcement learning system at scale. Advances in Neural Information Processing Systems ,38:113222–113244, 2026. Lifan Yuan, Wendi Li, Huayu Chen, Ganqu Cui, Ning Ding, Kaiyan Zhang, Bowen Zhou, Zhiyuan Liu, and Hao Peng. Free process rewards without process labels. arXiv preprint arXiv:2412.01981 , 2024. Siyan Zhao, Zhihui Xie, Mengchen Liu, Jing Huang, Guan Pang, Feiyu Chen, and Aditya Grover. Self-distilled reasoner: On-policy self-distillation for large language models. arXiv preprint arXiv:2601.18734 , 2026. Chujie Zheng, Kai Dang, Bowen Yu, Mingze Li, Huiqiang Jiang, Junrong Lin, Yuqiong Liu, Hao Lin, Chencan Wu, Feng Hu, et al. Stabilizing reinforcement learning with llms: Formulation and practices. arXiv preprint arXiv:2512.01374 , 2025a. Chujie Zheng, Shixuan Liu, Mingze Li, Xiong-Hui Chen, Bowen Yu, Chang Gao, Kai Dang, Yuqiong Liu, Rui Men, An Yang, Jingren Zhou, and Junyang Lin. Group sequence policy optimization. arXiv preprint arXiv:2507.18071 , 2025b. Haizhong Zheng, Yang Zhou, Brian Bartoldson, Bhavya Kailkhura, Fan Lai, Jiawei Zhao, and Beidi Chen. Act only when it pays: Efficient reinforcement learning for llm reasoning via selective rollouts. Advances in Neural Information Processing Systems , 38: 124321–124346, 2025c. Xuhui Zheng, Kang An, Ziliang Wang, Yuhang Wang, and Yichao Wu. Stepsearch: Igniting llms search ability via step-wise proximal policy optimization. In Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing ,pp. 21816–21841, 2025d. Andy Zhou, Kai Yan, Michal Shlapentokh-Rothman, Haohan Wang, and Yu-Xiong Wang. Language agent tree search unifies reasoning acting and planning in language models. arXiv preprint arXiv:2310.04406 , 2023. Zefang Zong, Dingwei Chen, Yang Li, Qi Yi, Bo Zhou, Chengming Li, Bo Qian, Peng Chen, and Jie Jiang. At 2po: Agentic turn-based policy optimization via tree search. In Proceedings of the 64th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pp. 24120–24143, 2026. Heming Zou, Yixiu Mao, Yun Qu, Qi Wang, and Xiangyang Ji. Utility-diversity aware online batch selection for llm supervised fine-tuning. arXiv preprint arXiv:2510.16882 , 2025a. Heming Zou, Yunliang Zang, and Xiangyang Ji. Structural features of the fly olfactory circuit mitigate the stability-plasticity dilemma in continual learning. arXiv preprint arXiv:2502.01427 , 2025b. Heming Zou, Yunliang Zang, Wutong Xu, Yao Zhu, and Xiangyang Ji. FlyloRA: Boosting task decoupling and parameter efficiency via implicit rank-wise mixture-of-experts. In The Thirty-ninth Annual Conference on Neural Information Processing Systems ,2025c. Heming Zou, Qi Wang, Yun Qu, Yuhang Jiang, Lizhou Cai, Yixiu Mao, Ru Peng, Xin Xu, Weijie Liu, Kai Yang, et al. TRACE: A unified rollout budget allocation framework for efficient agentic reinforcement learning. arXiv preprint arXiv:2606.11119 ,2026a. Heming Zou, Yunliang Zang, Wutong Xu, and Xiangyang Ji. Fly-CL: A fly-inspired framework for enhancing efficient decorrelation and reduced training time in pre-trained model-based continual representation learning. In The Fourteenth International Conference on Learning Representations , 2026b. URL https://openreview.net/forum?id=jNbxjdc745 .
+
+> 15
+
+# Contents 
+
+1 Introduction 12 Preliminaries 2
+
+2.1 Agentic reinforcement learning . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2 2.2 Initialize-then-expand rollout trees . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3 2.3 Tree-based turn credit . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3 
+
+3 TreeOPSD 4
+
+3.1 Behavior-relative turn distributions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4 3.2 Teacher construction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5 3.3 Distribution matching and off-policy analysis . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6 3.4 Practical optimization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8 
+
+4 Experiments 8
+
+4.1 Experimental setup . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8 4.2 Main results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9 4.3 Pointwise credit and the posterior map . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9 4.4 Rollout allocation and target-radius sensitivity . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10 
+
+5 Conclusion 11 Appendices A Related Work 17 B Theoretical Analysis 18 
+
+B.1 Calibrated affine targets on a fixed tree . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18 B.2 Exact Forward-KL aggregation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19 B.3 On-policy tangent and off-policy drift analysis . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19 
+
+C Discussion 21 
+
+C.1 Tree acquisition, credit assignment, and policy optimization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 C.2 Independent turn targets and pairwise preferences . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 C.3 Finite-target feedback under sequential optimization . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21 C.4 Limitations and future work . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22 
+
+D Extended experimental results 22 
+
+D.1 Applicability to other model families . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22 D.2 Controlled numerical studies . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 D.3 Interaction length and training efficiency in Deep Research . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 24 D.4 Stability across training seeds . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 24 
+
+E Experimental and implementation details 25 
+
+E.1 Datasets, environments, and rewards . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25 E.2 Models. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .25 E.3 Training and evaluation settings . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26 E.4 Baselines and rollout-budget control . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26 
+
+F Data Examples 26 
+
+F.1 Multi-Hop QA (HotpotQA) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27 F.2 Deep Research (OpenResearcher) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28 
+
+> 16
+
+# A Related Work  
+
+> RLVR and agentic RLVR.
+
+Reinforcement learning with verifiable rewards (RLVR) (Shao et al., 2024; Guo et al., 2025; Yu et al., 2026) trains language models from automatically checked outcomes and has produced strong reasoning policies in mathematics, coding, and other rule-based tasks. PPO remains a general policy-gradient backbone (Schulman et al., 2017), while GRPO removes the learned value model by estimating advantages from response groups (Shao et al., 2024). Later variants alter the granularity of importance weighting (Zheng et al., 2025b) or organize comparisons within larger groups (Feng et al., 2025). RLVR has also moved from complete reasoning responses to agents that interleave language, tools, and environment observations (Yao et al., 2022). In this setting, a single terminal advantage supervises a sequence of search queries, tool calls, and answer decisions (Jin et al., 2025; Zheng et al., 2025d; Dong et al., 2026). TreeOPSD focuses on this turn-structured regime and derives intermediate targets directly from verifiable outcomes rather than introducing a learned critic or process labels.  
+
+> Tree search and tree-based policy optimization.
+
+Tree search lets language models compare continuations from a shared history instead of drawing only independent complete trajectories. At inference time, Tree-of-Thought (Yao et al., 2023), language-agent search (Zhou et al., 2023), and MCTS-style procedures (Feng et al., 2023) use branching to improve planning or answer selection. Offline methods turn reasoning trees into supervised or preference data (Lai et al., 2024), while online methods bring the tree into RL for exploration, value estimation, local comparisons, or rollout allocation (Hou et al., 2025; Ji et al., 2026; Yang et al., 2025b; Zong et al., 2026; Dong et al., 2026; Zou et al., 2026a). These approaches differ in where branches are collected and how sibling outcomes become gradients. TreeOPSD takes a shared-prefix tree as input, backs terminal evidence into turn credit, and converts that credit into a finite target for the current policy. Its contribution lies in optimizing the acquired tree rather than choosing where the tree should branch.  
+
+> Sample-efficient RLVR and rollout allocation.
+
+A parallel line of work reduces rollout cost by deciding which examples receive sampling budget. Offline curation fixes the training set before optimization (Ye et al., 2025; Li et al., 2025a; Wang et al., 2025). Online methods filter prompts whose rollouts are uninformative (Yu et al., 2026; Bae et al., 2026) or predict prompt difficulty before sampling (Zheng et al., 2025c; Qu et al., 2025; Gao et al., 2025; Mao et al., 2026a; Qu et al., 2026b), much as automated model evaluation predicts test accuracy from unlabeled data (Peng et al., 2024). POPO replays effective groups from earlier policies in place of zero-variance groups (Mao et al., 2026b), and budget allocation varies the number of rollouts per prompt (Li et al., 2025b; Yao et al., 2026). In supervised fine-tuning, online batch selection scores samples by utility and diversity (Zou et al., 2025a). TRACE extends allocation from prompt roots to turn-level prefixes with a shared success predictor (Zou et al., 2026a). These methods decide which rollouts to acquire, and TreeOPSD decides how an acquired tree updates the policy, so the two compose without changing the teacher in Section 3.2.  
+
+> Credit assignment under sparse rewards.
+
+Credit assignment under delayed rewards is a long-standing RL problem. Temporal-difference learning (Sutton et al., 1998), potential-based shaping (Ng et al., 1999), and return decomposition (Arjona-Medina et al., 2019) provide denser signals by estimating state values or redistributing terminal returns. For language-model reasoning, process supervision and process reward models score intermediate steps (Uesato et al., 2022; Lightman et al., 2024; Wang et al., 2024), and recent work derives progress signals from Monte Carlo continuations, answer likelihoods, or implicit process objectives (Setlur et al., 2025; Yuan et al., 2024). Long-horizon LLM methods further use trajectory graphs (Li et al., 2026a), vine-style continuations (Kazemnejad et al., 2025), or alternative reward aggregation (Cheng et al., 2026) to localize responsibility within a rollout. Rollout trees (Ji et al., 2026; Zong et al., 2026; Yang et al., 2025b) provide a related source of counterfactual evidence because sibling suffixes keep the prefix fixed while varying the future. TreeOPSD backs this evidence through the sampled tree and preserves value shared by multiple useful continuations instead of removing it through sibling centering.  
+
+> Behavior-relative targets and posterior distillation.
+
+KL-regularized RL (Ouyang et al., 2022), maximum-a-posteriori policy optimization (Abdolmaleki et al., 2018), and preference optimization (Rafailov et al., 2023; Meng et al., 2024) improve a policy while anchoring it to a reference distribution. Mirror-descent and mirror-ascent analyses 
+
+> 17
+
+make the corresponding target-and-projection structure explicit (Beck & Teboulle, 2003; Vaswani et al., 2022; Asad et al., 2025), and recent work applies this view to group-based language-model updates on finite response sets (Qu et al., 2026a). On-policy distillation instead trains on student-generated samples using a teacher distribution (Agarwal et al., 2024; Gu et al., 2024; Zhao et al., 2026; Kaur et al., 2026) or privileged continuation information (Nguyen et al., 2026). TreeOPSD joins these perspectives at the turn level. It represents each observed turn by a behavior-relative Bernoulli, related to relative density-ratio estimation (Yamada et al., 2013; Cranmer et al., 2015) and contrastive source classification (Goodfellow et al., 2014; Chen et al., 2024), then obtains a closed-form teacher from backed-up credit and matches it with Forward KL. Independent turn targets avoid treating a sparse sibling sample as a closed continuation simplex, while the finite teacher supplies a destination that fixed-credit policy gradients do not specify. 
+
+# B Theoretical Analysis 
+
+B.1 Calibrated affine targets on a fixed tree 
+
+We condition on one prompt, its rollout tree, and the frozen behavior policy that sampled that tree. The terminal advantages 𝐴 𝑘 , backed-up turn credits 𝑉 𝑖 , and child weights 𝜔 𝑖,𝑐 are fixed during the policy update. For 𝐾 ≥ 2terminal trajectories and target radius 0 < 𝜌 < 1/2, define 
+
+𝐵 𝐾 := 𝐾 − 1
+
+√𝐾 , 𝜏 := 𝐵 𝐾 
+
+𝜌 , 𝑞 𝑖 := 12 + 𝑉 𝑖 
+
+𝜏 , 𝜙 𝑖 := logit (𝑞 𝑖 ). (18) 
+
+Lemma B.1 (Depth-independent bound). For every terminal occurrence 𝑘 and every backed-up turn 𝑖 ,
+
+| 𝐴 𝑘 | ≤ 𝐵 𝐾 , |𝑉 𝑖 | ≤ 𝐵 𝐾 , 𝑞 𝑖 − 12 ≤ 𝜌. (19) 
+
+Proof. Let 𝜉 𝑘 := 𝑅 𝑘 − 𝑅 and let b𝜎 𝑅 be the sample standard deviation of the 𝐾 terminal rewards. When b𝜎 𝑅 > 0, we have Í𝑘 𝜉 𝑘 = 0 and Í𝑘 𝜉 2 
+
+> 𝑘
+
+= (𝐾 − 1)b𝜎 2
+
+> 𝑅
+
+. Hence 
+
+𝜉 2 
+
+> 𝑘
+
+= ∑︁ 
+
+> ℓ≠𝑘
+
+𝜉 ℓ
+
+!2
+
+≤ ( 𝐾 − 1)∑︁ 
+
+> ℓ≠𝑘
+
+𝜉 2
+
+> ℓ
+
+= (𝐾 − 1)
+
+
+
+(𝐾 − 1)b𝜎 2 
+
+> 𝑅
+
+− 𝜉 2
+
+> 𝑘
+
+
+
+, (20) which gives | 𝐴 𝑘 | = |𝜉 𝑘 |/ b𝜎 𝑅 ≤ ( 𝐾 − 1)/ √𝐾 = 𝐵 𝐾 . This is Samuelson’s inequality (Samuelson, 1968). Equality holds when one reward differs from the other 𝐾 − 1 rewards, which are equal. If b𝜎 𝑅 = 0, every 𝐴 𝑘 is zero by convention. Because each internal credit is a convex combination of its children, |𝑉 𝑖 | ≤ 𝐵 𝐾 , and Eq. 18 gives the target-radius bound. □
+
+Backup-consistent target map. Suppose a map 𝑓 : [− 𝐵 𝐾 , 𝐵 𝐾 ] → ( 0, 1) commutes with every finite convex combination, satisfies 𝑓 (− 𝑣 ) = 1 − 𝑓 (𝑣 ), and maps 𝐵 𝐾 to 1 /2 + 𝜌 . Symmetry then maps −𝐵 𝐾 to 1 /2 − 𝜌 . Writing any 𝑣 ∈ [− 𝐵 𝐾 , 𝐵 𝐾 ] as the convex interpolation 
+
+𝑣 = (1 − 𝑡 )(− 𝐵 𝐾 ) + 𝑡𝐵 𝐾 , 𝑡 = 𝑣 + 𝐵 𝐾 
+
+2𝐵 𝐾 
+
+, (21) then gives 
+
+𝑓 (𝑣 ) = 12 + 𝜌 𝐵 𝐾 
+
+𝑣 = 12 + 𝑣 𝜏 . (22) Thus the affine teacher is the unique symmetric map with this radius. Applying it before or after any normalized tree backup leaves the parent target unchanged. 
+
+> 18
+
+Proposition B.2 (Trust-region properties and closed-form teacher). Parameterize any Bernoulli distribution Ber (𝑞 )
+
+by its log-odds 𝑠 = log 𝑞  
+
+> 1−𝑞
+
+, so that 𝑞 = 𝜎 (𝑠 ) and 1 − 𝑞 = 𝜎 (− 𝑠 ). The divergence from the on-policy behavior anchor Ber (1/2) satisfies 
+
+𝜓 (𝑠 ) := 𝐷 KL 
+
+
+
+Ber ( 12 )∥ Ber (𝜎 (𝑠 )) 
+
+
+
+= − 12 log  4𝜎 (𝑠 )𝜎 (− 𝑠 ) = log cosh 𝑠 
+
+2 . (23) The penalty 𝜓 (𝑠 ) has three structural properties: (i) Local quadratic trust region: 𝜓 (0) = 𝜓 ′ (0) = 0 and 
+
+𝜓 ′′ (𝑠 ) = 𝜎 (𝑠 )( 1 − 𝜎 (𝑠 )) ∈ ( 0, 1/4], giving the Taylor expansion 𝜓 (𝑠 ) = 18 𝑠 2 − 1192 𝑠 4 + O( 𝑠 6) around the on-policy point 𝑠 = 0. (ii) Globally bounded slope: Its derivative 𝜓 ′ (𝑠 ) = 12 tanh 𝑠  
+
+> 2
+
+= 𝜎 (𝑠 ) − 12 = 𝑞 − 12 ∈ (− 1/2, 1/2) is linear in 𝑞 and uniformly bounded for all 𝑠 ∈ R. (iii) Unique affine maximizer: Substituting 𝜓 (𝑠 ) into Eq. 10 gives the strictly concave objective J𝑖 (𝑠 ) = 𝑉 𝑖 𝑠 − 𝜏 log cosh (𝑠 /2) with derivatives 
+
+J ′ 
+
+> 𝑖
+
+(𝑠 ) = 𝑉 𝑖 − 𝜏 
+
+
+
+𝜎 (𝑠 ) − 12
+
+
+
+, J ′′  
+
+> 𝑖
+
+(𝑠 ) = −𝜏𝜎 (𝑠 )( 1 − 𝜎 (𝑠 )) < 0. (24) Because 𝜓 ′ (𝑠 ) = 𝑞 − 1/2 is linear in 𝑞 , the stationary condition J ′ 
+
+> 𝑖
+
+(𝑠 ★𝑖 ) = 0 yields the exact affine teacher 
+
+𝜎 (𝑠 ★𝑖 ) = 1/2 + 𝑉 𝑖 /𝜏 = 𝑞 𝑖 required by Eq. 22 (whereas the exponential-tilting objective 𝑉 𝑖 𝑞 − 𝜏𝐷 KL (Ber (𝑞 )∥ Ber ( 12 )) 
+
+yields a nonlinear logistic teacher 𝑞 = 𝜎 (𝑉 𝑖 /𝜏 ) that fails to commute with tree backup). By Lemma B.1 and 𝜌 < 1/2, we have 𝜏 > 2|𝑉 𝑖 |, so 𝑠 ★𝑖 = 𝜙 𝑖 is interior and finite, with target likelihood ratio 
+
+𝑟 ★𝑖 = 𝑒 𝑠 ★𝑖 = 𝑞 𝑖 
+
+1 − 𝑞 𝑖 
+
+= 𝜏 + 2𝑉 𝑖 
+
+𝜏 − 2𝑉 𝑖 
+
+∈
+
+ 1 − 2𝜌 
+
+1 + 2𝜌 , 1 + 2𝜌 
+
+1 − 2𝜌 
+
+
+
+. □ (25) 
+
+B.2 Exact Forward-KL aggregation 
+
+Let D𝑖 be the terminal descendants of turn 𝑖 . For a descendant 𝑢 , let 𝛼 𝑖,𝑢 be the product of the normalized child weights along the unique path from 𝑖 to 𝑢 . If U is any complete cut below 𝑖 , repeated application of the backup in Eq. 5 gives ∑︁ 
+
+> 𝑢 ∈ U
+
+𝛼 𝑖,𝑢 = 1, 𝑉 𝑖 =∑︁ 
+
+> 𝑢 ∈ U
+
+𝛼 𝑖,𝑢 𝑉 𝑢 , 𝑞 𝑖 =∑︁ 
+
+> 𝑢 ∈ U
+
+𝛼 𝑖,𝑢 𝑞 𝑢 . (26) The last identity follows from the affine credit-to-target map proved above. 
+
+Proof of Theorem 1. Write 𝑑 B (𝑎 ∥𝑏 ) := 𝐷 KL (Ber (𝑎 )∥ Ber (𝑏 )) and let 𝐻 B denote binary entropy. When every descendant teacher on the cut is matched to the same ancestor probability 𝑝 𝜃 ,𝑖 ∈ ( 0, 1),∑︁ 
+
+> 𝑢 ∈ U
+
+𝛼 𝑖,𝑢 𝑑 B (𝑞 𝑢 ∥ 𝑝 𝜃 ,𝑖 ) = −∑︁ 
+
+> 𝑢 ∈ U
+
+𝛼 𝑖,𝑢 𝐻 B (𝑞 𝑢 ) − 𝑞 𝑖 log 𝑝 𝜃 ,𝑖 − ( 1 − 𝑞 𝑖 ) log (1 − 𝑝 𝜃 ,𝑖 )
+
+=∑︁ 
+
+> 𝑢 ∈ U
+
+𝛼 𝑖,𝑢 𝑑 B (𝑞 𝑢 ∥𝑞 𝑖 ) + 𝑑 B (𝑞 𝑖 ∥ 𝑝 𝜃 ,𝑖 ). (27) The first term on the right is independent of 𝜃 . Therefore 
+
+∇𝜃 ∑︁ 
+
+> 𝑢 ∈ U
+
+𝛼 𝑖,𝑢 𝑑 B (𝑞 𝑢 ∥ 𝑝 𝜃 ,𝑖 ) = ∇𝜃 𝑑 B (𝑞 𝑖 ∥ 𝑝 𝜃 ,𝑖 ), arg min 
+
+> 𝑝 ∈ ( 0,1)
+
+∑︁ 𝑢 ∈ U 
+
+𝛼 𝑖,𝑢 𝑑 B (𝑞 𝑢 ∥ 𝑝 ) = 𝑞 𝑖 . (28) Setting U = D𝑖 (or U = C𝑖 ) yields Eqs. 14–15. Hence one backed-up teacher produces the exact same gradient on the shared turn as all descendant teachers, while each descendant turn retains its own policy score and target. □
+
+B.3 On-policy tangent and off-policy drift analysis 
+
+Variational duality and Fenchel–Young form. Define the convex log-partition potential and its Fenchel conjugate on 
+
+(− 𝜏 /2, 𝜏 /2):
+
+Ω𝜏 (𝑠 ) := 𝜏 log 
+
+
+
+2 cosh 𝑠 
+
+2
+
+
+
+, Ω★𝜏 (𝑉 ) := sup 
+
+> 𝑠 ∈R
+
+{𝑉 𝑠 − Ω𝜏 (𝑠 )} = −𝜏𝐻 B
+
+ 12 + 𝑉 𝜏 
+
+
+
+. (29) 
+
+> 19
+
+For 𝑞 𝑖 = 𝑞 (𝑉 𝑖 ) = 1/2 + 𝑉 𝑖 /𝜏 and 𝑝 𝜃 ,𝑖 = 𝜎 (𝑠 𝜃 ,𝑖 ), expanding 𝜏𝑑 B (𝑞 𝑖 ∥𝜎 (𝑠 𝜃 ,𝑖 )) yields the Fenchel–Young loss identity of Blondel et al. (2020): 
+
+𝜏𝑑 B
+
+ 𝑞 (𝑉 𝑖 )∥ 𝜎 (𝑠 𝜃 ,𝑖 ) = Ω 𝜏 (𝑠 𝜃 ,𝑖 ) + Ω★𝜏 (𝑉 𝑖 ) − 𝑉 𝑖 𝑠 𝜃 ,𝑖 = J𝑖 (𝑄 ★𝑖 ) − J 𝑖 (𝑃 𝜃 ,𝑖 ). (30) Summing Eq. 30 across 𝑖 ∈ T 𝑥 with weights 𝐿 𝑖 /𝐿 𝑥 proves the second equality in Eq. 13. Moreover, defining the tree-weighted proximal RL objective J𝑥 (𝜃 ) := 1
+
+> 𝐿 𝑥
+
+Í𝑖 ∈ T 𝑥 𝐿 𝑖 J𝑖 (𝑃 𝜃 ,𝑖 ), Eq. 30 implies that for any two parameter iterates 
+
+𝜃, 𝜃 ′ on a fixed rollout batch, 
+
+J𝑥 (𝜃 ′) − J 𝑥 (𝜃 ) = L𝑥 (𝜃 ) − L 𝑥 (𝜃 ′). (31) Thus every sequential mini-batch step that reduces the Forward-KL distillation loss L𝑥 monotonically improves the proximal objective J𝑥 by the exact same amount. 
+
+Proof of Theorem 2. For token 𝑗 in turn 𝑖 , differentiating 𝑠 𝜃 ,𝑖 in Eq. 8 contributes a factor 1 /𝐿 𝑖 , which cancels the turn-length weight 𝐿 𝑖 in Eq. 13: 
+
+𝜕 L𝑥 
+
+𝜕 log 𝜋 𝜃 (𝑎 𝑖, 𝑗 | ℎ𝑖, 𝑗 ) = 𝜏𝐿 𝑖 
+
+𝐿 𝑥 
+
+𝜕𝑑 B (𝑞 𝑖 ∥𝜎 (𝑠 𝜃 ,𝑖 )) 
+
+𝜕𝑠 𝜃 ,𝑖 
+
+𝜕𝑠 𝜃 ,𝑖 
+
+𝜕 log 𝜋 𝜃 (𝑎 𝑖, 𝑗 | ℎ𝑖, 𝑗 ) = 𝜏𝐿 𝑖 
+
+𝐿 𝑥 
+
+ 𝑝 𝜃 ,𝑖 − 𝑞 𝑖 
+
+ 1
+
+𝐿 𝑖 
+
+= − 1
+
+𝐿 𝑥 
+
+
+
+𝑉 𝑖 − 𝜏 
+
+
+
+𝑝 𝜃 ,𝑖 − 12
+
+ 
+
+. (32) Define the off-policy effective ascent weight 
+
+Γ𝑖 (𝑠 ) := 𝜏  𝑞 𝑖 − 𝜎 (𝑠 ) = 𝑉 𝑖 − 𝜏 
+
+
+
+𝜎 (𝑠 ) − 12
+
+
+
+= 𝑉 𝑖 − 𝜏 
+
+2 tanh 𝑠 
+
+2 . (33) Substituting 𝑞 𝑖 = 𝑟 ★𝑖 /( 1 + 𝑟 ★𝑖 ) and 𝜎 (𝑠 𝜃 ,𝑖 ) = 𝑟 𝜃 ,𝑖 /( 1 + 𝑟 𝜃 ,𝑖 ) gives the self-normalized ratio form in Eq. 17: 
+
+Γ𝑖 (𝑠 𝜃 ,𝑖 ) = 𝜏 
+
+ 𝑟 ★𝑖 
+
+1 + 𝑟 ★𝑖 
+
+− 𝑟 𝜃 ,𝑖 
+
+1 + 𝑟 𝜃 ,𝑖 
+
+
+
+= 𝜏 𝑟 ★𝑖 − 𝑟 𝜃 ,𝑖 
+
+(1 + 𝑟 ★𝑖 )( 1 + 𝑟 𝜃 ,𝑖 ) . (34) The three properties in Theorem 2 follow directly: (i) At 𝜃 = 𝜃 old , 𝑠 𝜃 ,𝑖 = 0 and Γ𝑖 (0) = 𝑉 𝑖 , so 
+
+−∇ 𝜃 L𝑥 (𝜃 )| 𝜃 =𝜃 old = 1
+
+𝐿 𝑥 ∑︁ 𝑖 ∈ T 𝑥 
+
+> 𝐿 𝑖
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑉 𝑖 ∇𝜃 log 𝜋 𝜃 old (𝑎 𝑖, 𝑗 | ℎ𝑖, 𝑗 ) = 𝑔 tree  
+
+> 𝑥
+
+. (35) (ii) Because 𝜎 is 1 /4-Lipschitz and 𝜎 (0) = 1/2, the additive drift correction satisfies 
+
+|Γ𝑖 (𝑠 ) − 𝑉 𝑖 | = 𝜏 𝜎 (𝑠 ) − 12 ≤ 𝜏 
+
+4 |𝑠 |, |Γ𝑖 (𝑠 )| = 𝜏 |𝑞 𝑖 − 𝜎 (𝑠 )| ≤ 
+
+ 12 + 𝜌 
+
+
+
+𝜏, (36) where the uniform bound uses 𝑞 𝑖 ∈ [ 1/2 − 𝜌, 1/2 + 𝜌 ] and 𝜎 (𝑠 ) ∈ ( 0, 1). Unlike unclipped importance-weighted coefficients 𝑟 𝜃 ,𝑖 𝑉 𝑖 = 𝑒 𝑠 𝜃 ,𝑖 𝑉 𝑖 , which grow exponentially when 𝑠 𝜃 ,𝑖 > 0, Γ𝑖 (𝑠 𝜃 ,𝑖 ) remains bounded for all 𝑟 𝜃 ,𝑖 ∈ ( 0, ∞) .(iii) Because 𝜎 is strictly increasing and 𝑞 𝑖 = 𝜎 (𝜙 𝑖 ),
+
+Γ𝑖 (0) = 𝑉 𝑖 , Γ𝑖 (𝜙 𝑖 ) = 0, sign Γ𝑖 (𝑠 ) = sign (𝜙 𝑖 − 𝑠 ) = sign (𝑟 ★𝑖 − 𝑟 𝜃 ,𝑖 ). □ (37) 
+
+Off-policy scalar contraction and parameter-drift bound. By the mean-value theorem, for any score 𝑠 ∈ R
+
+there exists 𝜉 between 𝑠 and 𝜙 𝑖 such that Γ𝑖 (𝑠 ) = 𝜏𝜎 ′ (𝜉 )( 𝜙 𝑖 − 𝑠 ) with 0 < 𝜎 ′ (𝜉 ) ≤ 1/4. A gradient step 
+
+𝑠 (𝑡 +1) = 𝑠 (𝑡 ) + 𝜂 𝐿 𝑖  
+
+> 𝐿 𝑥
+
+Γ𝑖 (𝑠 (𝑡 ) ) on the turn score therefore satisfies 
+
+𝑠 (𝑡 +1) − 𝜙 𝑖 =  1 − 𝜅 𝑡 
+
+   𝑠 (𝑡 ) − 𝜙 𝑖 
+
+, 𝜅 𝑡 := 𝜂 𝜏𝐿 𝑖 
+
+𝐿 𝑥 
+
+𝜎 ′ (𝜉 𝑡 ) ∈ 
+
+
+
+0, 𝜂𝜏𝐿 𝑖 
+
+4𝐿 𝑥 
+
+
+
+. (38) 
+
+20 Whenever 0 < 𝜂 ≤ 4𝐿 𝑥  
+
+> 𝜏 𝐿 𝑖
+
+, we have 𝜅 𝑡 ∈ ( 0, 1], so 𝑠 (𝑡 ) contracts monotonically toward the target log-odds 𝜙 𝑖 = log 𝑟 ★𝑖 
+
+without overshooting. Finally, in parameter space, let d𝑖 (𝜃 ) := Í𝐿 𝑖  
+
+> 𝑗 =1
+
+∇𝜃 log 𝜋 𝜃 (𝑎 𝑖, 𝑗 | ℎ𝑖, 𝑗 ) and compare the TreeOPSD update direction gOPSD  
+
+> 𝑥
+
+(𝜃 ) with the fixed-credit direction gfixed  
+
+> 𝑥
+
+(𝜃 ):
+
+gOPSD  
+
+> 𝑥
+
+(𝜃 ) := 1
+
+𝐿 𝑥 ∑︁ 𝑖 ∈ T 𝑥 
+
+Γ𝑖 (𝑠 𝜃 ,𝑖 )d𝑖 (𝜃 ), gfixed  
+
+> 𝑥
+
+(𝜃 ) := 1
+
+𝐿 𝑥 ∑︁ 𝑖 ∈ T 𝑥 
+
+𝑉 𝑖 d𝑖 (𝜃 ). (39) Applying Eq. 36 gives the off-policy parameter-drift bound 
+
+gOPSD  
+
+> 𝑥
+
+(𝜃 ) − gfixed  
+
+> 𝑥
+
+(𝜃 ) ≤ 𝜏 
+
+4𝐿 𝑥 ∑︁ 𝑖 ∈ T 𝑥 
+
+|𝑠 𝜃 ,𝑖 | ∥ d𝑖 (𝜃 )∥ . (40) Thus TreeOPSD and fixed-credit optimization coincide at the on-policy first mini-batch ( 𝑠 𝜃 ,𝑖 = 0) and depart proportionally to the off-policy score drift |𝑠 𝜃 ,𝑖 | accumulated across subsequent mini-batches. 
+
+# C Discussion 
+
+C.1 Tree acquisition, credit assignment, and policy optimization 
+
+Tree-based agent RL involves three decisions that are often coupled in one algorithm. A rollout procedure first decides which prompts or prefixes receive continuations. A credit-assignment rule then maps terminal outcomes on that tree to turn values. Policy optimization uses those values to update the current LLM. TreeOPSD handles the last step: it takes a sampled tree and normalized child weights, converts the backed-up values into behavior-relative targets, and matches the current policy to those targets. The same target construction can be paired with random branching, learned rollout allocation, or other tree samplers. 
+
+C.2 Independent turn targets and pairwise preferences 
+
+A categorical distribution over sampled siblings is invariant to a common shift of their logits or rewards. It can rank the observed continuations, but it removes value shared by all of them. This is appropriate when the sampled set is treated as a closed choice set. In an LLM, however, a few sampled siblings cover only a small part of the continuation space. If every observed sibling is useful relative to the behavior policy, a sibling-normalized update cannot raise them together. TreeOPSD instead assigns each observed turn its own behavior-relative Bernoulli target, allowing the shared policy to increase all useful turns while retaining their relative differences. Each target describes where one observed turn should move relative to its behavior likelihood. These targets do not form a normalized action distribution over the full vocabulary or continuation space. Step-level preference optimization is a boundary case. For two siblings with centered credits 𝑉 + = 𝑣 and 𝑉 − = −𝑣 , the TreeOPSD behavior-policy tangent is proportional to the usual pairwise direction ∇ log 𝜋 (𝑎 +) − ∇ log 𝜋 (𝑎 − ). The objectives differ after that initial point. A hard pairwise preference keeps enlarging the preferred margin, whereas TreeOPSD assigns both turns finite soft targets and stops when those targets are reached. When the pair has nonzero mean credit, TreeOPSD also retains the common update that pairwise centering removes. 
+
+C.3 Finite-target feedback under sequential optimization 
+
+Rollout batches are generated by a frozen behavior policy, but later optimizer blocks run after earlier blocks have already changed the shared LLM parameters. A fixed-credit surrogate continues to apply the collection-time coefficient 
+
+𝑉 𝑖 even when the likelihood of turn 𝑖 has already moved. TreeOPSD keeps the teacher fixed and recomputes the student probability, replacing 𝑉 𝑖 by the residual Γ𝑖 = 𝜏 (𝑞 𝑖 − 𝑝 𝜃 ,𝑖 ). The first block therefore follows the tree-policy-gradient tangent. Later blocks reduce, stop, or reverse the update according to the current student–teacher gap. This feedback differs from importance-ratio clipping. Clipping limits how strongly a sampled action can move, but it does not specify a destination. The TreeOPSD teacher supplies that destination in a behavior-relative coordinate. The 
+
+> 21
+
+radius 𝜌 bounds the target probability and, with it, the geometric-mean likelihood ratio of the observed turn. It sets the finite target that later blocks pursue after updates on other prompts have already moved the shared policy. 
+
+C.4 Limitations and future work  
+
+> Allocation-aware teachers.
+
+Theorems 1 and 2 condition on the sampled tree, so TreeOPSD can train on trees from learned allocators such as DPS (Mao et al., 2026a), GPS (Qu et al., 2026b), and TRACE (Zou et al., 2026a), while its teachers still come only from verifier outcomes and behavior likelihoods. The allocator also sets the scale of those teachers. Under the Samuelson calibration, the root-mean-square of 𝑞 𝑖 𝑘 − 1/2 over the 𝐾 leaves equals 𝜌 /√𝐾 − 1whenever the rewards are not all equal, about 0 .075 at the default 𝜌 = 0.25 and 𝐾 = 12, and only a tree with a single dissenting reward reaches the full radius. Allocators that favor mixed outcomes move trees toward balanced rewards, and budget allocators vary 𝐾 across prompts (Li et al., 2025b; Yao et al., 2026). A radius set from the realized credits or from 𝐾 would let allocation and teacher scale be designed together. It keeps both theorems, since the first-block tangent does not depend on 𝜏 and Theorem 1 only needs every 𝑞 𝑖 in (0, 1). 
+
+> Tree replay.
+
+Each tree currently serves 𝐸 = 4 optimizer blocks before it is discarded. POPO saves rollouts by replaying effective groups from earlier policies in place of zero-variance groups (Mao et al., 2026b), and the same replay fits TreeOPSD. A target ratio 𝑟 ★𝑖 is defined relative to the policy that collected its tree, so a replayed teacher still satisfies Eq. 12, and the residual 𝜏 (𝑞 𝑖 − 𝑝 𝜃 ,𝑖 ) shrinks or reverses on turns that the current policy has already moved toward or past their targets. The residual also scores stored turns with one forward pass, which could drive utility- and diversity-aware batch selection over a replay buffer (Zou et al., 2025a). Since each 𝑉 𝑖 averages continuations from the collecting policy, replayed credit ages as the policy improves, and weighting stored trees by their off-policiness, as POPO does for groups, would account for this aging.  
+
+> Continual agentic post-training.
+
+A tree whose rewards all coincide has 𝑞 𝑖 = 1/2 at every turn, so in later blocks it pulls its own turns back toward 𝜋 𝜃 old , much as Learning without Forgetting distills the previous model’s outputs (Li & Hoiem, 2017). On-policy RL forgets less than SFT, and its forgetting tracks the KL shift on the new task (Shenfeld et al., 2026). TreeOPSD shares the on-policy sampling behind this result, and its teachers also stay within 𝜌 of 1 /2. RL post-training still forgets across task sequences, however, because KL measured on current-task data does not control drift on prior-task distributions (Luo et al., 2026). Mixing a few stored trees from earlier environments, together with their logged behavior probabilities, into later batches would extend the 𝑞 𝑖 = 1/2 anchor to prior tasks without new rollouts. On the parameterization side, continual-learning methods mitigate the stability–plasticity dilemma through parameter regularization (Kirkpatrick et al., 2017), fly-olfactory-circuit designs (Zou et al., 2025b, 2026b), and guided random projections (Li et al., 2026b). FlyLoRA limits inter-task interference in LoRA (Hu et al., 2022) by using a frozen sparse random projection as an implicit router over rank-wise experts (Zou et al., 2025c), and TreeOPSD applies to such parameterizations unchanged because it only reweights token log-likelihood gradients. The residual already accounts for drift among prompts within a batch (Appendix C.3), and a decorrelated parameterization would limit interference across environments that never share a batch. 
+
+# D Extended experimental results 
+
+D.1 Applicability to other model families 
+
+We train Qwen3-1.7B and Llama-3.2-3B-Instruct on HotpotQA and evaluate them with the same four-benchmark exact-match average as Section 4.2. The ReAct scaffold, local E5 retrieval server (Wang et al., 2022), and TreeOPSD settings ( (𝑀, 𝑁 ) = (4, 2), 𝜌 = 0.25, 𝐸 = 4) match the main Multi-Hop QA runs. Table 3 and Figure 6 show TreeOPSD with the highest average on both backbones. Because TreePO shares the trees, credits 𝑉 𝑖 , and optimizer blocks of TreeOPSD, the remaining gap is the difference between residual matching and fixed credit. The 1.7B TreeOPSD curve lies above GRPO after the first few updates. Llama-3.2-3B-Instruct starts from a weaker ReAct initialization, and TreeOPSD remains ahead of GRPO through the rest of training. 
+
+> 22
+
+Table 3 Performance comparison on Multi-Hop QA with smaller backbones. We train on HotpotQA and evaluate Qwen3-1.7B and Llama-3.2-3B-Instruct on four test sets. TreeOPSD consistently outperforms competitive baselines on average. The best results are indicated in bold .
+
+Method Qwen3-1.7B Llama-3.2-3B-Instruct Hotpot 2Wiki MuSiQue Bamboogle Avg Hotpot 2Wiki MuSiQue Bamboogle Avg ReAct 23.04 26.11 6.37 19.20 18.68 12.18 7.38 4.22 20.00 10.95 
+
+GRPO 29.10 31.48 8.61 33.60 25.70 36.80 36.35 13.78 40.00 31.73 
+
+GSPO 29.09 31.85 8.52 32.80 25.57 36.48 36.73 13.61 39.20 31.50 
+
+TreePO 29.86 32.18 8.90 33.60 26.13 37.56 37.43 14.23 40.00 32.30 
+
+TreeOPSD 31.30 33.81 9.60 32.80 26.88 39.59 41.15 15.97 45.60 35.58 0 15 30 45 
+
+> Training Steps
+> 16 20 24 28
+> Test Accuracy
+
+Multi-Hop QA, Qwen3-1.7B    
+
+> 015 30 45
+> Training Steps
+> 10 20 30 40
+> Test Accuracy
+
+Multi-Hop QA, Llama-3.2-3B-Instruct  
+
+> TreeOPSD GRPO
+
+Figure 6 Test accuracy during training. The two panels report TreeOPSD and GRPO with Qwen3-1.7B and Llama-3.2-3B-Instruct on the Multi-Hop QA average (HotpotQA, 2WikiMultiHopQA, MuSiQue, and Bamboogle). Higher curves indicate stronger final policies under identical sampling budgets. 0 1 2 3 4
+
+> Optimizer step
+> 0.50 0.60 0.75 0.90 1.00
+> Student probability
+
+(a) Repeated policy updates     
+
+> TreeOPSD TreePO Target
+> 0.00 0.25 0.50 0.75 1.00
+> Shared credit m
+> 0.65 0.70 0.75 0.80 0.85
+> Probability of useful turns
+
+(b) Shared credit     
+
+> Pointwise Listwise Behavior policy
+> 0.0 0.5 1.0 1.5 2.0
+> Child-value gap
+> 0246810
+> Gradient error (×10 −3 )
+
+(c) Gradient consistency 
+
+> Odds map Reverse KL Logistic map
+
+Figure 7 Numerical studies of turn credit and the posterior map. (a) Repeated updates share one scalar policy score. TreeOPSD stops at the teacher, while TreePO keeps the collection-time coefficient. (b) Two useful children share a credit 𝑚 . Pointwise credit is 𝑉 𝑐 , and listwise credit is the group-relative 𝑉 𝑐 − 𝑉 𝑖 . (c) The odds map with Forward KL preserves the parent gradient after tree backup. Reverse KL and a logistic map do not. 
+
+D.2 Controlled numerical studies 
+
+Figure 7 isolates the sequential residual in Theorem 2 and the two design choices in Section 4.3 on a noise-free backup. 
+
+Finite-target residual. Panel (a) starts at the behavior policy, where TreeOPSD and TreePO share the tree-policy-gradient tangent. Later blocks see a student that has already moved. TreePO keeps the collection-time credit 𝑉 , while TreeOPSD evaluates the current residual 𝜏 (𝑞 − 𝑝 ). Once the student passes the teacher, that residual changes sign and the update stops at the finite target. 
+
+23 0 20 40 60 70 
+
+> Training Steps
+> 234567
+> Average Number of Turns
+
+(a) Evaluation turns     
+
+> 020 40 60 70
+> Training Steps
+> 1.5 2.0 2.5 3.0 3.5
+> Average Number of Turns
+
+(b) Training turns     
+
+> 0510 15 20
+> Training time (hours)
+> 7911 13
+> Test Accuracy
+
+(c) Accuracy vs. training time  
+
+> TreeOPSD GRPO
+
+Figure 8 Interaction length and training efficiency. Panels (a) and (b) report the average number of assistant turns during evaluation and training on BrowseComp-Plus with Qwen3-30B-A3B-Thinking-2507. Panel (c) plots test accuracy against cumulative training time and shows TreeOPSD only within the total time used by GRPO. Higher curves in (c) indicate stronger final policies under identical training-time budgets. 
+
+Table 4 Mean ± std over five training seeds with Qwen3-4B-Thinking-2507. Averages use the same Multi-Hop QA and Deep Research protocol as Table 1. TreeOPSD consistently outperforms competitive baselines on average. The best results are indicated in bold .                                
+
+> Method Multi-Hop QA Deep Research ReAct 24 .13 ±0.05 8.80 ±0.26
+> GRPO 43 .37 ±0.19 12 .18 ±0.27
+> GSPO 43 .15 ±0.19 12 .17 ±0.32
+> TreePO 43 .40 ±0.17 13 .07 ±0.37
+> TreeOPSD 44 .13 ±0.16 15 .45 ±0.39
+
+Pointwise credit and the posterior map. Panel (b) gives two useful children a shared credit 𝑚 . Pointwise credit is 
+
+𝑉 𝑐 , and listwise credit is the group-relative 𝑉 𝑐 − 𝑉 𝑖 . These centered credits average to zero under the backup weights, so listwise cannot raise both children relative to the behavior policy. Panel (c) keeps 𝑉 𝑐 and changes the teacher map. The odds map 𝑞 = 1/2 + 𝑉 /𝜏 is affine in 𝑉 , so a parent teacher is the weighted mean of its child teachers and Forward KL preserves that parent gradient. A logistic map does not commute with backup, and Reverse KL uses a logit-space centroid instead of that mean. 
+
+D.3 Interaction length and training efficiency in Deep Research 
+
+Long-horizon search is difficult for outcome-only policy gradients because one terminal advantage supervises every preceding query, document read, and answer decision. Early useful actions in an unsuccessful rollout receive the same trajectory-level signal as the eventual error, whereas branches from a shared prefix show whether the next turn improves the downstream trajectory. Figure 8 reports this difference with Qwen3-30B-A3B-Thinking-2507 on BrowseComp-Plus. TreeOPSD uses more assistant turns at evaluation, and the training rollouts follow the same trend later. Panel (c) keeps TreeOPSD inside GRPO’s measured training-time budget, and the accuracy curve remains above GRPO when training time replaces policy updates on the horizontal axis. 
+
+D.4 Stability across training seeds 
+
+We rerun the Qwen3-4B-Thinking-2507 comparison with five training seeds. Table 4 reports mean ± std of the same Multi-Hop QA and Deep Research averages as Table 1. ReAct is the frozen initialization, rescored under the same five evaluation draws. 
+
+> 24
+
+TreePO is the closest trained control because it already uses the sampled tree, the backed-up credits 𝑉 𝑖 , unique-turn reconstruction, which scores each shared turn once, and the four sequential optimizer blocks. Across seeds, the remaining variation comes from which rollouts were collected and which checkpoint in the evaluation window was reported. TreeOPSD shares those sources of noise. The TreeOPSD–TreePO and TreeOPSD–GRPO gaps keep the same order in every seed, and the remaining gap is the difference between residual matching and fixed credit. The two columns do not scatter the same way. HotpotQA and 2WikiMultiHopQA are large enough that a few extra exact matches barely move the Multi-Hop average. GAIA and xbench-DeepSearch have about one hundred questions each, so one extra match already moves the Deep Research average. ReAct’s spread there reflects this granularity. 
+
+# E Experimental and implementation details 
+
+We follow Search-R1 (Jin et al., 2025; Zou et al., 2026a) for Multi-Hop QA and OpenResearcher (Li et al., 2026d; Tao et al., 2026) for Deep Research. 
+
+E.1 Datasets, environments, and rewards 
+
+E.1.1 Multi-Hop QA  
+
+> Training data and environment.
+
+We use all 90,447 questions from the HotpotQA distractor training split (Yang et al., 2018). The agent searches a local E5 retrieval server (Wang et al., 2022) built over a Wikipedia dump (Karpukhin et al., 2020). Each tool call accepts up to four queries and returns the top three passages for each query. We cap a rollout at five assistant turns, including the final answer, which leaves at most four tool-calling turns.  
+
+> Evaluation benchmarks.
+
+We evaluate on the 7,405-question HotpotQA validation split, the 12,576-question 2WikiMultiHopQA development split (Ho et al., 2020), the 2,417-question MuSiQue development split (Trivedi et al., 2022), and all 125 Bamboogle test questions (Press et al., 2023).  
+
+> Reward function.
+
+Training uses thresholded token F1. A parsed answer receives its token-level F1 when that score is at least 0 .3 and receives zero otherwise. Validation records both F1 and exact match. Table 1 and the training curves use exact match (EM). 
+
+E.1.2 Deep Research  
+
+> Training data and environment.
+
+OpenResearcher provides 16 synthesized trajectories for each of 6,102 MiroVerse questions (Li et al., 2026d). We keep one prompt per unique question and do not place the released teacher responses in the policy input. Training and BrowseComp-Plus (Chen et al., 2025b) evaluation use closed-corpus retrieval. BrowseComp (Wei et al., 2025), GAIA (Mialon et al., 2024), and xbench-DeepSearch (Chen et al., 2025a) use the same search, open, and find tools with a Serper backend.  
+
+> Evaluation benchmarks.
+
+Final evaluation covers all 830 BrowseComp-Plus test questions, 1,266 BrowseComp test questions, 103 text-only questions from the GAIA development split, and 100 xbench-DeepSearch test questions. To limit temporal variation in live search, we interleave the open-web methods within the same evaluation window and archive the raw search responses with each generation.  
+
+> Reward function.
+
+The training reward is exact match, with a 0 .1 bonus for a well-formed final-answer span. Table 1 reports exact match without that bonus. No evaluation question from either setting is used for policy optimization. 
+
+E.2 Models 
+
+The main experiments use Qwen3-4B-Thinking-2507 and Qwen3-30B-A3B-Thinking-2507 (Yang et al., 2025a). Appendix D.1 also trains Qwen3-1.7B and Llama-3.2-3B-Instruct. ReAct (Yao et al., 2022) evaluates the corresponding initialization in the same agent interface. The model repositories are:  
+
+> 25 •
+
+Qwen3-4B-Thinking-2507: https://huggingface.co/Qwen/Qwen3-4B-Thinking-2507 . 
+
+> •
+
+Qwen3-30B-A3B-Thinking-2507: https://huggingface.co/Qwen/Qwen3-30B-A3B-Thinking-2507 . 
+
+> •
+
+Qwen3-1.7B: https://huggingface.co/Qwen/Qwen3-1.7B . 
+
+> •
+
+Llama-3.2-3B-Instruct: https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct .
+
+E.3 Training and evaluation settings  
+
+> Optimization and systems.
+
+All runs use bfloat16 and SGLang on one eight-GPU node. Qwen3-4B uses FSDP. Qwen3-30B-A3B uses FSDP for Multi-Hop QA and FSDP2 for Deep Research, with rollout tensor parallelism of four on 96GB H20 GPUs. We train for 100 policy updates with AdamW, a constant learning rate of 10 −6, and weight decay 0 .01. The Adam coefficients are (0.9, 0.999 ) for Multi-Hop QA and (0.9, 0.98 ) for Deep Research. We use no auxiliary KL penalty or entropy regularization, and sample training rollouts with temperature 1 .0 and top-𝑝 1.0. Appendix D.4 repeats the Qwen3-4B comparison with five training seeds. TreeOPSD uses 𝑀 = 4, 
+
+𝑁 = 2, likelihood-weighted backup, target radius 𝜌 = 0.25, and 𝐸 = 4 sequential Forward-KL optimizer blocks, with unique-turn reconstruction.  
+
+> Task-specific settings.
+
+For Multi-Hop QA, collection uses 256 prompts split into four optimizer blocks of 64. Prompt and response lengths are capped at 2,048 and 6,144 tokens, retrieved observations at 16,384 characters, and each rollout at five assistant turns including the answer. Evaluation decodes one answer per question every five updates with temperature 0 .6 and top-𝑝 0.95. For Deep Research, collection uses 128 prompts split into four blocks of 32, with prompt, response, and tool-observation limits of 4,096, 16,384, and 2,048 tokens. Training allows 60 assistant turns. BrowseComp-Plus evaluation allows 80 and greedily decodes one trajectory per question every five updates.  
+
+> Evaluation and checkpoint selection.
+
+We evaluate every five policy updates through step 80 on Multi-Hop QA and step 70 on BrowseComp-Plus, and report one checkpoint per run in that window. In Figure 8, the serialized trajectory stores two chat entries per assistant decision, so we divide both evaluation and training turn counts by two. The training-turn curve averages the rollouts collected at each checkpoint. Final Deep Research evaluation uses that checkpoint with one rollout per question, exact match against the short reference, at most 200 assistant turns, and a 131,072-token response budget. The reported average weights the four datasets equally. 
+
+E.4 Baselines and rollout-budget control  
+
+> Controlled methods.
+
+ReAct (Yao et al., 2022) evaluates the shared initialization without parameter updates. GRPO (Shao et al., 2024) standardizes terminal rewards over complete rollouts from each prompt. GSPO (Zheng et al., 2025b) replaces token-level importance ratios with a sequence-level ratio while retaining group-relative terminal advantages. TreePO uses the same initialize-then-expand trees, likelihood-weighted credits 𝑉 𝑖 , unique-turn reconstruction, prompt normalization, and optimizer blocks as TreeOPSD, but applies the fixed ascent coefficient 𝑉 𝑖 /𝐿 𝑥 throughout optimization instead of matching a finite posterior target. Every trainable method applies four actor optimizer blocks per collected prompt batch.  
+
+> Rollout budget.
+
+GRPO and GSPO use 𝐺 = 8 rollouts per prompt. TreePO and TreeOPSD begin with 𝑀 = 4complete trajectories, select 𝑁 = 2 branch-anchor occurrences from each, and sample one fresh terminal suffix per occurrence. Keeping the roots gives 𝑀 (𝑁 + 1) = 12 terminal leaves. A continuation randomly starts from an intermediate prefix, so its expected generation length is roughly half that of a root rollout, and the expected cost 
+
+𝑀 (1 + 𝑁 /2) = 8 matches 𝐺 . Appendix D.3 compares the methods at equal training time. 
+
+# F Data Examples 
+
+This section shows one training record from each setting. We print the stored system message, the tool schemas injected by the Qwen3 chat template at rollout time, the stored user prompt, and the rule-based target. The serialized 
+
+> 26
+
+RL row stores this chat prompt, the target, and per-example tool-routing metadata, but no teacher trajectory or hidden evidence. 
+
+F.1 Multi-Hop QA (HotpotQA) 
+
+The example is the first row of the HotpotQA distractor training parquet. The system turn is the stored system string with the chat-template tool block appended. The user turn is the Search-R1 instruction followed by the question. A search call returns the top three passages from the fixed Wikipedia-2018 index with each query truncated at 512 characters. 
+
+Multi-Hop QA (HotpotQA) Example 
+
+System prompt: You are a helpful and harmless assistant. # Tools You may call one or more functions to assist with the user query. You are provided with function signatures within <tools></tools> XML tags: 
+
+<tools> {"type": "function", "function": { "name": "search", "description": "Searches the local wiki-18 dense retrieval index for passages relevant to the given queries.", "parameters": { "type": "object", "properties": { "query_list": { "type": "array", "description": "A list of fully-formed natural-language search queries.", "items": { "type": "string", "minLength": 1, "maxLength": 512 }, "minItems": 1, "maxItems": 4 }}, "required": ["query_list"], "additionalProperties": false }, "strict": true }}</tools> 
+
+For each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags: 
+
+<tool_call> {"name": <function-name>, "arguments": <args-json-object>} </tool_call> 
+
+Prompt: Answer the given question. You must conduct reasoning inside <think> and </think> first every time you get new information. After reasoning, if you find you lack some knowledge, you can call a search engine. Emit one Hermes tool call per assistant turn and no surrounding prose in this form: 
+
+27 <tool_call> {"name":"search", "arguments":{"query_list":["fully formed search query"]}} </tool_call> 
+
+The arguments value must be a JSON object and query_list must be a non-empty JSON array containing only non-empty strings. Never put a bare query, Python syntax, Markdown fences, or trailing commas inside <tool_call> . The search engine will return the top searched results between <tool_response> and </tool_response> . You can search as many times as you want. If you find no further external knowledge needed, directly provide the answer inside <answer> and </answer> , without detailed illustrations. For example, <answer> Beijing </answer> . Question: Which magazine was started first Arthur’s Magazine or First for Women? 
+
+Ground-Truth Answer: Arthur’s Magazine 
+
+F.2 Deep Research (OpenResearcher) 
+
+RL construction reads one OpenResearcher record per unique question and discards the teacher messages (Li et al., 2026d). All reported runs present only the question as the user turn, together with the system string below. The training row routes browser.search , browser.open , and browser.find to the fixed OpenResearcher corpus. Evaluation rows keep the same interface and select the fixed BrowseComp-Plus corpus or the Serper backend. 
+
+Deep Research (OpenResearcher) Example 
+
+System prompt: You are a helpful assistant and harmless assistant. You will be able to use a set of browsering tools to answer user queries. Tool for browsing. The ‘cursor‘ appears in brackets before each browsing display: ‘[{cursor}]‘ . Cite information from the tool using the following format: ‘[{cursor} †L{line_start}(-L{line_end})?]‘ , for example: ‘[6 †L9-L11]‘ or ‘[8 †L3]‘ . Do not quote more than 10 words directly from the tool output. sources=web 
+
+When you have enough evidence, output your final answer in the exact form ‘<answer>YOUR_ANSWER</answer>‘ on its own line. Only the concise answer string goes inside; no citations, no explanations, no extra text after ‘</answer>‘ . Example final line: ‘<answer>Paris</answer>‘ 
+
+# Tools You may call one or more functions to assist with the user query. You are provided with function signatures within <tools></tools> XML tags: 
+
+<tools> {"type": "function", "function": { "name": "browser.search", "description": "Searches for information related to a query and displays top N results with titles, URLs, and summaries.", "parameters": { "type": "object", "properties": { "query": { "type": "string", "description": "The search query string." }, "topn": { "type": "integer", "description": "Number of results to display; default 10." }}, "required": ["query"] }
+
+28 }}{"type": "function", "function": { "name": "browser.open", "description": "Opens a zero-based result id from the most recent browser.search and displays a line-numbered viewport. Use the number inside [id title]; do not use the [cursor] page number or an L line number as id.", "parameters": { "type": "object", "properties": { "id": { "type": "integer", "description": "Zero-based result id shown inside [id title], not the leading L line number or [cursor] page number. Default -1 reopens the current page." }, "loc": { "type": "integer", "description": "Starting line; default -1." }, "num_lines": { "type": "integer", "description": "Number of lines; default -1." }}, "required": [] }}}{"type": "function", "function": { "name": "browser.find", "description": "Finds exact case-insensitive matches in an opened page.", "parameters": { "type": "object", "properties": { "pattern": { "type": "string", "description": "The exact text pattern to search for." }, "cursor": { "type": "integer", "description": "Page cursor; default -1 means the most recent page." }}, "required": ["pattern"] }
+
+29 }}</tools> 
+
+For each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags: 
+
+> <tool_call> {"name": <function-name>, "arguments": <args-json-object>} </tool_call>
+
+Prompt: Determine if Neil Patrick Harris has narrated the audiobook version of ’Henry Huggins’. 
+
+Ground-Truth Answer: Yes, Neil Patrick Harris narrated the audiobook version of *The Henry Huggins Audio Collection*. 
+
+30

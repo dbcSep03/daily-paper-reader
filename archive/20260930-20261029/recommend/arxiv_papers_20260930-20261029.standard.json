@@ -1,0 +1,1099 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-29T03:23:18.328641+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 31,
+    "deep_cap": 6,
+    "deep_selected": 14,
+    "quick_candidates": 56,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2610.04973v1",
+      "source": "arxiv",
+      "title": "TrajLong: Co-Designing Agentic and Long-Context Supervision for Mid-Training",
+      "abstract": "LLM agents for coding, search, and workplace tasks increasingly rely on long-context capabilities to effectively aggregate and reason over extended interaction histories. Recent work has incorporated agent trajectories into mid-training stage, drawing on their naturally long and interaction-rich structure. Yet how to organize the information within these trajectories into effective mid-training supervision remains underexplored. In this work, we investigate the relationship between long-context and agent atomic capabilities and introduce TrajLong, a novel framework that compiles trajectories into long-context training tasks with dense supervision, targeting three representative atomic capabilities: evidence grounding, cross-evidence aggregation, and temporal state maintenance. We mid-train Qwen3-14B-Base and Qwen3-30B-A3B-Base with data compiled by TrajLong, followed by supervised fine-tuning. Experiments on 6 long-context and 12 agent benchmarks demonstrate broad performance gains, with controlled ablations showing improvements over raw and masked trajectory baselines. Capability-level analyses further reveal task-dependent associations between long-context and agent atomic capabilities. These findings suggest that the shared capability demands of long-context reasoning and agent execution provide a principled basis for designing mid-training data to develop downstream agent capabilities.",
+      "authors": [
+        "Miao Peng",
+        "Qintong Zhang",
+        "Nuo Chen",
+        "Yuhan Li",
+        "Guochen Yan",
+        "Xinran Gu",
+        "Hongqiu Wu",
+        "Hai Wang",
+        "Lydell Huang",
+        "Wentao Zhang",
+        "Jia Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-10-04T05:42:22+00:00",
+      "link": "https://arxiv.org/pdf/2610.04973v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "compiles agent trajectories into mid-training long-context supervision",
+      "llm_evidence_cn": "将智能体轨迹编译为中期训练长上下文监督",
+      "llm_evidence": "将智能体轨迹编译为中期训练长上下文监督",
+      "canonical_evidence": "将智能体轨迹编译为中期训练长上下文监督",
+      "llm_tldr_en": "TrajLong studies how to organize agent trajectories into effective mid-training supervision, compiling them into long-context tasks with dense supervision for evidence grounding and aggregation capabilities.",
+      "llm_tldr_cn": "针对将智能体轨迹引入中期训练时如何组织轨迹内信息仍缺乏探索的问题，论文研究长上下文能力与智能体原子能力之间的关系。作者提出TrajLong框架，将轨迹编译为带密集监督的长上下文训练任务，聚焦证据定位、跨证据聚合等代表性原子能力。实验表明这种协同设计能有效利用轨迹结构进行中期训练监督。该工作为智能体模型的中期训练数据组织提供了系统方法。",
+      "llm_tldr": "针对将智能体轨迹引入中期训练时如何组织轨迹内信息仍缺乏探索的问题，论文研究长上下文能力与智能体原子能力之间的关系。作者提出TrajLong框架，将轨迹编译为带密集监督的长上下文训练任务，聚焦证据定位、跨证据聚合等代表性原子能力。实验表明这种协同设计能有效利用轨迹结构进行中期训练监督。该工作为智能体模型的中期训练数据组织提供了系统方法。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "mid-training data and schedules for large language models",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.11345v1",
+      "source": "arxiv",
+      "title": "SynCo: Data Synthesis Co-Training for Self-Evolving LLMs via Multi-Agent Reinforcement Learning",
+      "abstract": "Self-evolving LLM agents promise to improve autonomously through continual interaction and learning, reducing their dependence on manually curated supervision. Realizing this promise requires not only updating the agent, but also evolving its training experience as its capabilities change. However, most existing pipelines rely on static datasets or separately updated synthesis models, causing previously useful tasks to become trivial while overly difficult tasks remain uninformative. This growing mismatch between agent capability and training experience limits sustained self-improvement. To address this problem, we propose SynCo, an agentic data synthesis co-training framework for self-evolving LLMs based on multi-agent reinforcement learning. SynCo jointly optimizes two independently parameterized agents: a Synthesizer that constructs training tasks from the Reasoner's evolving capability state, and a Reasoner that learns from the resulting experience. Each synthesized task induces multiple Reasoner rollouts whose outcomes provide complementary rewards to both agents. Correctness feedback improves the Reasoner, while task quality, answer reliability, and outcome-grounded teachability guide the Synthesizer. Their updates are fed back into subsequent synthesis rounds, allowing the task-solving policy and its training distribution to evolve together. Extensive experiments across eight mathematical reasoning benchmarks demonstrate that SynCo substantially outperforms a broad range of existing synthetic-data methods and controlled baselines, achieving the strongest overall performance while deriving most of its gains from previously unsolved problems.",
+      "authors": [
+        "Wei Yang",
+        "Shawn Li",
+        "Yuehan Qin",
+        "Yawei Wang",
+        "Mingxi Wang",
+        "Shixuan Li",
+        "Tiankai Yang",
+        "Jiate Li",
+        "Jesse Thomason",
+        "Xuezhe Ma",
+        "Yue Zhao"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-08T06:40:18+00:00",
+      "link": "https://arxiv.org/pdf/2610.11345v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "agentic data synthesis co-training for self-evolving LLM agents",
+      "llm_evidence_cn": "面向自演化大模型智能体的智能体数据合成协同训练",
+      "llm_evidence": "面向自演化大模型智能体的智能体数据合成协同训练",
+      "canonical_evidence": "面向自演化大模型智能体的智能体数据合成协同训练",
+      "llm_tldr_en": "Static datasets make self-evolving LLM agents train on mismatched difficulty. SynCo co-trains an agentic data synthesizer with the solver via multi-agent reinforcement learning, keeping training experience aligned with evolving capability.",
+      "llm_tldr_cn": "自演化大模型智能体若依赖静态数据或独立更新的合成模型，训练任务会与当前能力脱节，简单任务失效而困难任务无信息量。作者提出SynCo，将数据合成器与解题智能体通过多智能体强化学习进行协同训练，使训练经验随能力提升而持续演化。实验表明该框架能维持任务难度与能力的匹配，带来更持久的自我改进，为智能体数据构造与课程自适应提供了新思路。",
+      "llm_tldr": "自演化大模型智能体若依赖静态数据或独立更新的合成模型，训练任务会与当前能力脱节，简单任务失效而困难任务无信息量。作者提出SynCo，将数据合成器与解题智能体通过多智能体强化学习进行协同训练，使训练经验随能力提升而持续演化。实验表明该框架能维持任务难度与能力的匹配，带来更持久的自我改进，为智能体数据构造与课程自适应提供了新思路。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "agentic data construction and curation for training AI agents",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.11585v1",
+      "source": "arxiv",
+      "title": "Adapting English Quality Classifiers for Multilingual LLM Pretraining Data Selection",
+      "abstract": "Recent advances in large language model (LLM) pretraining highlight the role of high-quality training data in improving performance. While model-based filtering has proven effective in selecting high-quality subsets from web-scale corpora, especially for high-resource languages, low-resource languages face challenges due to limited availability of annotated data. This work explores extending quality filtering to over 100 languages by proposing a multilingual adaptation approach that converts an existing English quality classifier into a multilingual variant. Our approach proposes training a small multi-layer perceptron on top of Transformer encoder-only model embeddings, using multilingual text as input and scores obtained from English classifiers applied to machine-translated text as labels. Our 1B, 3B and 8B scale experiments show that our approach maintains the downstream LLM benchmark performance of existing multilingual model-based filtering baselines, without harming regional and cultural knowledge benchmarks. To further evaluate cross-lingual generalization, we compare classifier scores of high-quality synthetic data and web samples, and the correlation of classifier scores with LLM-based ones, revealing that the classifier can learn the scoring criteria of its original English variant, even for languages not included in its training data.",
+      "authors": [
+        "Vinko Sabolčec",
+        "Bettina Messmer",
+        "Yassine Turki",
+        "Martin Jaggi"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-10-08T09:33:32+00:00",
+      "link": "https://arxiv.org/pdf/2610.11585v1",
+      "tags": [
+        "keyword:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multilingual adaptation of quality classifiers for LLM pretraining data selection",
+      "llm_evidence_cn": "将质量分类器多语言适配用于LLM预训练数据选择",
+      "llm_evidence": "将质量分类器多语言适配用于LLM预训练数据选择",
+      "canonical_evidence": "将质量分类器多语言适配用于LLM预训练数据选择",
+      "llm_tldr_en": "Converts an English quality classifier into a multilingual variant by training a small MLP on encoder embeddings, enabling quality filtering of pretraining data across over 100 languages.",
+      "llm_tldr_cn": "基于模型的高质量数据过滤在低资源语言上受限于标注稀缺，难以推广。本文提出多语言适配方法，在Transformer编码器嵌入之上训练小型多层感知机，把英语质量分类器迁移到百余种语言。该方法可为多语言预训练语料提供可用的质量打分与筛选，缓解低资源语言数据匮乏问题。",
+      "llm_tldr": "基于模型的高质量数据过滤在低资源语言上受限于标注稀缺，难以推广。本文提出多语言适配方法，在Transformer编码器嵌入之上训练小型多层感知机，把英语质量分类器迁移到百余种语言。该方法可为多语言预训练语料提供可用的质量打分与筛选，缓解低资源语言数据匮乏问题。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "pretraining data selection and mixture for language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.14238v1",
+      "source": "arxiv",
+      "title": "Agentic Data Engineering for LLMs: System Design and a Controlled Empirical Study",
+      "abstract": "LLM data engineering requires iterative experimentation to determine how data selection, rewards, and curricula affect model learning, making it a natural setting for AI-for-AI (AI4AI) research. Can agents use experimental feedback to progressively improve strategies, and do the resulting strategies improve target-model performance on held-out data? We study how agents use experimental feedback to develop data-engineering strategies under fixed training and evaluation protocols. Our Agentic Data Engineering (ADE) framework lets agents pursue, revise, or combine research directions using cumulative findings. Strategies are selected by in-loop scores and evaluated on held-out benchmarks. Across four tasks-math and code data selection, math reward design, and math curriculum learning-selected strategies achieve absolute gains over generic baselines of up to 13.34% on AIME25 Pass@32 and 5.85% averaged across four held-out benchmarks under fixed training conditions. In-loop scores improve over successive experiments, while held-out trajectories show that later in-loop gains do not always improve generalization. Comparisons of research organization and feedback access favor combining evidence analysis with cumulative findings. Research trajectories show how earlier findings inform strategy revisions and combinations across research directions.",
+      "authors": [
+        "Ruomeng Ding",
+        "Qianli Shen",
+        "Zhaoyang Han",
+        "Meixin Chen",
+        "Daoyuan Chen",
+        "Yaliang Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-10-09T18:56:21+00:00",
+      "link": "https://arxiv.org/pdf/2610.14238v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "agentic data engineering for data selection, rewards and curricula of LLM training",
+      "llm_evidence_cn": "面向大模型训练数据选择、奖励与课程设置的智能体数据工程",
+      "llm_evidence": "面向大模型训练数据选择、奖励与课程设置的智能体数据工程",
+      "canonical_evidence": "面向大模型训练数据选择、奖励与课程设置的智能体数据工程",
+      "llm_tldr_en": "Data engineering for LLMs requires iterative experimentation. The Agentic Data Engineering framework lets agents propose, revise and combine data-selection, reward and curriculum strategies from experimental feedback, improving target-model performance on held-out benchmarks.",
+      "llm_tldr_cn": "大模型数据工程需要反复实验来确定数据选择、奖励与课程安排对学习的影响，人工试错成本高。作者提出智能体数据工程框架，让智能体依据累计实验反馈自主提出、修正或组合研究策略，并以环内分数筛选、在留出基准上评估。在数学与代码数据选择、数学奖励等四项任务上验证了该流程的有效性，为自动化数据策展与训练配方搜索提供了可复用的范式。",
+      "llm_tldr": "大模型数据工程需要反复实验来确定数据选择、奖励与课程安排对学习的影响，人工试错成本高。作者提出智能体数据工程框架，让智能体依据累计实验反馈自主提出、修正或组合研究策略，并以环内分数筛选、在留出基准上评估。在数学与代码数据选择、数学奖励等四项任务上验证了该流程的有效性，为自动化数据策展与训练配方搜索提供了可复用的范式。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "agentic data construction and curation for training AI agents",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.17670v1",
+      "source": "arxiv",
+      "title": "Cowork-Gym: Synthesizing Interactive Work Environments at Scale",
+      "abstract": "Cowork agents navigate dependencies across tools and files while adapting to changing user requirements and edits to shared workspaces. Scaling such environments requires maintaining consistency among task objectives, executable resources, user behavior, and success criteria. We introduce Cowork-Gym, a framework that synthesizes Cowork environments through a build-execute-revise loop that uses execution evidence and review feedback to validate and repair generated environments. To capture realistic Cowork dynamics, a stateful user simulator responds to the agent's actions through dialogue and direct edits to the shared workspace. We synthesize 64.9K environments across 14 application scenarios and use them to post-train 9B, 27B, and 35B-A3B Qwen models with supervised fine-tuning, reinforcement learning, and on-policy distillation. Averaged across six agentic benchmarks, these models outperform their corresponding base checkpoints by 8.7, 6.4, and 4.1 points, respectively. Ours-27B ranks second overall among the evaluated models and achieves the highest average scores on PawBench and ClawEval, outperforming models with over 100B total parameters on both benchmarks.",
+      "authors": [
+        "Anni Zou",
+        "Cheng Chen",
+        "Jiaji Deng",
+        "Weikang Zhou",
+        "Xinji Mai",
+        "Yue Wu",
+        "Jianing Lin",
+        "Lipeng Xie",
+        "Lixiong Qin",
+        "Qingyue Zhao",
+        "Que Shen",
+        "Shuchang Tao",
+        "Xuchen Pan",
+        "Yaliang Li",
+        "Yunpeng Zhai",
+        "Yushuo Chen",
+        "Zhihai Wang",
+        "Zhuo Zhang",
+        "Zhaoyang Liu",
+        "Bolin Ding",
+        "Jingren Zhou"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-13T03:56:58+00:00",
+      "link": "https://arxiv.org/pdf/2610.17670v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "synthesizes cowork environments with stateful user simulator for post-training",
+      "llm_evidence_cn": "合成带状态用户模拟器的协作环境用于后训练",
+      "llm_evidence": "合成带状态用户模拟器的协作环境用于后训练",
+      "canonical_evidence": "合成带状态用户模拟器的协作环境用于后训练",
+      "llm_tldr_en": "Cowork-Gym synthesizes interactive cowork environments via a build-execute-revise loop with a stateful user simulator, producing 64.9K environments to post-train Qwen agents for collaborative workspace tasks.",
+      "llm_tldr_cn": "针对协作智能体需要在工具与文件依赖中适应动态用户需求的问题，论文提出Cowork-Gym框架，通过构建-执行-修正循环合成可交互的协作工作环境。该框架使用有状态用户模拟器，通过对话和对共享工作区的直接编辑响应智能体动作，并合成6.49万个环境覆盖14类应用场景。作者用这些环境对9B、27B和35B-A3B的Qwen模型进行后训练。该工作为协作智能体的规模化环境构建与训练数据生成提供了系统方案。",
+      "llm_tldr": "针对协作智能体需要在工具与文件依赖中适应动态用户需求的问题，论文提出Cowork-Gym框架，通过构建-执行-修正循环合成可交互的协作工作环境。该框架使用有状态用户模拟器，通过对话和对共享工作区的直接编辑响应智能体动作，并合成6.49万个环境覆盖14类应用场景。作者用这些环境对9B、27B和35B-A3B的Qwen模型进行后训练。该工作为协作智能体的规模化环境构建与训练数据生成提供了系统方案。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.18067v1",
+      "source": "arxiv",
+      "title": "WorkRover: Scaling Long-Horizon Cowork Agent Training Via Recursive Environment Evolution",
+      "abstract": "Scaling interactive environments is important for training long-horizon agents through reinforcement learning. These environments often require further testing and refinement after initial generation, and correcting defects in a task may also require updating its work context and verifier. However, existing construction pipelines offer limited support for such iterative refinement while keeping these components aligned. We introduce WorkRover, a framework for training long-horizon cowork agents through recursive environment evolution. Its harness-driven synthesis enables construction agents to jointly build and validate semantically aligned work contexts, executable tasks, and evidence-grounded verifiers, adapting their actions to workspace state and execution feedback rather than following a fixed construction workflow. To support environment evolution, we introduce Factorial Compatibility Replay (FCR), which uses rollout feedback to evaluate combinations of component revisions through dependency-closed replay and selects the smallest validated repair among tested candidates while preserving task requirements and evaluation constraints. To provide finer-grained training signals, we propose Verifier-to-Turn Credit Assignment (VTCA), which augments trajectory-level GRPO advantages with signals from deterministic workspace-progress checks and assigns a bounded share of positive-progress credit to prerequisite turns using recorded tool-output and artifact dependencies. Using WorkRover, we post-train Qwen3.5-35B-A3B to obtain WorkRover-35B-A3B and evaluate it on several cowork-agent benchmarks. Its reported scores exceed those of Qwen3.5-35B-A3B by 26.27 percentage points on JobBench, 29.32 percentage points on OfficeQA Pro, and 413.25 Elo points on GDPval v2. These results suggest that WorkRover offers a promising foundation for scalable training of long-horizon cowork agents.",
+      "authors": [
+        "Hang He",
+        "Linting Wang",
+        "Guanming Liu",
+        "Bo Mao",
+        "Jinxiu Liu",
+        "Yiran Suo",
+        "Maosen Zhou",
+        "Zhiheng Xi",
+        "Guanting Dong",
+        "Zhou Shao",
+        "Rui Zheng",
+        "Jie Zhou",
+        "Chengcheng Wan",
+        "Tao Gui",
+        "Qi Zhang",
+        "Xipeng Qiu",
+        "Xuanjing Huang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-10-13T09:52:02+00:00",
+      "link": "https://arxiv.org/pdf/2610.18067v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "framework for training long-horizon cowork agents via recursive environment evolution",
+      "llm_evidence_cn": "通过递归环境演化训练长时程协作智能体的框架",
+      "llm_evidence": "通过递归环境演化训练长时程协作智能体的框架",
+      "canonical_evidence": "通过递归环境演化训练长时程协作智能体的框架",
+      "llm_tldr_en": "Training long-horizon cowork agents needs scalable, self-correcting interactive environments. WorkRover uses harness-driven synthesis so construction agents jointly build and validate aligned work contexts, tasks, and verifiers, enabling recursive refinement for RL training.",
+      "llm_tldr_cn": "训练长时程协作智能体依赖可扩展的交互环境，但现有构建流程难以在修正任务缺陷的同时同步更新工作上下文与验证器。作者提出WorkRover框架，由构建智能体通过受控合成联合生成并校验语义一致的工作上下文、可执行任务与有证据支撑的验证器。该框架支持递归式环境演化与对齐修正，从而为强化学习持续提供高质量训练环境，推动了协作智能体训练数据的规模化生产。",
+      "llm_tldr": "训练长时程协作智能体依赖可扩展的交互环境，但现有构建流程难以在修正任务缺陷的同时同步更新工作上下文与验证器。作者提出WorkRover框架，由构建智能体通过受控合成联合生成并校验语义一致的工作上下文、可执行任务与有证据支撑的验证器。该框架支持递归式环境演化与对齐修正，从而为强化学习持续提供高质量训练环境，推动了协作智能体训练数据的规模化生产。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.19695v1",
+      "source": "arxiv",
+      "title": "C3: Rethinking Process Supervision via Confidence-Guided Credit Correction in Multi-Turn Reinforcement Learning",
+      "abstract": "Large language models are increasingly trained as multi-turn agents that interact with external tools. However, outcome-only reinforcement learning can produce a form of misguided reinforcement: even on successful trajectories, undesirable local behaviors may receive positive token-level advantages and be favored by the policy update. To address this issue, we propose Confidence-Guided Credit Correction (C$^3$), a plug-in method for local credit correction. C$^3$ identifies spans corresponding to undesirable behaviors and selectively corrects positive credit after advantage estimation, with the correction strength adaptively controlled by the behavior policy's confidence in the corresponding behavior, while leaving the task reward and original credit estimation unchanged. Across multiple multi-turn benchmarks, C$^3$ improves performance under both {critic-based and critic-free reinforcement learning methods}. Injecting the same behavioral signals as turn-level or outcome rewards does not consistently improve performance. Our results show that local credit correction provides an effective form of process supervision for outcome-driven RL.",
+      "authors": [
+        "Ai Jian",
+        "Haoran Pan",
+        "Eryu Guo",
+        "Haojin Yang",
+        "Jinghan He",
+        "Xiaoyun Zhang",
+        "Jiangbo Pei",
+        "Peiyu Liu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-14T07:18:13+00:00",
+      "link": "https://arxiv.org/pdf/2610.19695v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multi-turn reinforcement learning agents with tool use and credit correction",
+      "llm_evidence_cn": "带工具调用的多轮强化学习智能体与信用校正",
+      "llm_evidence": "带工具调用的多轮强化学习智能体与信用校正",
+      "canonical_evidence": "带工具调用的多轮强化学习智能体与信用校正",
+      "llm_tldr_en": "Outcome-only RL can reward undesirable local behaviors on successful trajectories. C3 is a plug-in credit correction that identifies such spans and adjusts positive advantage using behavior-policy confidence, improving multi-turn tool-use training.",
+      "llm_tldr_cn": "大模型正被训练为调用外部工具的多轮智能体，但仅用结果奖励的强化学习会在成功轨迹中错误强化不良局部行为。作者提出置信度引导的信用校正C3，在优势估计后识别对应不良行为的片段，并按行为策略对该行为的置信度自适应调节正信用。该方法可即插即用地接入多轮强化学习流程，缓解误导性强化，提升工具使用智能体的训练质量与稳定性。",
+      "llm_tldr": "大模型正被训练为调用外部工具的多轮智能体，但仅用结果奖励的强化学习会在成功轨迹中错误强化不良局部行为。作者提出置信度引导的信用校正C3，在优势估计后识别对应不良行为的片段，并按行为策略对该行为的置信度自适应调节正信用。该方法可即插即用地接入多轮强化学习流程，缓解误导性强化，提升工具使用智能体的训练质量与稳定性。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.23181v1",
+      "source": "arxiv",
+      "title": "Tree-Aware Posterior Distillation for Long-Horizon Agentic Reinforcement Learning",
+      "abstract": "Reinforcement learning with verifiable rewards has become a scalable post-training paradigm for large language models. However, training agents over long-horizon interactions presents two challenges: using only terminal rewards makes turn-level credit assignment sparse and high-variance, while sequential mini-batch updates on a fixed rollout batch introduce policy staleness as the current policy drifts from the behavior policy. Existing approaches obtain denser credit via learned critics, process reward models, or on-policy distillation, but they rely on a value network, step-level annotations, or a stronger external teacher that increase training complexity. Meanwhile, importance sampling and clipping mitigate policy drift, but they do not specify a finite target that stops sequential updates from overshooting. In this work, we introduce TreeOPSD, a critic-free, tree-aware posterior self-distillation framework for long-horizon agentic reinforcement learning. Treating each interaction turn as a tree node, TreeOPSD branches alternative continuations from shared prefixes and recursively backs up terminal rewards into implicit turn-level credit. It then maps each credit to a closed-form, bounded teacher distribution parameterized by the likelihood ratio relative to the frozen behavior policy. Minimizing the divergence between this teacher and the student policy recovers the policy-gradient direction as the tangent at the behavior policy while bounding updates toward a finite target across sequential mini-batches. Empirically, TreeOPSD improves agentic capabilities across several competitive benchmarks and model scales, especially for long-horizon tasks, e.g., raising the average accuracy of Qwen3-30B-A3B-Thinking-2507 by 4.97 points over GRPO on the Deep Research setting.",
+      "authors": [
+        "Heming Zou",
+        "Qi Wang",
+        "Yixiu Mao",
+        "Yun Qu",
+        "Yuyi Guo",
+        "Zeyuan Liu",
+        "Chenglin Li",
+        "Weijie Liu",
+        "Saiyong Yang",
+        "Xiangyang Ji"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-10-16T09:17:26+00:00",
+      "link": "https://arxiv.org/pdf/2610.23181v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "credit assignment and policy staleness in long-horizon agentic RL over multi-turn interactions",
+      "llm_evidence_cn": "长时程智能体多轮强化学习中的信用分配与策略陈旧问题",
+      "llm_evidence": "长时程智能体多轮强化学习中的信用分配与策略陈旧问题",
+      "canonical_evidence": "长时程智能体多轮强化学习中的信用分配与策略陈旧问题",
+      "llm_tldr_en": "Long-horizon agentic RL suffers from sparse terminal rewards and policy staleness during sequential updates. This work proposes a tree-aware posterior distillation that yields denser turn-level credit without a critic, reward model, or external teacher, improving training stability.",
+      "llm_tldr_cn": "长时程智能体强化学习仅依赖终局奖励会导致轮级信用分配稀疏且高方差，固定采样批次上的小批量更新还会带来策略陈旧问题。作者提出树感知后验蒸馏，在无需价值网络、过程标注或更强外部教师的情况下获得更稠密的轮级信用信号。方法在长时程多轮交互任务上提升了训练稳定性与效果，为可扩展的智能体强化学习后训练提供了更轻量的信用分配方案。",
+      "llm_tldr": "长时程智能体强化学习仅依赖终局奖励会导致轮级信用分配稀疏且高方差，固定采样批次上的小批量更新还会带来策略陈旧问题。作者提出树感知后验蒸馏，在无需价值网络、过程标注或更强外部教师的情况下获得更稠密的轮级信用信号。方法在长时程多轮交互任务上提升了训练稳定性与效果，为可扩展的智能体强化学习后训练提供了更轻量的信用分配方案。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.23234v2",
+      "source": "arxiv",
+      "title": "MultiAgent-OPD: End-to-End Training of Hierarchical Multi-Agent Systems with On-Policy Distillation",
+      "abstract": "In a hierarchical multi-agent system, a Leader assigns tasks and subagents carry them out. Jointly training the Leader and the subagents is difficult because a final answer gives only indirect feedback to the subagents. An LLM judge can score the performance of the subagents, but these scores depend on the judge's own assessment of the quality of subagents' responses. We present MultiAgent-OPD, which combines on-policy distillation with reinforcement learning to jointly train a shared-parameter Leader-Searcher-Answerer team end to end. We first train a Teacher in a Searcher-Answerer workflow using answer correctness. During team training, the frozen Teacher scores student-generated search and summary tokens to provide local process supervision for the Searchers, while the Leader learns from team success and the Answerer from candidate correctness. Across seven datasets, the trained system reaches 38.68% macro avg@4, exceeding Prompted Critic by 4.06 percentage points and C-MAS + RL, the trained cascaded multiagent system, by 2.61 percentage points. The team also solves more questions within four attempts.",
+      "authors": [
+        "Yuhan Sun",
+        "Jiaxin Zhao",
+        "Yongdong Luo",
+        "Yibo Hu",
+        "Meiguang Jin",
+        "Junfeng Ma",
+        "Weixun Wang",
+        "Weihang Pan",
+        "Zhongan Bi"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-10-16T10:01:52+00:00",
+      "link": "https://arxiv.org/pdf/2610.23234v2",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "on-policy distillation combined with RL for hierarchical multi-agent training",
+      "llm_evidence_cn": "结合强化学习的在策略蒸馏用于分层多智能体训练",
+      "llm_evidence": "结合强化学习的在策略蒸馏用于分层多智能体训练",
+      "canonical_evidence": "结合强化学习的在策略蒸馏用于分层多智能体训练",
+      "llm_tldr_en": "MultiAgent-OPD jointly trains a hierarchical Leader-Searcher-Answerer team end to end by combining on-policy distillation with RL, using a frozen teacher to score student-generated tokens for local credit assignment.",
+      "llm_tldr_cn": "分层多智能体系统中最终答案只给子智能体间接反馈，联合训练困难。作者提出MultiAgent-OPD，先用答案正确性训练教师，再在团队训练中结合在策略蒸馏与强化学习，由冻结教师为学生生成的检索与摘要token打分，提供局部监督。该方法端到端联合训练共享参数的Leader-Searcher-Answerer团队，改善了子智能体的信用分配与整体协作表现。",
+      "llm_tldr": "分层多智能体系统中最终答案只给子智能体间接反馈，联合训练困难。作者提出MultiAgent-OPD，先用答案正确性训练教师，再在团队训练中结合在策略蒸馏与强化学习，由冻结教师为学生生成的检索与摘要token打分，提供局部监督。该方法端到端联合训练共享参数的Leader-Searcher-Answerer团队，改善了子智能体的信用分配与整体协作表现。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "on-policy distillation methods that train student agents using trajectories generated by their current policy",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.24960v1",
+      "source": "arxiv",
+      "title": "CoworkEnv: Synthesizing Training Environments for Long-Horizon Cowork Agents",
+      "abstract": "AI coworkers must coordinate tools, communicate across turns, and act on changing workspace state while respecting workflow constraints. Constructing training experience for these capabilities requires coherent requests, service records, tool interfaces, and grading checks. We present CoworkEnv, a capability-guided framework for synthesizing executable training environments for AI coworkers. Workflow requirements guide task construction, and programmatic validation with feedback repair checks generated specifications and grading behavior. Teacher executions yield curated demonstrations for supervised fine-tuning (SFT), while student interactions provide rollouts and rewards for reinforcement learning (RL). Using these resources, we train compact PocketWorker models. For Qwen3-VL-8B-Instruct, SFT raises the mean score from 46.6 to 64.1 on Claw-Eval, including a 31.9-point gain on Multi-turn tasks. An SFT-only extension to ClawMark demonstrates applicability across coworker benchmarks. We further compare RL training dynamics across configurations that vary reward processing and credit assignment. Improving training rewards provide preliminary evidence that the constructed environments support policy optimization.",
+      "authors": [
+        "Zhongwei Xie",
+        "Yiming Du",
+        "Jiaxin Bai",
+        "Baixuan Xu",
+        "Chunyang Li",
+        "Xiyu Ren",
+        "Wei Fan",
+        "Tianshi Zheng",
+        "Weizhi Du",
+        "Jingqiao Yu",
+        "Xingsu Li",
+        "Zhaowei Wang",
+        "Yangqiu Song"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-10-18T02:20:30+00:00",
+      "link": "https://arxiv.org/pdf/2610.24960v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "synthesizes executable training environments and curated data for long-horizon cowork agents",
+      "llm_evidence_cn": "为长时程协作智能体合成可执行训练环境与精选数据",
+      "llm_evidence": "为长时程协作智能体合成可执行训练环境与精选数据",
+      "canonical_evidence": "为长时程协作智能体合成可执行训练环境与精选数据",
+      "llm_tldr_en": "AI coworkers need coherent requests, tool interfaces and grading checks to learn coordination. CoworkEnv synthesizes executable training environments from workflow requirements, yielding SFT demonstrations and RL rollouts to train compact cowork agents.",
+      "llm_tldr_cn": "AI 同事需要在变化的工作区状态下协调工具、跨轮沟通并遵守流程约束，但构建相应训练经验十分困难。本文提出 CoworkEnv，一个能力引导的框架，依据工作流需求合成可执行的训练环境，并用程序化校验与反馈修复来保证任务规格和评分行为正确。教师执行产生精选示范用于监督微调，学生交互则提供 rollout 与奖励用于强化学习。基于这些资源训练的紧凑协作智能体验证了该数据与环境合成管线的有效性。",
+      "llm_tldr": "AI 同事需要在变化的工作区状态下协调工具、跨轮沟通并遵守流程约束，但构建相应训练经验十分困难。本文提出 CoworkEnv，一个能力引导的框架，依据工作流需求合成可执行的训练环境，并用程序化校验与反馈修复来保证任务规格和评分行为正确。教师执行产生精选示范用于监督微调，学生交互则提供 rollout 与奖励用于强化学习。基于这些资源训练的紧凑协作智能体验证了该数据与环境合成管线的有效性。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.25034v1",
+      "source": "arxiv",
+      "title": "Beyond the Teacher: Understanding and Preserving Distillation Overshoot in Agentic On-Policy Distillation",
+      "abstract": "On-policy distillation (OPD) trains agents on their own trajectories using supervision from a stronger teacher. We uncover a counterintuitive phenomenon in multi-turn agentic tasks: a smaller, initially weaker student can substantially outperform its teacher during training, only to regress as distillation continues. We term this phenomenon distillation overshoot. Through decision- and task-level analyses, we trace overshoot to two competing effects of OPD: repairing weak student decisions and eroding successful student choices that the teacher disfavors. Early in training, repair outpaces erosion, allowing the student to combine the teacher's corrections with its own strengths and surpass the teacher. As training continues, erosion overtakes repair, causing these gains to vanish. Motivated by this finding, we propose Success-Preserving On-Policy Distillation (SPOD), which selectively masks conflicting teacher supervision on successful student choices and introduces a soft probability floor to counteract their erosion, while retaining teacher guidance elsewhere. SPOD requires only binary episode success and model probabilities already available during OPD. Across two model families and three agentic benchmarks, SPOD consistently outperforms ordinary OPD and evaluated variants, improving final success by up to 15.2 percentage points and surpassing the teacher by up to 20.0 points. Moreover, SPOD's final checkpoints outperform even ordinary OPD's best intermediate checkpoints in all six settings, demonstrating that beyond-teacher gains can be not only preserved but further extended. Code: https://github.com/Jike338/SPOD",
+      "authors": [
+        "Jike Zhong",
+        "Ming Li",
+        "Yuxiang Lai",
+        "Xi Xiao",
+        "Sheng Zhang",
+        "Ritwick Chaudhry",
+        "Tianle Chen",
+        "Jingyu Xie",
+        "Zheda Mai",
+        "Shao-Yuan Lo",
+        "Konstantinos Psounis",
+        "Yuanyuan Lei"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-10-18T05:44:26+00:00",
+      "link": "https://arxiv.org/pdf/2610.25034v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "analyzes on-policy distillation for multi-turn agentic tasks on student-generated trajectories",
+      "llm_evidence_cn": "分析基于学生自生成轨迹的多轮智能体在线蒸馏",
+      "llm_evidence": "分析基于学生自生成轨迹的多轮智能体在线蒸馏",
+      "canonical_evidence": "分析基于学生自生成轨迹的多轮智能体在线蒸馏",
+      "llm_tldr_en": "On-policy distillation trains agents on their own trajectories with teacher supervision, yet students can outperform the teacher then regress. This work names and analyzes distillation overshoot, tracing it to repair versus erosion of student decisions.",
+      "llm_tldr_cn": "在线蒸馏用更强教师的监督训练智能体自身生成的轨迹，但在多轮智能体任务中学生可能先超越教师、随后又退步。本文提出并命名蒸馏过冲现象，通过决策级与任务级分析将其归因于两种相互竞争的作用：修复学生的弱决策，以及侵蚀教师不认可的、学生原本正确的选择。训练早期修复快于侵蚀，使学生结合教师纠正与自身优势而超越教师；随着训练推进平衡反转导致性能回落。该分析为更稳健的在线蒸馏训练策略提供了依据。",
+      "llm_tldr": "在线蒸馏用更强教师的监督训练智能体自身生成的轨迹，但在多轮智能体任务中学生可能先超越教师、随后又退步。本文提出并命名蒸馏过冲现象，通过决策级与任务级分析将其归因于两种相互竞争的作用：修复学生的弱决策，以及侵蚀教师不认可的、学生原本正确的选择。训练早期修复快于侵蚀，使学生结合教师纠正与自身优势而超越教师；随着训练推进平衡反转导致性能回落。该分析为更稳健的在线蒸馏训练策略提供了依据。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "on-policy distillation methods that train student agents using trajectories generated by their current policy",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.25693v1",
+      "source": "arxiv",
+      "title": "ToolOPD: Credit-Aware On-Policy Distillation for Tool-Use Agents",
+      "abstract": "On-policy distillation (OPD) enhances the capabilities of small language agents by providing dense, token-level supervision from a teacher model on student-generated trajectories. However, standard OPD implicitly assumes that credit is uniformly distributed across long-horizon trajectories, assigning the same strength of teacher supervision to different actions. Through credit-distribution analysis and outcome-reversal counterfactual experiments, we find that trajectory credit is concentrated on a small number of critical actions. Moreover, even when the trajectory is held fixed, reversing only the final outcome substantially changes the credit assigned to multiple interaction turns. These findings show that the uniform-credit assumption fails to identify critical decisions and ultimately degrades the model's reasoning accuracy. To address these challenges, we propose ToolOPD, an outcome-aware on-policy distillation framework designed for long-horizon tool use. ToolOPD first summarizes each completed trajectory and its outcome into a reusable hindsight skill. It then measures how this skill changes the teacher's probability of each student action token and converts the change into outcome-aware credit. The resulting credit preserves supervision that supports successful decisions or discourages failed ones, while suppressing irrelevant and conflicting signals. ToolOPD uses these credits to reweight the action-level distillation loss and jointly optimizes it with reinforcement learning. Extensive experiments across multiple long-horizon tool interaction benchmarks demonstrate that ToolOPD significantly outperforms existing reinforcement learning and self-distillation baselines.",
+      "authors": [
+        "Chu Zhao",
+        "Lei Tang",
+        "Yanming Wang",
+        "Jianzhe Zhao",
+        "Guibing Guo",
+        "Zhengzong Chen",
+        "Yuanyuan Zhao",
+        "Fei Huang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-19T02:41:31+00:00",
+      "link": "https://arxiv.org/pdf/2610.25693v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "credit-aware on-policy distillation with dense teacher supervision on student-generated tool-use trajectories",
+      "llm_evidence_cn": "在学生自生成工具使用轨迹上做信用感知在线蒸馏",
+      "llm_evidence": "在学生自生成工具使用轨迹上做信用感知在线蒸馏",
+      "canonical_evidence": "在学生自生成工具使用轨迹上做信用感知在线蒸馏",
+      "llm_tldr_en": "On-policy distillation gives dense token-level teacher supervision on student trajectories, but assumes uniform credit across long horizons. ToolOPD shows credit concentrates on few critical actions and proposes credit-aware distillation for tool-use agents.",
+      "llm_tldr_cn": "在线蒸馏通过对学生自生成轨迹提供稠密 token 级监督来增强小型语言智能体，但标准做法隐含假设长时程轨迹上信用均匀分布。本文通过信用分布分析与结果反转反事实实验发现，轨迹信用集中于少数关键动作，且仅反转最终结果就会显著改变多个交互轮次的信用分配。这说明均匀信用假设无法识别关键决策。据此提出的 ToolOPD 在工具使用智能体上实施信用感知的在线蒸馏，为长时程智能体蒸馏提供更合理的监督分配方式。",
+      "llm_tldr": "在线蒸馏通过对学生自生成轨迹提供稠密 token 级监督来增强小型语言智能体，但标准做法隐含假设长时程轨迹上信用均匀分布。本文通过信用分布分析与结果反转反事实实验发现，轨迹信用集中于少数关键动作，且仅反转最终结果就会显著改变多个交互轮次的信用分配。这说明均匀信用假设无法识别关键决策。据此提出的 ToolOPD 在工具使用智能体上实施信用感知的在线蒸馏，为长时程智能体蒸馏提供更合理的监督分配方式。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "on-policy distillation methods that train student agents using trajectories generated by their current policy",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.25957v1",
+      "source": "arxiv",
+      "title": "Productive State-Space Exploration for Multi-turn RL in LLM Agents",
+      "abstract": "Reinforcement Learning (RL) for Large Language Model (LLM) agents in multi-turn, long-horizon environments remains challenging due to inefficient action selection and repetitive behavioral patterns. In particular, agents often become trapped in high-confidence yet unproductive behaviors, repeatedly executing invalid actions or entering action loops that hinder task completion. We observe that these frequently violate environment preconditions, revealing a mismatch between the agent's representation of the internal state and the dynamics of the underlying environment. In addition, repetitive high-confidence actions lead to cyclical behaviors that provide little to no progress towards the goal. We argue that addressing these challenges requires more productive task-aligned exploration to improve the agent's understanding of environment dynamics. Motivated by intrinsic curiosity-driven exploration, we propose a conditional state-space exploration framework that balances task completion with intrinsic information-seeking behavior. Specifically, we introduce an intrinsic reward that penalizes actions whose observation duplicates prior state memory. This provides the benefit of reducing redundant behaviors and encouraging state-space coverage without relying on a general information-theoretic measure. Strong experimental results demonstrate that our approach substantially improves policy learning in multi-turn environments, mitigating invalid actions and repetitive loops.",
+      "authors": [
+        "Mohammed Haroon Dupty",
+        "Yong Liang Goh",
+        "Song Guo",
+        "Wee Sun Lee"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-10-19T07:49:35+00:00",
+      "link": "https://arxiv.org/pdf/2610.25957v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multi-turn RL with productive state-space exploration for LLM agents",
+      "llm_evidence_cn": "LLM智能体多轮强化学习中的生产性状态空间探索",
+      "llm_evidence": "LLM智能体多轮强化学习中的生产性状态空间探索",
+      "canonical_evidence": "LLM智能体多轮强化学习中的生产性状态空间探索",
+      "llm_tldr_en": "This paper identifies unproductive high-confidence behaviors in multi-turn LLM agent RL and proposes productive state-space exploration to reduce invalid actions and action loops in long-horizon environments.",
+      "llm_tldr_cn": "针对LLM智能体在多轮长程环境中进行强化学习时动作选择低效、易陷入高置信却无产出的重复行为的问题，论文分析发现这类行为常违反环境前置条件，反映内部状态表示与环境动态不匹配。作者提出面向生产性状态空间的探索方法，以减少无效动作和动作循环。实验表明该方法能改善多轮长程任务中的探索效率与任务完成表现。该工作为LLM智能体的多轮强化学习提供了针对状态空间探索的改进思路。",
+      "llm_tldr": "针对LLM智能体在多轮长程环境中进行强化学习时动作选择低效、易陷入高置信却无产出的重复行为的问题，论文分析发现这类行为常违反环境前置条件，反映内部状态表示与环境动态不匹配。作者提出面向生产性状态空间的探索方法，以减少无效动作和动作循环。实验表明该方法能改善多轮长程任务中的探索效率与任务完成表现。该工作为LLM智能体的多轮强化学习提供了针对状态空间探索的改进思路。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.26887v1",
+      "source": "arxiv",
+      "title": "Navalia: Advancing Cowork Agents through Verifiable Task Synthesis and Long-Horizon Post-Training",
+      "abstract": "Large language model (LLM) agents are evolving from conversational assistants into Cowork Agents capable of autonomous planning, tool use, and complex task execution. Financial analysis requires these agents to integrate cross-document evidence and perform multistep numerical reasoning, but expert task authoring is costly, while direct LLM synthesis struggles to produce challenging tasks with reliable answers. We introduce Navalia, a framework for Cowork Agents that combines verifiable task synthesis with long-horizon post-training. Using corporate financial reports as its data source, Navalia semantically selects supporting evidence from complete fact sets and constructs executable computation chains to generate analytical tasks with traceable evidence and actual data dependencies between steps. We further use independent LLM review and programmatic checks to verify evidence consistency and answer correctness. The verified tasks are then used for trajectory collection, cold-start supervised fine-tuning (SFT), and reinforcement learning (RL) to improve long-horizon task execution. Navalia, initialized from Qwen3.6-35B-A3B, achieves consistent gains over the base model across all five benchmarks: OfficeQA Pro, FinSearchComp, Finance Agent Benchmark, APEX-Agents-AA, and Workspace-Bench-Lite. These results demonstrate that Navalia improves evidence integration, tool use, and long-horizon task execution capabilities and generalizes to broader Cowork settings, including general office tasks.",
+      "authors": [
+        "Hengqi Liu",
+        "Ziyuan Liu",
+        "Yang Qin",
+        "Wanting Zhou",
+        "Zichuan Wang",
+        "Jiachen Liang",
+        "Xu Chu",
+        "Shaowei Chen",
+        "Zhaokai Luo",
+        "Mu Chuan"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-13T07:19:22+00:00",
+      "link": "https://arxiv.org/pdf/2610.26887v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "cowork agents with verifiable task synthesis and long-horizon post-training",
+      "llm_evidence_cn": "面向协作智能体的可验证任务合成与长程后训练",
+      "llm_evidence": "面向协作智能体的可验证任务合成与长程后训练",
+      "canonical_evidence": "面向协作智能体的可验证任务合成与长程后训练",
+      "llm_tldr_en": "Navalia builds challenging, verifiable tasks for Cowork Agents from financial reports via semantic evidence selection and executable computation chains, then applies long-horizon post-training to strengthen planning and tool use.",
+      "llm_tldr_cn": "协作智能体需要跨文档整合证据并进行多步数值推理，但专家标注成本高、直接合成又难以保证答案可靠。Navalia以企业财报为数据源，通过语义筛选证据并构建可执行计算链，自动生成可验证的分析任务。结合长程后训练，该方法显著提升了协作智能体的规划与工具使用能力，为协作智能体的数据构建与训练提供了完整范式。",
+      "llm_tldr": "协作智能体需要跨文档整合证据并进行多步数值推理，但专家标注成本高、直接合成又难以保证答案可靠。Navalia以企业财报为数据源，通过语义筛选证据并构建可执行计算链，自动生成可验证的分析任务。结合长程后训练，该方法显著提升了协作智能体的规划与工具使用能力，为协作智能体的数据构建与训练提供了完整范式。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2609.39436v1",
+      "source": "arxiv",
+      "title": "From Imitation to Reward Discovery: On-Policy Warmup for Agentic RL",
+      "abstract": "Reinforcement learning with a verifiable reward (RLVR) offers a scalable approach to training language-model agents, yet sparse outcome rewards can leave early training with little signal for policy improvement. We identify an On-Policy Acceleration Phenomenon: in our main comparisons, RLVR initialized with on-policy distillation reaches high performance earlier in training and achieves both higher average performance during subsequent RLVR and higher final performance than the alternative baselines. Motivated by this observation, we study On-Policy Warmup (OPW), a teacher-guided stage in which the student trains with teacher supervision on its own interaction trajectories before transitioning to RLVR. Unlike imitation on fixed teacher-generated trajectories, OPW targets states induced by the student's own decisions, including imperfect actions and recovery situations. We provide a theoretical explanation by connecting on-policy reverse-KL distillation to trajectory-level distribution matching. Under a competent teacher and sufficiently small population distillation loss, this connection yields a lower bound on initial verifier success and a corresponding bound on reward-discovery complexity. For group-relative RLVR, we further characterize when increased success probability produces more reward-informative groups. Together, our findings support on-policy distillation as an effective warmup for agentic RLVR and identify initial reward discovery as a mechanism that can contribute to the observed acceleration.",
+      "authors": [
+        "Yitong Qiao",
+        "Tiantian He",
+        "Lei Liu",
+        "Yue Shen",
+        "Jian Wang",
+        "Jinjie Gu",
+        "Zhixuan Chu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-30T10:13:01+00:00",
+      "link": "https://arxiv.org/pdf/2609.39436v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "on-policy distillation warmup on student interaction trajectories before agentic RL",
+      "llm_evidence_cn": "在智能体强化学习前用学生交互轨迹做在线蒸馏预热",
+      "llm_evidence": "在智能体强化学习前用学生交互轨迹做在线蒸馏预热",
+      "canonical_evidence": "在智能体强化学习前用学生交互轨迹做在线蒸馏预热",
+      "llm_tldr_en": "Sparse verifiable rewards leave early agentic RL with little signal. The authors identify an on-policy acceleration phenomenon and propose On-Policy Warmup, distilling a teacher on the student own trajectories before switching to RLVR.",
+      "llm_tldr_cn": "带可验证奖励的强化学习可扩展地训练语言模型智能体，但稀疏结果奖励使训练早期缺乏改进信号。作者观察到在线加速现象：以在线蒸馏初始化的强化学习更早达到高性能，并在后续训练中获得更高平均与最终表现。据此提出在线预热，即先由教师在学生自身交互轨迹上监督，再切换到强化学习，而非模仿固定的教师轨迹。该流程把蒸馏与强化学习衔接，缓解了智能体强化学习冷启动难题。",
+      "llm_tldr": "带可验证奖励的强化学习可扩展地训练语言模型智能体，但稀疏结果奖励使训练早期缺乏改进信号。作者观察到在线加速现象：以在线蒸馏初始化的强化学习更早达到高性能，并在后续训练中获得更高平均与最终表现。据此提出在线预热，即先由教师在学生自身交互轨迹上监督，再切换到强化学习，而非模仿固定的教师轨迹。该流程把蒸馏与强化学习衔接，缓解了智能体强化学习冷启动难题。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "on-policy distillation methods that train student agents using trajectories generated by their current policy",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2609.40221v1",
+      "source": "arxiv",
+      "title": "PhantomEnvironments: Training LLM Agents in Fictional Worlds",
+      "abstract": "Training LLM agents with reinforcement learning (RL) is bottlenecked by environments, which must provide verifiable rewards, support long-horizon interaction, and scale cheaply. Existing approaches rely on costly human-curated data or on LLM-generated environments that risk hallucinations and benchmark contamination. We show that LLMs can instead be trained into capable search agents using synthetic environments generated entirely by rules, whose generation requires no LLM and has zero marginal cost. We build PhantomEnvironments, multi-turn RL environments from fictional worlds, where agents must search a corpus of templated articles to answer multi-hop questions. Despite sharing no facts with the real world, these strikingly simple environments yield agents that transfer to real-world multi-hop search benchmarks, often outperforming real-world training data on newer benchmarks. Trained agents generalize to unseen fictional universes, and Qwen models learn to scale their search budget roughly linearly with question difficulty, suggesting emergent search scaling from environment interaction alone. Ablating environment complexity reveals that hop count drives transfer more than constraints or comparisons: even the simplest rule-generated environments are a surprisingly effective, free resource for training generalizable LLM agents.",
+      "authors": [
+        "Anmol Kabra",
+        "Swathi Saravana Selvam",
+        "Albert Gong",
+        "Chao Wan",
+        "Christian Belardi",
+        "Dongyoung Go",
+        "Katie Z. Luo",
+        "Kilian Q. Weinberger"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-09-30T17:26:57+00:00",
+      "link": "https://arxiv.org/pdf/2609.40221v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "multi-turn RL environments for training LLM search agents",
+      "llm_evidence_cn": "用于训练LLM搜索智能体的多轮强化学习环境",
+      "llm_evidence": "用于训练LLM搜索智能体的多轮强化学习环境",
+      "canonical_evidence": "用于训练LLM搜索智能体的多轮强化学习环境",
+      "llm_tldr_en": "Builds PhantomEnvironments, rule-generated fictional multi-turn RL environments with verifiable rewards, showing LLM agents can be trained into capable search agents without costly human data or LLM-generated environments.",
+      "llm_tldr_cn": "针对强化学习训练LLM智能体受限于环境需可验证奖励、长程交互与低成本扩展的问题，本文提出PhantomEnvironments。该方法完全用规则生成虚构世界的多轮搜索环境，智能体需在多跳问答中检索模板化文章。实验表明即便这些环境与现实事实无关，也能训练出有能力的搜索智能体。该工作为智能体强化学习提供了零边际成本、可扩展的多轮训练环境方案。",
+      "llm_tldr": "针对强化学习训练LLM智能体受限于环境需可验证奖励、长程交互与低成本扩展的问题，本文提出PhantomEnvironments。该方法完全用规则生成虚构世界的多轮搜索环境，智能体需在多跳问答中检索模板化文章。实验表明即便这些环境与现实事实无关，也能训练出有能力的搜索智能体。该工作为智能体强化学习提供了零边际成本、可扩展的多轮训练环境方案。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.00583v1",
+      "source": "arxiv",
+      "title": "Worse Together: How Performance Breaks Down in Multi-User Multi-Agent Teams",
+      "abstract": "People are increasingly delegating tasks to AI agents, and those agents are increasingly encountering other people's agents over shared resources such as a codebase, a calendar, or a budget. When each agent acts for a different user with different goals, coordination often fails, and the group ends up worse off than if a single agent had acted for everyone. We study this multi-user, multi-agent setting across five frontier models and 77 scenarios in four environments: an API key environment in which agents share a compute budget, a clinic in which they share a calendar, a personal assistant environment in which they share a group order or booking, and a merge queue in which they share a release cutoff. In each scenario, we compare a single agent that serves every user (a coordinator) to a team in which each agent serves one user, with and without a communication channel between the agents. Teams deliver worse group outcomes than the coordinator in every environment: without a channel, they completely collapse in two environments, and even with one, coordination overhead creates substantial gaps. For example, in the personal assistant environment, the coordinator fulfills a targeted user request about twice as often as teams. We identify distinct behaviors associated with this poor group-level performance, including stalling as teams grow, overriding each other's actions, and fabricating claims. We find effective but environment-specific mitigations, such as a team lead, explicit procedural instructions, and a platform check that makes an agent read its peers' messages before committing. We will release the API key, clinic, and personal assistant environments as MAMUBench, comprising 74 scenarios for evaluating multi-user, multi-agent coordination.",
+      "authors": [
+        "Sahan Paliskara",
+        "Nattaput Namchittai",
+        "Andrew Lampinen"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-09-30T18:49:25+00:00",
+      "link": "https://arxiv.org/pdf/2610.00583v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "multi-user multi-agent teams sharing resources and coordination failure",
+      "llm_evidence_cn": "多用户多智能体共享资源下的协作失败",
+      "llm_evidence": "多用户多智能体共享资源下的协作失败",
+      "canonical_evidence": "多用户多智能体共享资源下的协作失败",
+      "llm_tldr_en": "Studies how multi-user multi-agent teams degrade when agents serve different users over shared resources, evaluating five frontier models across 77 scenarios in four environments and comparing against a single-agent baseline.",
+      "llm_tldr_cn": "用户越来越多地把任务交给AI智能体，不同用户的智能体在共享资源上相遇时协调常常失败。论文在共享预算、日历、订单与发布截止四类环境中构建77个场景，比较五个前沿模型的多用户多智能体表现与单一智能体基线。结果显示团队协作频繁出现协调失败，整体表现反而不如单个智能体。该研究揭示了多用户多智能体协作的系统性失效模式，为设计更稳健的协作智能体提供诊断依据。",
+      "llm_tldr": "用户越来越多地把任务交给AI智能体，不同用户的智能体在共享资源上相遇时协调常常失败。论文在共享预算、日历、订单与发布截止四类环境中构建77个场景，比较五个前沿模型的多用户多智能体表现与单一智能体基线。结果显示团队协作频繁出现协调失败，整体表现反而不如单个智能体。该研究揭示了多用户多智能体协作的系统性失效模式，为设计更稳健的协作智能体提供诊断依据。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.00388v1",
+      "source": "arxiv",
+      "title": "T2SPO: Trajectory-to-Step Policy Optimization for Agentic Reinforcement Learning",
+      "abstract": "Reinforcement learning enables large language model (LLM) agents to learn multi-step behaviors through interaction with their environments. However, rewards in many interactive tasks reflect only the final outcome, providing limited guidance on which intermediate decisions advance the task. Successful training trajectories contain intermediate states that can provide supervision for subsequent interactions. We introduce Trajectory-to-Step Policy Optimization (T2SPO), a method that uses past interaction trajectories to provide step-level feedback for policy learning. T2SPO derives remaining-distance targets from successful trajectories and pairs them with representations of the states visited along the way. Conditioned on these examples, a pretrained TabPFN regressor estimates the remaining distance to success at each state of a new rollout. Changes in this distance estimate across consecutive states yield auxiliary credit for agent steps alongside task-level supervision. As training proceeds, newly completed trajectories refresh the estimator's context, incorporating new experience without updating its parameters. Experiments with 1.5B and 7B language models on ALFWorld and WebShop show that T2SPO consistently improves overall task success over GRPO.",
+      "authors": [
+        "Bo-Wen Zhang",
+        "Junwei He",
+        "Maoqi Liu",
+        "Feiran Li",
+        "Song-Lin Lv",
+        "Wentao Ma",
+        "Rongyi Lin",
+        "Shuhan Zhong",
+        "Lan-Zhe Guo"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-09-30T10:34:27+00:00",
+      "link": "https://arxiv.org/pdf/2610.00388v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "step-level policy optimization from interaction trajectories for agentic RL",
+      "llm_evidence_cn": "利用交互轨迹的步级策略优化用于智能体强化学习",
+      "llm_evidence": "利用交互轨迹的步级策略优化用于智能体强化学习",
+      "canonical_evidence": "利用交互轨迹的步级策略优化用于智能体强化学习",
+      "llm_tldr_en": "Outcome-only rewards give weak guidance in multi-step agent tasks. T2SPO converts successful trajectories into step-level remaining-distance targets to supervise policy learning, improving credit assignment in agentic RL.",
+      "llm_tldr_cn": "许多交互式智能体任务只有最终结果奖励，难以指导中间决策。作者提出T2SPO，从成功轨迹中推导剩余距离目标，并与所访问状态表示配对，为策略学习提供步级反馈。该方法改善了长程多步任务中的信用分配，使智能体在多轮交互环境中更有效地学习行为，为智能体强化学习提供了可复用的轨迹监督思路。",
+      "llm_tldr": "许多交互式智能体任务只有最终结果奖励，难以指导中间决策。作者提出T2SPO，从成功轨迹中推导剩余距离目标，并与所访问状态表示配对，为策略学习提供步级反馈。该方法改善了长程多步任务中的信用分配，使智能体在多轮交互环境中更有效地学习行为，为智能体强化学习提供了可复用的轨迹监督思路。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.03286v1",
+      "source": "arxiv",
+      "title": "VenusRL: A Fully Disaggregated Agentic RL System with Priority Scheduling and Scalable Interaction",
+      "abstract": "Agentic Reinforcement Learning (RL) trains LLM agents through multi-turn interactions with external tool environments. Its multi-turn nature exposes two system-level bottlenecks unaddressed by existing agentic RL frameworks. First, end-to-end training throughput is constrained by the slowest trajectories to complete, yet optimizing per-GPU utilization alone scatters rollout progress across many groups, delaying the completion of enough groups to unblock the next training step. Second, tool sandboxes are statically over-provisioned by their declared memory ceilings, leaving most physical memory stranded while replicating near-identical state across sandboxes launched from the same prompt. We present VenusRL, a fully disaggregated agentic RL system that addresses both bottlenecks. VenusRL's priority-aware action scheduler uses length-prediction heuristics to identify sample groups whose completion is most likely to unblock the next training step, and pushes them ahead of others across batch admission, KV Cache residency, and cross-worker request orchestration. VenusRL's environment resource manager combines a memory-aware admission threshold with a template-keyed page-sharing pool, packing more sandboxes per node while preserving strict memory isolation via write-protected page table entry aliasing and copy-on-write. Across representative agentic RL workloads, VenusRL achieves up to 4.24x end-to-end training speedup over state-of-the-art baselines and reduces environment cost by up to 89%.",
+      "authors": [
+        "Mingjun Zhang",
+        "Yucheng Li",
+        "Menghao Zhang",
+        "Shuyong Zhu",
+        "Ping Zhang",
+        "Xiaohe Hu",
+        "Jun Chen",
+        "Zhixin Wang",
+        "Xutong Wang",
+        "He Liu",
+        "Yanmin Jia",
+        "Shengrong Zhu",
+        "Peng Sun",
+        "Mingjie Zhang",
+        "Liming Liu",
+        "Jinlong Hou",
+        "Yuan Cheng",
+        "Yujun Zhang"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC"
+      ],
+      "published": "2026-10-02T13:29:40+00:00",
+      "link": "https://arxiv.org/pdf/2610.03286v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "system for agentic RL training of LLM agents through multi-turn interactions with external tool environments",
+      "llm_evidence_cn": "支撑LLM智能体与外部工具环境多轮交互的智能体强化学习训练系统",
+      "llm_evidence": "支撑LLM智能体与外部工具环境多轮交互的智能体强化学习训练系统",
+      "canonical_evidence": "支撑LLM智能体与外部工具环境多轮交互的智能体强化学习训练系统",
+      "llm_tldr_en": "Agentic RL suffers from straggler trajectories and over-provisioned tool sandboxes; VenusRL is a fully disaggregated system with priority scheduling and scalable interaction that raises end-to-end training throughput.",
+      "llm_tldr_cn": "智能体强化学习通过多轮工具交互训练LLM，但端到端吞吐受最慢轨迹制约，工具沙箱又按内存上限静态超配，造成大量物理内存闲置。论文提出VenusRL，一个全解耦的智能体RL系统，用优先级调度协调rollout完成顺序，并复用同提示沙箱的状态以扩展交互规模。实验显示该系统缓解了长尾轨迹与内存浪费两大瓶颈，显著提升多轮智能体RL的训练吞吐，为大规模智能体RL提供了系统级基础设施。",
+      "llm_tldr": "智能体强化学习通过多轮工具交互训练LLM，但端到端吞吐受最慢轨迹制约，工具沙箱又按内存上限静态超配，造成大量物理内存闲置。论文提出VenusRL，一个全解耦的智能体RL系统，用优先级调度协调rollout完成顺序，并复用同提示沙箱的状态以扩展交互规模。实验显示该系统缓解了长尾轨迹与内存浪费两大瓶颈，显著提升多轮智能体RL的训练吞吐，为大规模智能体RL提供了系统级基础设施。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.01195v1",
+      "source": "arxiv",
+      "title": "Federated Agent Optimization",
+      "abstract": "Large language model (LLM) agents increasingly operate in private environments and accumulate valuable experience from task execution, tool use, feedback, and local knowledge. Yet such experience is distributed across organizations and cannot be directly shared because of privacy and proprietary constraints. Conventional federated learning is insufficient for this setting, as agent capabilities extend beyond model parameters to memory, tools, rewards, skills, and structured knowledge. In this paper, we formulate \\textbf{Federated Agent Optimization (FAO)}, which studies how distributed agents can collaboratively improve through controlled information exchange while keeping raw data, complete trajectories, and private knowledge local. We define FAO as a multi-objective problem balancing agent utility, privacy leakage, and communication cost, and organize its optimization space across policy, memory, tool use, reward, and structured knowledge and skills. We further characterize how private experience can be abstracted, protected, aggregated, and adapted into transferable capabilities, providing a unified view of how agents can benefit from one another without direct experience sharing. Finally, we identify the key challenges of FAO and outline several promising directions for future research toward trustworthy federated agent systems.",
+      "authors": [
+        "Qiang Yang",
+        "Zhiqiang Kou",
+        "Xueyi Zhang",
+        "Dong-Dong Wu",
+        "Hanlin Gu",
+        "Jing Guo",
+        "Yang Liu",
+        "Di Jiang",
+        "Qian Xu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-01T07:06:00+00:00",
+      "link": "https://arxiv.org/pdf/2610.01195v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "distributed agents collaboratively improve through controlled information exchange across organizations",
+      "llm_evidence_cn": "分布式智能体通过受控信息交换实现跨组织协同改进",
+      "llm_evidence": "分布式智能体通过受控信息交换实现跨组织协同改进",
+      "canonical_evidence": "分布式智能体通过受控信息交换实现跨组织协同改进",
+      "llm_tldr_en": "LLM agents accumulate private experience across organizations; this paper formulates Federated Agent Optimization, studying controlled information exchange over memory, tools, rewards and skills while keeping raw trajectories local.",
+      "llm_tldr_cn": "大模型智能体在私有环境中积累了大量执行经验，但隐私与产权约束使这些经验无法跨组织直接共享，而传统联邦学习只覆盖模型参数。论文形式化联邦智能体优化问题，研究如何在保持原始数据、完整轨迹与私有知识本地的条件下进行受控信息交换，并将其建模为效用与隐私等多目标权衡。该工作为分布式智能体的协同改进提供了新的问题定义与研究框架。",
+      "llm_tldr": "大模型智能体在私有环境中积累了大量执行经验，但隐私与产权约束使这些经验无法跨组织直接共享，而传统联邦学习只覆盖模型参数。论文形式化联邦智能体优化问题，研究如何在保持原始数据、完整轨迹与私有知识本地的条件下进行受控信息交换，并将其建模为效用与隐私等多目标权衡。该工作为分布式智能体的协同改进提供了新的问题定义与研究框架。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.10120v1",
+      "source": "arxiv",
+      "title": "RewardWeaver: Long-Horizon Interactive Learning for Language Agents via Self-Evolving Reward Adaptation",
+      "abstract": "Reinforcement learning with verifiable rewards (RLVR) has driven substantial progress in domains where task outcomes can be reliably evaluated, but long-horizon interaction remains challenging due to sparse terminal feedback and difficult credit assignment. Process rewards provide denser supervision, yet the capabilities most relevant for training can change as the policy evolves: a behavior that is easy to evaluate or frequently deficient need not be the bottleneck currently limiting task success. We introduce RewardWeaver, a self-evolving reward adaptation framework for language agents in long-horizon interaction. RewardWeaver maintains a validated capability space in which the semantics of admitted Rubrics remain fixed, and closes the loop between policy optimization, task evaluation, failure attribution, and reward adaptation. After each training stage, it performs outcome-grounded backward attribution on low-outcome trajectories, aggregates recurrent and policy-controlled capability bottlenecks, and dynamically selects the corresponding process rewards for the next stage. Recurrent failures not covered by the existing capability space trigger a separate, controlled expansion procedure. We evaluate REWARDWEAVER on SOTOPIA, Amazon?HistoryPrice, and a newly constructed Sales Benchmark. Across social interaction, bilateral bargaining, and domain-specific sales, REWARDWEAVER establishes new state-of-the-art (SOTA) results. Ablations further demonstrate the importance of dynamic reward allocation, failure-grounded attribution, and stable semantics for admitted capabilities.",
+      "authors": [
+        "Hengbo Xiao",
+        "Boyao Zhang",
+        "Purui Liu",
+        "Yuxuan Zheng",
+        "Haoran Yin",
+        "Haibo Liu",
+        "Fan Zhang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-07T14:04:45+00:00",
+      "link": "https://arxiv.org/pdf/2610.10120v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "self-evolving reward adaptation for long-horizon multi-turn language-agent RL",
+      "llm_evidence_cn": "面向长程多轮语言智能体强化学习的自演化奖励适配",
+      "llm_evidence": "面向长程多轮语言智能体强化学习的自演化奖励适配",
+      "canonical_evidence": "面向长程多轮语言智能体强化学习的自演化奖励适配",
+      "llm_tldr_en": "RewardWeaver targets sparse terminal feedback and credit assignment in long-horizon language-agent RL by self-evolving process rewards. It maintains a validated capability space so reward rubrics adapt as the policy changes, providing denser and more relevant supervision during multi-turn interaction.",
+      "llm_tldr_cn": "针对可验证奖励强化学习在长程交互中面临稀疏终局反馈和信用分配困难、而固定过程奖励又随策略演化逐渐失效的问题，本文提出RewardWeaver自演化奖励适配框架。该方法维护经过验证的能力空间，使评分规则语义能够随策略能力变化而调整，从而为语言智能体提供更密集且动态适配的奖励监督。工作面向多轮长程交互训练，旨在提升智能体在复杂环境中的学习效率。",
+      "llm_tldr": "针对可验证奖励强化学习在长程交互中面临稀疏终局反馈和信用分配困难、而固定过程奖励又随策略演化逐渐失效的问题，本文提出RewardWeaver自演化奖励适配框架。该方法维护经过验证的能力空间，使评分规则语义能够随策略能力变化而调整，从而为语言智能体提供更密集且动态适配的奖励监督。工作面向多轮长程交互训练，旨在提升智能体在复杂环境中的学习效率。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.05935v1",
+      "source": "arxiv",
+      "title": "ThunderSyncRL: Lossless Acceleration of Agentic Reinforcement Learning",
+      "abstract": "Language models are moving beyond generating answers to pursuing long-horizon goals in interactive environments. Post-training these agents requires long, heterogeneous trajectories, and synchronous systems leave learner engines idle until rollout and verification finish. To squeeze out these pipeline bubbles, asynchronous training overlaps rollout and learning across updates, but comes at the cost of policy staleness. We introduce ThunderSyncRL, which starts gradient computation as soon as all required inputs are fixed, without policy staleness. For group relative policy optimization (GRPO), ThunderSyncRL computes each trajectory's score gradient as soon as the reward for that trajectory arrives, without waiting for the group. For on-policy distillation (OPD), it computes gradients for each completed agentic turn's teacher-scored actions while tool calls run in the sandbox. We prove that gradient streaming produces the same GRPO and OPD updates as batch-synchronous training, without changing either objective. On SWE-bench Verified and Terminal Bench 4.0, we train models to the same performance up to $1.9 \\times$ faster than synchronous training. With zero policy staleness, ThunderSyncRL also outperforms asynchronous training at a fixed budget by up to $2.47$ percentage points.",
+      "authors": [
+        "Seil Kang",
+        "Hangoo Kang",
+        "Tarun Suresh",
+        "Youngeun Kim",
+        "Shreyas Pimpalgaonkar",
+        "Seong Jae Hwang",
+        "Azalia Mirhoseini"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-05T07:51:46+00:00",
+      "link": "https://arxiv.org/pdf/2610.05935v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Lossless acceleration of agentic RL with on-policy distillation and no policy staleness",
+      "llm_evidence_cn": "面向智能体强化学习的无损加速，支持同策略蒸馏且无策略陈旧",
+      "llm_evidence": "面向智能体强化学习的无损加速，支持同策略蒸馏且无策略陈旧",
+      "canonical_evidence": "面向智能体强化学习的无损加速，支持同策略蒸馏且无策略陈旧",
+      "llm_tldr_en": "ThunderSyncRL accelerates agentic RL post-training by starting gradient computation as soon as inputs are fixed, computing per-trajectory GRPO gradients without waiting for the group, achieving lossless speedup with no policy staleness, including on-policy distillation.",
+      "llm_tldr_cn": "训练长程交互智能体需要大量异构轨迹，同步系统会让学习引擎在采样与验证期间空闲。作者提出ThunderSyncRL，在所需输入确定后立即开始梯度计算：对GRPO在单条轨迹奖励到达时即计算其梯度而无需等待整组，对同策略蒸馏同样适用，从而在无策略陈旧的前提下实现无损加速。该工作提升了智能体强化学习后训练的吞吐效率。",
+      "llm_tldr": "训练长程交互智能体需要大量异构轨迹，同步系统会让学习引擎在采样与验证期间空闲。作者提出ThunderSyncRL，在所需输入确定后立即开始梯度计算：对GRPO在单条轨迹奖励到达时即计算其梯度而无需等待整组，对同策略蒸馏同样适用，从而在无策略陈旧的前提下实现无损加速。该工作提升了智能体强化学习后训练的吞吐效率。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.01882v1",
+      "source": "arxiv",
+      "title": "Flowing Faster to Coordinate: One-Step Online Multi-Agent Flow Policies",
+      "abstract": "Multi-agent reinforcement learning (MARL) provides a powerful framework for learning coordinated behaviors through interactions with the environment. Developing MARL policies requires balancing expressive modeling of complex and multimodal action distributions with efficient training and execution. Generative policies, particularly diffusionbased policies, can faithfully capture complex and multimodal behaviors, but costly iterative sampling hinders their scalability in online multi-agent settings. We propose an Online MARL framework via one-step Flow model (OMAF) that combines expressive generative policies with efficient one-step action generation. OMAF employs a Transformer-based flow policy to capture complex coordination behaviors, while its approximate path score surrogate provides a principled route to synchronized flow policy optimization. To enable stable and sampleefficient learning, we further develop a joint optimization scheme coupling softmax Q-value estimation with a joint flow policy objective for coordinated policy learning. By eliminating iterative sampling, OMAF dramatically reduces training overhead without sacrificing policy expressiveness. Extensive experiments across 10 standard tasks from MPE and MAMuJoCo show that OMAF consistently achieves superior performance, with up to 3.4x higher returns and 10.5x sample efficiency improvement compared with baseline methods. These results validate the effectiveness of OMAF as an expressive and computationally efficient one-step flow policy paradigm for online MARL.",
+      "authors": [
+        "Zhuoran Li",
+        "Yunzhan Li",
+        "Xun Wang",
+        "Yihan Du",
+        "Longbo Huang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-01T15:36:31+00:00",
+      "link": "https://arxiv.org/pdf/2610.01882v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "online multi-agent RL for coordinated policies",
+      "llm_evidence_cn": "在线多智能体强化学习协调策略",
+      "llm_evidence": "在线多智能体强化学习协调策略",
+      "canonical_evidence": "在线多智能体强化学习协调策略",
+      "llm_tldr_en": "OMAF tackles expensive iterative sampling in online multi-agent RL by combining a Transformer-based flow policy with one-step action generation to learn coordinated behaviors efficiently.",
+      "llm_tldr_cn": "针对在线多智能体强化学习中扩散策略迭代采样成本高、难以兼顾表达力与效率的问题，论文提出OMAF框架，将基于Transformer的流策略与一步动作生成结合。该方法在保持复杂多模态协调行为建模能力的同时，显著降低在线训练与执行时的采样开销。实验表明该框架能在在线多智能体环境中高效学习协调策略。该工作为生成式多智能体策略的在线应用提供了高效方案。",
+      "llm_tldr": "针对在线多智能体强化学习中扩散策略迭代采样成本高、难以兼顾表达力与效率的问题，论文提出OMAF框架，将基于Transformer的流策略与一步动作生成结合。该方法在保持复杂多模态协调行为建模能力的同时，显著降低在线训练与执行时的采样开销。实验表明该框架能在在线多智能体环境中高效学习协调策略。该工作为生成式多智能体策略的在线应用提供了高效方案。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.13755v1",
+      "source": "arxiv",
+      "title": "Matched-Context Group Policy Optimization for LLM Agent Training",
+      "abstract": "Training long-horizon language model agents requires assigning credit to intermediate decisions from sparse terminal feedback. Within a finite group of sibling rollouts, useful action comparisons depend on their context, evidence for both alternatives, and how that evidence enters learning. We propose Matched-Context Group Policy Optimization (MCGPO), a procedure for constructing weighted action preferences from already collected trajectories. MCGPO defines comparison contexts with pre-action state summaries and observed rubric progress, annotated by task rules. Two-action support selects among ordered exact and coarse matching rules. Fixed folds separate candidate decisions from the terminal outcomes used to orient their preferences, and support-dependent evidence weights scale an auxiliary pairwise objective alongside shared GraphGPO task learning. MCGPO reuses rollout data and each response's original history, preserving critic-free training. Across six environment-backbone settings with three training seeds each, MCGPO improves mean success over matched GraphGPO: by 0.47-1.46 percentage points on ALFWorld and WebShop with Qwen2.5-1.5B and 7B, and by 3.96 and 5.16 points on WebShop with Qwen3-4B and 8B. The ALFWorld gains build on baseline success above 92%, where remaining headroom is limited. Integrated success improves in three of four Qwen2.5 settings. Three-seed factorial controls support opposite-fold evidence and evidence weighting; joint state-rubric matching achieves the highest mean in all four representation-control settings.",
+      "authors": [
+        "Chenxu Zhang",
+        "Yaorui Shi",
+        "Wenlong Zhang",
+        "Jianchao Tan",
+        "Zihan Wang",
+        "Yiming Cheng"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-09T15:41:37+00:00",
+      "link": "https://arxiv.org/pdf/2610.13755v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "credit assignment for long-horizon agent rollouts via group policy optimization",
+      "llm_evidence_cn": "通过组策略优化为长程智能体轨迹做信用分配",
+      "llm_evidence": "通过组策略优化为长程智能体轨迹做信用分配",
+      "canonical_evidence": "通过组策略优化为长程智能体轨迹做信用分配",
+      "llm_tldr_en": "MCGPO builds weighted action preferences from collected long-horizon agent trajectories using matched contexts and rubric progress, improving credit assignment from sparse terminal rewards.",
+      "llm_tldr_cn": "长程语言模型智能体训练中，终局稀疏反馈难以归因到中间决策。本文提出匹配上下文组策略优化MCGPO，利用动作前状态摘要与评分规则进度构造比较上下文，从已收集轨迹中生成加权动作偏好。方法通过两动作支撑与固定折叠分离候选决策与终局结果，从而在稀疏奖励下实现更可靠的信用分配。",
+      "llm_tldr": "长程语言模型智能体训练中，终局稀疏反馈难以归因到中间决策。本文提出匹配上下文组策略优化MCGPO，利用动作前状态摘要与评分规则进度构造比较上下文，从已收集轨迹中生成加权动作偏好。方法通过两动作支撑与固定折叠分离候选决策与终局结果，从而在稀疏奖励下实现更可靠的信用分配。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.07332v1",
+      "source": "arxiv",
+      "title": "Structuring MoE Expert Selection for Agentic Reinforcement Learning",
+      "abstract": "Long-horizon LLM agents are frequently implemented using sparse mixture-of-experts (MoE) models, yet the co-design of agentic behavior and MoE structures remains underexplored. In this work, we comprehensively study the connections between agentic post-training and MoE expert selection. In off-the-shelf MoE models, we observe expert selection exhibits a specialized structure that naturally aligns with agentic trajectories. Specifically, expert routing overlaps more between turns where the agent performs semantically similar operations (e.g., READ, UPDATE) than between turns with differing operations. However, standard RL algorithms ignore this specialization, allowing the MoE routing to go uncontrolled during training, which empirically limit task performance and inference efficiency. To address this, we introduce a hierarchical routing control framework for agentic tasks. We explicitly encourage turn-level expert selections to align with agentic operations while regularizing token-level expert selections to maintain local consistency. To resolve stability issues that arise during post-training with the proposed methods, we further introduce an entropy-gated control mechanism. Overall, our routing control framework achieves over 10-point improvements in success rate on all evaluated benchmarks. These results demonstrate that agentic trajectory structure provides an effective signal for optimizing MoE capacity during RL post-training.",
+      "authors": [
+        "Bolian Li",
+        "Ting-Yao Hu",
+        "Cheng-Yu Hsieh",
+        "Sanjoy Chowdhury",
+        "Oncel Tuzel",
+        "Raviteja Vemulapalli"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-10-05T20:06:47+00:00",
+      "link": "https://arxiv.org/pdf/2610.07332v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "agentic RL post-training with MoE expert selection over multi-turn trajectories",
+      "llm_evidence_cn": "面向多轮轨迹的智能体强化学习后训练与专家选择",
+      "llm_evidence": "面向多轮轨迹的智能体强化学习后训练与专家选择",
+      "canonical_evidence": "面向多轮轨迹的智能体强化学习后训练与专家选择",
+      "llm_tldr_en": "Studies how agentic RL post-training interacts with MoE expert routing, showing routing aligns with agentic operations, and proposes structure-aware RL to improve long-horizon agent performance.",
+      "llm_tldr_cn": "针对MoE模型在长程智能体任务中路由结构与强化学习后训练缺乏协同设计的问题，本文系统分析专家选择与智能体轨迹操作之间的对应关系，发现同类操作轮次的专家路由更相似。作者提出在强化学习中引入结构约束以控制路由，实验表明可提升长程智能体任务表现并避免训练中路由失控。该工作为智能体后训练与稀疏模型结构的联合设计提供了新视角。",
+      "llm_tldr": "针对MoE模型在长程智能体任务中路由结构与强化学习后训练缺乏协同设计的问题，本文系统分析专家选择与智能体轨迹操作之间的对应关系，发现同类操作轮次的专家路由更相似。作者提出在强化学习中引入结构约束以控制路由，实验表明可提升长程智能体任务表现并避免训练中路由失控。该工作为智能体后训练与稀疏模型结构的联合设计提供了新视角。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

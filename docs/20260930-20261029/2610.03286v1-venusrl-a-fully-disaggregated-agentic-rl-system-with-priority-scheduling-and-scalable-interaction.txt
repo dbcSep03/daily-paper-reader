@@ -1,0 +1,626 @@
+Title: VenusRL: A Fully Disaggregated Agentic RL System with Priority Scheduling and Scalable Interaction
+
+URL Source: https://arxiv.org/pdf/2610.03286v1
+
+Published Time: Mon, 05 Oct 2026 01:14:17 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+# VenusRL: A Fully Disaggregated Agentic RL System with Priority Scheduling and Scalable Interaction 
+
+Mingjun Zhang 1, Yucheng Li 2, Menghao Zhang 2, Shuyong Zhu 1, Ping Zhang 3, Xiaohe Hu 3, 4 , Jun Chen 3,Zhixin Wang 4, Xutong Wang 3, He Liu 3, Yanmin Jia 3, Shengrong Zhu 3, Peng Sun 5,Mingjie Zhang 3, Liming Liu 4, Jinlong Hou 4, Yuan Cheng 4, Yujun Zhang 1
+
+> 1
+
+Institute of Computing Technology, Chinese Academy of Sciences 2Beihang University 3Infrawaves 
+
+> 4
+
+Shanghai Innovation Institute 5Shanghai Qiji Zhifeng Co., Ltd. 
+
+## Abstract 
+
+Agentic Reinforcement Learning (RL) trains LLM agents through multi-turn interactions with external tool environ-ments. Its multi-turn nature exposes two systems-level bot-tlenecks unaddressed by existing agentic RL frameworks. First, end-to-end training throughput is constrained by the slowest trajectories to complete, yet optimizing per-GPU uti-lization alone scatters rollout progress across many groups, delaying the completion of enough groups to unblock the next training step. Second, tool sandboxes are statically over-provisioned by their declared memory ceilings, leaving most physical memory stranded while replicating near-identical state across sandboxes launched from the same prompt. We present VenusRL, a fully disaggregated agentic RL system that addresses both bottlenecks. VenusRL’s priority-aware action scheduler uses length-prediction heuristics to iden-tify sample groups whose completion is most likely to un-block the next training step, and pushes them ahead of others across batch admission, KV Cache residency, and cross-worker request orchestration. VenusRL’s environment resource manager combines a memory-aware admission threshold with a template-keyed page-sharing pool, packing more sandboxes per node while preserving strict memory isolation via write-protected page table entry aliasing and copy-on-write. Across representative agentic RL workloads, VenusRL achieves up to 4.24× end-to-end training speedup over state-of-the-art baselines and reduces environment cost by up to 89%. 
+
+## 1 Introduction 
+
+Agentic Reinforcement Learning (RL) trains Large Language Models (LLMs) to solve complex tasks through iterative inter-action with external environments. Driven by this paradigm, the applications of LLMs have evolved from simple language assistants into sophisticated agents capable of solving com-plex, real-world problems [14, 19, 27, 32, 34, 37]. This para-digm also motivates the emergence of industry products such as Claude Code [2], OpenClaw [8] and Deep Research [37]. 
+
+> Menghao Zhang and Shuyong Zhu are the corresponding authors.
+
+Similar to conventional single-turn RL, agentic RL train-ing is dominated by the rollout stage, which accounts for over 70% of total wall-clock time [18, 23, 41]. Existing RL systems mainly optimize this phase by mitigating straggler-induced skewness bubbles [16, 18, 41]. Beyond this shared characterization, the multi-turn nature of agentic trajecto-ries introduces unique system challenges: an efficient roll-out scheduling policy for maximizing end-to-end training throughput, and scalable environment interaction to support such flexible scheduling policy. First, for rollout scheduling, mainstream RL frameworks [10, 68] typically adopt trajectory-level scheduling, where each trajectory is treated as an indivisible execution unit. This coarse granularity ignores generation–interaction state tran-sitions, thereby leaving GPUs underutilized, which we call 
+
+turn-level agentic bubbles . Recent works address this problem by decoupling generation controllers from environment con-trollers, allowing one trajectory’s generation to overlap with another’s tool interaction [5, 33]. Though this action-level scheduling policy maximizes rollout GPU throughput, it may not accelerate training process since the trainer only waits for enough completed trajectory groups to form the next training batch, while this policy scatters rollout progress across samples. Moreover, KV Cache pressure and eviction are amplified by multi-turn execution. A trajectory may first generate, suspend during tool execution, and later resume after its KV Cache has already been evicted by other active trajectories [6, 28, 31]. This causes repeated recomputation overhead. What’s worse, the action-level scheduling, while effective for eliminating GPU idle time, increases the number of interleaved active trajectories and thereby aggravates this problem. Both problems pose challenges for an optimized rollout scheduling policy. Second, for environment interaction, the challenge is not merely the safe execution and isolation of each tool sand-boxes, but to sustain the high environment concurrency required by fine-grained rollout scheduling. Action-level scheduling increases the number of active trajectories so that rollout GPUs can consume ready trajectories while oth-ers wait for tool execution. However, if the environment side cannot support this concurrency, generation workers are arXiv:2610.03286v1 [cs.DC] 2 Oct 2026 blocked by interaction-side stalls, preventing action-level scheduling from fully realizing its benefit. Thus, scalable environment interaction in fact places a strong demand on high-density sandbox deployment. However, in production, sandboxes are conservatively packed by their configured memory ceilings, even though their actual resident set is far smaller, which leads to "memory stranding" [17, 25, 30]. Worse yet, existing systems treat sandboxes as independent instances and overlook the structural property of agentic RL: a sample group consists of multiple rollouts sharing the same prompt. Therefore, trajectories within the same sample group are launched from identical templates and execute nearly identical setup code, so a fraction of their pages are byte-identical. This leads to "state duplication" [24, 43] across sandboxes that could otherwise share memory. From the analysis above, we conclude an efficient agen-tic RL system requires two complementary capabilities: an effective rollout scheduling policy that maximizes training throughput, and a scalable environment manager that sup-ports such scheduling policy. To the end, we propose VenusRL, a fully disaggregated system for agentic RL training. VenusRL decouples training, rollout generation, and environment in-teraction into independent components, and introduces two key mechanisms: a priority-aware action scheduler for end-to-end training throughput, and an environment resource manager for cost-efficient environment interaction. The priority-aware action scheduler retains the benefits of action-level scheduling by separating generation workers from environment workers. Additionally, it incorporates pri-ority into its scheduling decisions. VenusRL defines critical groups as unfinished groups whose completion is most likely to unblock the next trainer batch. At runtime, VenusRL uses length-prediction-based heuristics to identify such groups and prioritizes their execution. To enforce this priority, VenusRL co-designs the RL framework and rollout engine to provide priority-aware GPU-slot execution, ensuring high-priority samples are scheduled ahead of others. Beyond GPU schedul-ing, VenusRL introduces priority-aware KV Cache residency. It employs trajectory-aware radix cache and uses a three-tier KV Cache model for admission control and eviction decisions. This preserves KV Cache entries of high-priority trajecto-ries on a best-effort basis. Furthermore, VenusRL performs priority-aware request orchestration to mitigate the imbal-anced distribution of high-priority samples across rollout workers. It monitors KV Cache pressure across rollout work-ers and migrates requests with their reusable prefix cache to reduce KV contention of high-priority samples. The environment resource manager provides scalable in-teraction by page-grained and high-density sandbox deploy-ment. At cluster scope, VenusRL provides scalable interac-tion by a global controller to allocate sandboxes from a shared environment pool and hide deployment details to the framework. At node scope, VenusRL introduces page-level sandbox placement and dynamic admission control to maximize deployment density while preventing memory overcommitment. To exploit similarity among agentic tra-jectories, VenusRL further builds a group-level page sharing pool. Trajectories from the same sample group share snap-shot pages whenever possible: read-only pages are mapped to the same write-protected physical pages, and private copies are created lazily through copy-on-write upon modification. We implemented VenusRL in 24k lines of Python, Rust and Golang. We conduct extensive evaluations to validate the effectiveness of VenusRL. Experimental data shows that VenusRL outperforms state-of-the-art RL systems, achieving 1.07–3.26 × end-to-end training speedup over Slime [68], 1.06-4.24 × speedup over RollFlash [33], and up to 2.67 × speedup compared to ThunderAgent [28]. Meanwhile, VenusRL re-duces environmental costs by up to 89% compared with E2B [13], a representative and widely-use sandbox platform. In summary, this paper makes the following contributions: 
+
+• We identify two systems challenges introduced by agentic RL training: multi-turn rollout scheduling on the generation side, and external environment man-agement on the interaction side (§2). 
+
+• We propose VenusRL, a fully disaggregated system for Agentic RL training (§3). VenusRL introduces a priority-aware action scheduler (§4) for maximizing end-to-end training throughput, and an environment resource manager (§5) to provide scalable and cost-efficient environment interaction. 
+
+• We implement VenusRL and evaluate it on represen-tative Agentic RL workloads (§6). Experimental re-sults show that VenusRL achieves up to 4.24 × training throughput improvement and reduces environment resource cost by up to 89% compared with existing systems. 
+
+## 2 Background and Motivation 2.1 Agentic RL 
+
+Agentic RL evolves LLMs into autonomous agents capable of solving complex real-world problems, including AI coding, deep research or embodied AI [12, 39, 48, 56, 64]. Departing from static and single-turn reasoning tasks [3, 36, 40], agents act through dynamic interaction with external environments. In this paradigm, LLM agents synthesize plans, invoke tools, observe feedback, and refine subsequent actions within a long-horizon execution process. A typical workflow of agen-tic RL training comprises three phases: rollout, reward and training. In the rollout phase, each prompt is replicated into multiple trajectories, and a rollout worker executes each tra-jectory by repeatedly alternating between model generation and environment interaction until reaching a terminal state. 23:15 00:15 01:15 02:00 02:55  
+
+> Time
+> 016 32 48 64
+> Active rollout bsz
+> worker-0 worker-1
+
+(a) Active rollout batch size 23:15 00:15 01:15 02:00 02:55   
+
+> Time
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> KV Cache Usage
+> Warmup Frequent Thrashing
+> 0.0 0.2 0.4 0.6 0.8 1.0
+
+(b) KV Cache Usage & hit rate 
+
+Figure 1: Profiling results for SWE-agent task (bsz=32). 
+
+Once a trajectory is completed, a reward worker evaluates the quality of agent’s actions using a scalar reward signal. The trainer worker collects finished trajectories groups, esti-mates the advantage and uses them for policy optimization with algorithms like PPO [44] or GRPO [45]. Agentic RL training can be performed in a synchronous or asynchronous setting. Synchronous frameworks [21, 22, 46] enforce strict on-policy training, where rollout must com-plete before training begins and all responses generated must use the most recent model weights. Though this synchro-nization stabilizes training, the system suffers from severe skewness bubble due to response variance within a single batch [18, 41]. Asynchronous frameworks [16, 20, 68] mit-igate the skewness bubble by disaggregating rollout from training. However, they still fail to address the turn-level agentic bubbles caused by multi-turn interaction. 
+
+## 2.2 Challenges of agentic RL 
+
+As quantified in previous works [18, 23, 41], rollout domi-nates the RL training pipeline, accounting for over 70% of total wall-clock time. The rollout phase involves repeatedly transition between GPU-side LLM generation and environ ment-side tool execution. This iterative loop introduces two unique system challenges: multi-turn rollout pipeline sched-uling on the generation side and environment resource man-agement on the interaction side. 
+
+Multi-turn Rollout Scheduling. Agentic trajectories alter-nate between GPU-side LLM generation and environment-side tool execution. Mainstream frameworks [10, 68] typi-cally schedule rollouts at the trajectory level, and are un-aware of the state transitions inside each trajectory. As a result, when a trajectory pauses for tool execution, it still occupies a generation slot, leaving GPUs underutilized. We refer to this inefficiency as the turn-level agentic bubble. We profile the active generation batch size on an online SWE-agent [54] workload. As shown in Figure 1a, although the configured generation batch size of each rollout worker is 64, the actual active batch size fluctuates substantially and reaches only 76.5% on average. To mitigate this problem, re-cent works [5, 33] disaggregate environment controller from generation controller, enabling one tool execution to overlap 23:00 00:00 01:00 02:00 03:00 04:00 
+
+> Time
+> 0500 1000 1500 2000 2500 3000 3500
+> Memory (GB)
+> Allocated Memory Actual Memory
+
+Figure 2: Online sandbox memory usage. 26/3 26/4 26/5   
+
+> Date
+> 020 40 60 80
+> Cost Ratio (%)  Sandbox Network/Storage Others
+
+Figure 3: Non-GPU Agen-tic workload expenses. 
+
+with the other’s generation, which we call action-level sched-uling policy. Though this policy successfully improves rollout GPU utilization, it may not translate into end-to-end train-ing speedup. Since generation progress is scattered across sample groups, action-level scheduling may even delay this step’s training progress (details in §4.1). Meanwhile, the multi-turn nature of agentic trajectories also introduces persistent KV Cache pressure and unexpected eviction as tokens accumulate across turns. Under limited HBM capacity, the system may be trapped in the cycle of evic-tion and recomputation: each trajectory generates, waits for tool execution, and later resumes after its KV Cache has been evicted by others. Figure 1b illustrates this severe KV thrash-ing. Although KV Cache usage remains constantly near satu-ration, the cache hit rate drops sharply and stays low, expos-ing substantial redundant recomputation. To mitigate this problem, hierarchical storage backends [9, 42] extend KV Cache capacity by offloading KV pages to lower-tier storage. However, they introduce extra reload overhead, which prior work has shown still inefficient [6]. Continuum [31] keeps KV Caches alive for a fixed time window using TTL-based management, while ThunderAgent [28] evicts trajectory KV Cache with a shortest-first policy to preserve the continuity of long-context trajectories. However, these designs are still agnostic to the inner characteristics of agentic RL training. 
+
+Environment Resource Management. Agentic RL relies on external environments for tool interaction. Such interac-tions require strong isolation to prevent unsafe tool actions, dependency conflicts, and cross-task interference. Existing systems [11, 49, 54] therefore commonly place each task in an isolated sandbox. Modern agentic sandboxes are de-ployed as microVMs [1, 7] with pre-built images and fixed memory allocations. In production, memory capacity is the primary bottleneck to sandbox density (Details in Appen-dix A). Unlike CPU and network resources, which can be oversubscribed with graceful performance degradation, sand-box memory is typically provisioned as a hard capacity con-straint: once memory is exhausted, no additional sandboxes can be created. Prior works improve memory deployment density through execution-state reuse and resource elasticity. TrEnv [24] proposes a repurposable sandbox design and facil-itates remote memory state sharing by implementing a new Linux namespace API, while ARL-Tangram [52] formulates Prompt Dataset       
+
+> Data Coordinator
+> Priority Policy Request Migration
+> Rollout Worker Rollout Worker Rollout Worker
+> Samples
+> Priority-aware Action Scheduler (
+> §4) Action 1 Action 2
+> Priority Monitor Decision
+> Actor Worker Actor Worker Actor Worker
+> Message Queue
+> Scheduler insert , preempt or migrate samples
+> Train Step Weight sync
+> Environment Resource Manager (
+> §5)
+> Page-level Sandbox Cluster-level Controller
+> GPU CPU Sandbox A Sandbox B k8s MicroVM
+
+Figure 4: System overview and workflow of VenusRL. 
+
+external resource management as an action-level optimiza-tion problem and dynamically allocates suitable resources to each sandbox during execution. However, none of these works fully address the follow-ing two sources of memory inefficiency for agentic sand-boxes. First, to guarantee stability, production deployment therefore limits concurrency by configured peak memory rather than observed usage, introducing "memory strand-ing" [17, 25, 30]. Moreover, treating each sandbox as a fully independent instance prevents reuse opportunities of shared runtimes, libraries, and dependencies, resulting in "state du-plication" [24, 43]. For ARL-Tangram, an additional limi-tation is that its elasticity relies on lightweight container-level reconfiguration and cannot be efficiently extended to strongly isolated microVM sandboxes, where resources are provisioned at the VM boundary. Our production profiling confirms this inefficiency: as shown in Figure 2, sandbox memory usage on a physical node remains only around 8% on average, while Figure 3 shows that environment sand-boxes contribute more than 60% of production non-GPU cost over the past three months. 
+
+## 3 VenusRL Design Overview 
+
+To address the challenges above, we propose VenusRL, a fully disaggregated system for agentic RL training, as shown in Fig-ure 4. Fundamentally, VenusRL follows the multi-controller paradigm adopted by prior works [50, 62]. Specifically, the data coordinator serves as the centralized control plane for dataset loading, prompt preprocessing, and sample schedul-ing. Each rollout worker continuously fetches samples from the data coordinator using a dedicated background thread and executes generation asynchronously. When a sample group finishes generation, the rollout worker computes its advantages and streams the group to actor workers for im-mediate gradient computation. Once enough sample groups form a global batch, actor workers accumulate all computed gradients, and trigger a synchronized gradient computation and update across all available GPUs. The updated actor weights are then synchronized back to rollout workers be-fore the next RL iteration. Unlike previous works [16, 65, 68] that only decouple roll-out from training, VenusRL further separates environment interaction from rollout execution. Building on this architec-ture, VenusRL introduces two key components: a priority-aware action scheduler to maximize end-to-end training throughput, and an environment resource manager to pro-vide scalable and cost-efficient environment interaction. 
+
+Priority-aware Action Scheduler. The priority-aware ac-tion scheduler decouples generation workers from environ-ment workers, scheduling samples at action granularity. The scheduler incorporates priority into scheduling policy, and uses a lightweight fine-tuned predictor to estimate each sam-ple’s remaining generation length at turn boundaries for identifying high-priority sample groups. Once high-priority groups are identified, the scheduler prioritizes their samples across GPU-slot execution, KV Cache residency and runtime request orchestration. 
+
+Environment Resource Manager. The environment re-source manager provides scalable interaction by page-grained and high-density sandbox deployment. At cluster scope, the manager maintains a global controller that allocates sand-boxes from a shared environment pool, hiding the deploy-ment details from the RL framework. At node scope, VenusRL introduces page-level sandbox placement and dynamic ad-mission control to maximize node deployment density while preventing memory overcommitment. Additionally, VenusRL exploits the strong similarity among agentic RL sandboxes through a group-level page pool to reuse as many as possible snapshot pages between trajectories. 
+
+## 4 Priority-aware Action Scheduler 
+
+To mitigate the inefficiency of rollout execution discussed in §2, we propose priority-aware action scheduler . We begin by formalizing the optimization problem for end-to-end train-ing. Subsequently, we propose a length-prediction heuristic to identify high-priority sample groups that contribute to end-to-end training throughput. We then design priority-aware action scheduler to prioritize high-priority samples across GPU-slot execution, KV Cache residency and request orchestration. 
+
+## 4.1 Problem Formulation 
+
+Let 𝑔 = {𝑟 𝑔, 1, . . . , 𝑟 𝑔,𝐾 } denote a sample group replicated from the same prompt, where 𝐾 = 1 for PPO [44] and 𝐾 > 1for GRPO [45]. A group contributes to training only after all 𝐾 samples in the group have completed rollout, so its completion time is determined by the slowest sample. If one trainer micro-batch requires 𝐵 ready groups, the optimized training efficiency objective is to minimize the time at which the next 𝐵 completed groups become available: min  
+
+> 𝜋
+
+𝑇 𝜋  
+
+> next
+
+(𝑡 ), 𝑇 𝜋  
+
+> next
+
+(𝑡 ) = inf {𝜏 ≥ 𝑡 : |G 𝜋 𝑟𝑒𝑎𝑑𝑦 (𝜏 )| ≥ 𝐵 }.Length Predictor Predicted Length Data Coordinator    
+
+> Priority Policy
+> Rollout Worker generation interaction Updated Scheduling Policy! Asynchronous Policy update
+
+Figure 5: Length-prediction Scheduling Policy. 
+
+Here 𝜋 denotes the rollout scheduling policy, and G𝜋 𝑟𝑒𝑎𝑑𝑦 (𝜏 )
+
+is the set of groups that have completed rollout by time 𝜏 .This formulation reveals why action-level scheduling adop ted in previous works [5, 33] alone is insufficient. Such a pol-icy improves rollout GPUs utilization, but may delay 𝑇 𝜋  
+
+> next
+
+(𝑡 )
+
+since trajectory progress is scattered across many groups, thereby stalling training process. Moreover, aggressively ex-panding the set of active trajectories increases KV Cache contention, which may trigger frequent KV Cache eviction, and further introduce reload, or redundant prefill recompu-tation overhead. Therefore, the scheduler should prioritize groups that are most valuable for unblocking the next train-ing micro-batch. We define high-priority groups as the subset of unfinished groups whose completion is expected to most directly reduce 𝑇 𝜋  
+
+> next
+
+(𝑡 ). Once identified, high-priority groups should receive preferential access to GPU slots and KV Cache residency to minimize our optimized goal. 
+
+## 4.2 Critical Groups Identification 
+
+Optimizing training throughput is in fact choosing the best scheduling policy 𝜋 for identifying high-priority groups. A naive solution is the first-come-first-served (FCFS) policy, which is widely used in scheduling systems. However, FCFS policy is not the best practice in agentic RL training due to stochastic response dynamics. Each prompt is replicated into a group of trajectories for advantage estimation. To encour-age exploration and response diversity, a high temperature (e.g., 0.7 for SWE-bench-verified [26]) is often set, which increases output-length variance. Moreover, this variance is further amplified by environment interaction: dynamic and unexpected observations can change the subsequent rea-soning path of each trajectory. As a result, the group arrival order provides limited information about completion order and is insufficient for identifying high-priority groups. Considering the exponential search space, selecting this critical group set at runtime is fundamentally NP-hard (De-tailed proof in Appendix B). Since complex scheduling logic can itself compromise training throughput, VenusRL instead adopts a lightweight online heuristic. We propose a length-prediction heuristic policy for identifying critical groups. The design is based on two observations. 
+
+Observation 1 : per-token latency is nearly constant. Action-level scheduling is necessary to keep rollout GPUs satu-rated. With the fully asynchronous streaming pipeline, roll-out workers continuously receive enough samples for gener-ation with a stable effective batch size. Thus, the per-token latency is nearly constant and the remaining output length becomes trustworthy for estimating remaining GPU time. 
+
+Observation 2 : length prediction accuracy improves as turns accumulate. As trajectory history accumulates, it ex-poses richer signals about the agent’s reasoning path, thereby improving the reliability of remaining-length prediction [59]. Based on these two observations, VenusRL proposes a length-prediction heuristic scheduling policy for identifying high-priority groups. We collect online trajectory traces and convert each sample into a (messages, length) pair. The resulting dataset is used to fine-tune a lightweight model, i.e., Qwen3-0.6B. The model is deployed as a microservice to simplify integration and scale independently from rollout workers. Meanwhile, to keep prediction off the critical path, VenusRL introduces an asynchronous priority policy update 
+
+mechanism. As shown in Figure 5, each trajectory overlaps length prediction with tool execution. The prediction result is then asynchronously reported to the data coordinator. The coordinator updates priorities only when the predicted or-dering of sample groups changes. It then pushes the updated policy to rollout workers without interrupting their genera-tion loops. Rollout workers continuously perform priority-aware scheduling using the latest available policy. Therefore, priority decisions do not block the training pipeline or affect the critical path of training progress. 
+
+Staleness-boundary promotion. Fully asynchronous RL typically enforces a weight-version threshold to bound the maximum number of model updates that any trajectory may span. However, length-prediction-based scheduling raises a potential concern that long-running trajectories may be repeatedly demoted, eventually becoming stale enough to be discarded and thereby biasing the training-data stream. VenusRL therefore adds a strict safeguard: once a trajectory reaches its last valid weight version, it is immediately pro-moted to the highest priority until completion, consistent with prior asynchronous RL systems [16, 68] that preferen-tially serve stale trajectories. In practice, fully asynchronous RL often adopts low staleness ratio to preserve training sta-bility; for instance, prior works [35, 65] recommend that accumulated stale samples should not exceed one global batch size. Such conservative staleness settings limit how long a trajectory can be overtaken by newer requests, sub-stantially restricting priority-induced delay. We provide a detailed analysis and proof in Appendix C, together with experimental evidence in §6.2. 
+
+## 4.3 Priority-aware Scheduling 
+
+Figure 6 presents the overview design of our priority-aware scheduling mechanism. 
+
+Priority-aware GPU-slot Execution. To preserve the ex-ecution order of high-priority samples while maintaining rollout GPU utilization, VenusRL introduces priority-aware other node’s memory other node’s memory 
+
+Priority-aware KV residency Priority-aware request orchestration (Cross-engine)    
+
+> Root
+> AB1 B2 B3
+> low high unused
+
+Priority-aware GPU-slot execution    
+
+> B
+> other nodes’ memory
+> Agentic trajectories
+> ADC
+> Scheduler dispatch
+> C
+> preempt
+> high-priority low-priority B
+> Eviction order
+> monitor
+> HP pool LP pool
+> re-dispatch KV cache
+
+Figure 6: Priority-aware Action Scheduler. 
+
+action-level scheduling . The scheduler still follows the action-level scheduling paradigm to keep GPU slots saturated. Si-multaneously, instead of scattering GPU slots uniformly across sample groups, it executes low-priority samples oppor-tunistically and high-priority samples preemptively. Specif-ically, low-priority samples are admitted only when GPU slots would otherwise be underutilized. When high-priority samples return from environment interaction and wait for potential GPU slots, the scheduler preempts ongoing low-priority samples. Their generation histories are preserved as partial rollout states [66], and the preempted samples are re-enqueued to wait for future GPU slots. However, enforcing execution priority only at the RL framework is insufficient. A fixed number of framework-level GPU slots does not perceive contention inside the rollout en-gine, especially the token-budget contention. Modern rollout engine [29, 63] typically adopts continuous batching [57], where requests are admitted and executed at batch granu-larity. Without priority awareness, the rollout engine forms new prefill batches in a FCFS order. This can cause priority inversion: a high-priority sample may fail to enter the batch due to insufficient token budget, whereas lower-priority sam-ples have already consumed part of the available token bud-get. Thus, VenusRL extends preemptive scheduling into the rollout engine. During prefill batch formation, the rollout engine prioritizes high-priority samples before admitting low-priority ones. This prevents low-priority samples from occupying token budget needed by high-priority ones. Since VenusRL only has two priority classes, batch construction requires only a linear-time partition rather than a full sort, adding negligible scheduling overhead. For decode batches, when the engine lacks sufficient token space to execute the next forward step, VenusRL retracts low-priority samples first. The framework-level slot preemption and engine-level priority-aware batching co-design strictly guarantees execu-tion order for high-priority samples. 
+
+Priority-aware KV Cache Residency. As discussed in §2, ·Token3 Root       
+
+> T2
+> (0,0)
+> Agentic Trajectories
+> Trajectory-aware RadixCache
+> HP LP
+> HP LP High-priority Low-priority
+> Token1 Token1
+> Tool Execution
+> Token4 Token5 Token1,3 Token1,4 Token6 Scheduler Policy Changed!
+> Prompt Output
+> Tool Execution LP LP
+> Completed Release ref
+> T1
+> (1,1)
+> T1
+> (1,0)
+> T4
+> (0,1)
+> Root
+> T2
+> (0,0)
+> T1
+> (1,1)
+> T3
+> (1,0)
+> T4
+> (0,1)
+> Root
+> T2
+> (0,0)
+> T1
+> (0,1) T3T5 (0,0) T4T6 (0,1)
+> Root
+> T2
+> (0,0)
+> T1
+> (0,2)
+> T3
+> (0,1)
+> T4
+> (0,1)
+> Low_Ref High_Ref Unused Protected
+
+Figure 7: Trajectory-Aware Radix Cache. 
+
+the naive KV Cache management mechanism in modern roll-out engines [29, 63] introduce frequent KV Cache eviction between multi-turn trajectories. This contention is further amplified by action-level scheduling due to increasing con-currency of active samples. Without proactive and priority-aware KV Cache management, high-priority samples may be delayed due to prefix caches reload or recomputation overhead, which compromises training throughput. To address this issue, VenusRL introduces trajectory-aware radix cache , as shown in Figure 7. VenusRL retains the prefix-tree architecture used by conventional radix caches, but addi-tionally augments cached token pages with trajectory-level reference counters. When each trajectory enters the rollout engine at first time, VenusRL records the priority of the tra-jectory and adds reference counters on the prefix pages it reuses. Unlike request-level protection, this reference is re-leased only when the entire multi-turn trajectory completes. This allows the cache manager to classify otherwise evictable pages into three tiers: unused , which is not referenced by any inflight trajectory; low_ref , which is referenced only by low-priority trajectories; and high_ref , which is referenced by at least one high-priority trajectory. Building on the trajectory-aware radix cache, VenusRL enforces priority-aware KV Cache residency by using the three-tiered model for both eviction and admission. When KV pages must be reclaimed for incoming prefill batch or running decode batch, VenusRL evicts pages in tier order: 
+
+unused first, then low_ref , and high_ref last. Crucially, the eviction scope is further bounded by the priority of the run-ning requests. Low-priority requests only reclaim unused 
+
+and low_ref tokens, whereas high_ref pages are consid-ered evictable merely for high-priority requests. Additionally, VenusRL applies the same tier model at admission time. For each candidate request, VenusRL computes its residual page budget using only the tiers that the request is permitted to evict. Crucially, admission and eviction must operate on the same reference snapshot since any skew between the counters used to compute the admission budget and the counters observed during eviction would introduce either memory leak or out-of-memory crashes. To enforce this consistency, VenusRL serializes all reference mutations at scheduler-iteration boundaries and applies them atomically before batch formation, preventing any reference update from being interleaved between a batch’s admission deci-sion and its KV allocation. This three-tiered eviction policy prevents low-priority trajectories from evicting KV pages that are still referenced by inflight high-priority trajectories, thereby reducing reload or prefill-recomputation overhead on the critical path of high-priority samples. However, tiered eviction alone is still insufficient. Although VenusRL prevents low-priority requests from evicting high_ref 
+
+KV pages, severe KV pressure can still cause eviction among high-priority trajectories themselves. Thus, we propose resi dency-aware priority demotion . Instead of admitting every high-priority request into running batch as long as it can reclaim pages from evictable page pool, VenusRL explic-itly constrains the concurrency of high-priority trajecto-ries to retain KV residency. When the high-priority KV de-mand exceeds the available KV Cache capacity, VenusRL temporarily selects a group of high-priority inflight trajecto-ries and demotes them to low-priority tier, thereby reserving the KV residency for the remaining high-priority trajecto-ries. Notably, VenusRL adopts shortest-context-first policy to select demoted trajectories to preserve long trajectories’ generation progress. Once high-priority trajectories com-plete and release their references, the paused trajectories are promoted back and resumed. By converting reactive high-priority cache thrashing into controlled priority demotion, this mechanism eliminates repeated eviction among high-priority trajectories and reduces recomputation overhead on the critical path. 
+
+Priority-aware Request Orchestration. As discussed above, high-priority requests may still be blocked under severe KV contention. Nevertheless, at the same time, some workers may have sufficient HBM space and execute low-priority samples due to imbalance distribution of high-priority sam-ples. This creates cross-worker priority inversion. To address this imbalance, VenusRL proposes runtime re-quest re-dispatching . VenusRL continuously monitors the high-priority KV Cache pressure of each rollout worker. Once a worker experiences KV contention among high-priority requests, the scheduler redistributes part of its pend-ing requests to workers with the lowest high-priority KV pressure. To avoid the recomputation overhead of long trajec-tory, VenusRL migrates the corresponding prefix KV Cache together. Following prior systems [59, 65], VenusRL uses Mooncake transfer engine [42] for zero-copy and resilient KV Cache movement. Notably, to avoid interference with three-tier allocation and admission consistency, VenusRL transfers KV Cache from host memory to host memory rather than directly manipulating on-device HBM cache. Overall, this Page Sharing      
+
+> S2 private p1 p2 p3 p4 S1 private Node A
+> migrate larget sandboxes
+> Migration
+> （rare OOM cases ）
+> Dynamic Admission Threshold Adaption
+> S*
+> page pool New Sandbox Admit Redirect
+> Other Nodes
+> Data
+
+Figure 8: Overview of Environment Resource Manager. 
+
+design mitigates priority inversion caused by cross-worker load imbalance and improves training throughput. 
+
+## 5 Environment Resource Manager 
+
+In this section, we target the low-density deployment prob-lem of agentic RL sandbox as discussed in §2. To solve this, we propose page-level sandbox placement design with dy-namic admission threshold in §5.1, and group-level page sharing design in §5.2. An overview of the two designs is shown in Figure 8. 
+
+## 5.1 Sandbox Placement 
+
+VenusRL first introduces a cluster-level controller to allocate sandboxes from a shared environment pool, enabling high-density multiplexing across concurrent agentic tasks. Then, VenusRL performs fine-grained sandbox placement per node to further improve deployment density. As discussed in §2, coarse-grained admission based on declared sandbox memory leads to severe "memory strand-ing", where nearly 90% physical memory is left unused. After deep dive, we find that E2B [13] uses Linux userfaultfd to lazily populate snapshot-backed pages, so physical pages are allocated only when they are first touched. This mechanism explains the gap between actual physical memory usage and virtual upper memory bound, which allows physical node to maintain more sandboxes than permitted. However, this also creates an admission dilemma. If we admit too few sand-boxes, it falls back to conservative allocation and wastes physical memory. If we admit too many, later page faults, Copy-on-Write (CoW) modification, and runtime allocations may exhaust physical pages and trigger Out-Of-Memory (OOM) issues. Therefore, the key problem is to decide how far a node can safely overcommit memory at runtime. VenusRL addresses this with a dynamic admission thresh-old 𝑇 , where details can be seen in Algorithm 1. A node ad-mits a new sandbox only when its current physical memory usage is below this threshold. VenusRL updates it at runtime Algorithm 1 Dynamic Admission Threshold Adaptation                                                                               
+
+> 1: Input: 𝑀 total ,𝑀 used ,𝑡 react ,𝛼 , active sandbox set S, candidate sandbox 𝑅 , worker set W
+> 2: Output: admission decision for 𝑅
+> 3: 𝐺 active ←EstimateActiveGrowth (S , 𝑡 react )
+> 4: 𝐺 candidate ←EstimateColdStartGrowth (𝑅, 𝑡 react )
+> 5: 𝐻 ←𝛼 · ( 𝐺 active +𝐺 candidate )
+> 6: 𝑇 ←1−𝐻 𝑀 total
+> 7: if 𝑀 used <𝑇 ·𝑀 total then
+> 8: Admit( 𝑅 )
+> 9: else
+> 10: Redirect( 𝑅 )
+> 11: end if
+> 12: if PageAllocationFails then
+> 13: InterceptOOM
+> 14: Spaused ← S
+> 15: Pause( Spaused )
+> 16: repeat
+> 17: 𝑠, 𝑤 ←SelectSandboxAndWorker (S ,W)
+> 18: Migrate( 𝑠, 𝑤 )
+> 19: S ← S \ { 𝑠 }
+> 20: 𝑀 used ←RecomputeMemoryUsage (S)
+> 21: 𝐺 active ←EstimateActiveGrowth (S , 𝑡 react )
+> 22: 𝐻 ←𝛼 ·𝐺 active
+> 23: 𝑇 ←1−𝐻 𝑀 total
+> 24: until 𝑀 used ≤𝑇 ·𝑀 total
+> 25: Resume( Spaused )
+> 26: end if
+> 27: return
+
+according to the predicted near-term memory growth. No-tably, VenusRL uses sandbox migration as a fallback when OOM occurs. 
+
+Dynamic Admission Threshold Adaption. The challenge here is how to estimate future memory growth for determin-ing the admission threshold 𝑇 . To answer this, we first deep dive into the memory allocation behavior of Firecracker [1]. We observe that the physical memory growth mainly comes from four sources: library loading, interpreter runtime caches, allocator operation, and CoW modifications to shared snap-shot pages. A deep investigation shows that sandbox memory growth has a structured lifecycle rather than an arbitrary pattern. Library loading and interpreter caches dominate the cold-start phase and are largely determined by the sand-box template. Allocator operations and CoW modifications continue during running phase, but both shows slower mar-ginal growth than the cold-start phase. The reason behind is that once allocators have expanded their arenas, subsequent allocations are often served from existing pages. Similarly, once shared pages have been privatized, later writes to the same pages no longer trigger additional CoW allocation. As a result, most sandboxes memory growth is typically bursty during cold start and much slower during running phase. Based on this observation, VenusRL uses two different predict heuristic for cold-start and running sandboxes. For cold-start phase sandboxes, VenusRL uses offline profiling of the same template to estimate memory growth, since sandboxes from the same template share the same runtime, dependencies, and initialization path. For running sandboxes, VenusRL esti-mates the recent growth rate from a short time window and uses this growth rate to estimate their short-term memory demand. At admission time, VenusRL accounts for both the re-cent growth of active sandboxes and the expected cold-start growth of the candidate one. It admits the candidate only af-ter reserving sufficient headroom for this near-term growth, with a safety factor 𝛼 to tolerate prediction bias. When sand-box memory usage is stable, VenusRL raises the threshold and admits more sandboxes; when memory is still grow-ing quickly, VenusRL lowers the threshold and delays fur-ther admission. This mechanism allows VenusRL to increase deployment density while avoiding the unsafe behavior of admitting sandboxes solely based on current memory usage. 
+
+Sandbox Migration. Although dynamic admission thresh-old substantially reduces OOM risk, it may still underesti-mate sudden memory bursts when sandbox footprints grow faster than the predictor. To improve robustness, VenusRL uses sandbox migration as a fallback mechanism. When the controller fails to allocate new physical pages for allocation request, VenusRL intercepts the resulting OOM exception signal before the failure propagates to the task. It then temporarily pauses all running sandboxes while pre-serving their in-memory states. It then selects the sandbox with the largest resident memory footprint and migrates only this sandbox to another resource worker. After migration, VenusRL recomputes the node’s memory usage and admis-sion threshold. If the node still exceeds the safe threshold, VenusRL repeats the process. This incremental largest-first policy avoids unnecessary migration: VenusRL releases one sandbox’s memory at a time and stops as soon as the node re-turns to a safe state. To reduce migration overhead and limit its impact on the critical path, VenusRL uses the Mooncake transfer engine [42] to transfer sandbox memory state di-rectly between resource workers. This direct memory-state transfer avoids slow checkpoint-and-reload paths and al-lows VenusRL to quickly relieve memory pressure while pre-serving sandbox execution state. Upon migration, VenusRL resumes all paused running sandboxes. 
+
+## 5.2 Page Sharing 
+
+RL algorithms such as PPO [44] and GRPO [45] expand each prompt into a group of trajectories that, by construc-tion, are launched from the same environment template. Within a group, sandboxes execute nearly identical setup code—loading the same dependencies, importing the same Local Write (CoW) Initialization SB1 SB2 Sandbox Layer Kernel Layer Group page pool     
+
+> Group G1
+> PTE1 PTE2
+> First Read
+> PTE1 populate create VMA PTE2 PTE share
+> Write
+> Concurrent read & Sharing
+> ✂
+> access page X (fi rst touch) write to page x (lazy CoW) PTE2 newly allocated alias physical frames indexed by offset
+> left middle right SB1 SB2
+> Later Read
+> access page X (later)
+> SB2
+> private frame
+
+Figure 9: Mechanism of Page Sharing. 
+
+packages, materializing the same scratch files—so a large frac-tion of their pages remain byte-identical until divergent tool calls begin to write new state. VenusRL exploits this invari-ant to increase per-node sandbox density without weakening isolation. As shown in Figure 9, VenusRL realizes intra-group sharing by decoupling three issues that the native fork/mmap path conflates, i.e., virtual-address ownership, physical-page residency, and write permission. Each sandbox keeps its own VMA (Virtual Memory Area) and page table, but read-only PTEs (Page Table Entry) from different sandboxes in a group may alias the same physical frame (shared residency), with write permission masked until a write actually occurs, i.e., lazy CoW. Two requirements must be satisfied. (i) Eager bind-ing: sharing should be installed at sandbox creation, before any page fault, so that no sandbox ever allocates a redundant frame for a snapshot page (Figure 9-left). (ii) Strict isolation: a write by one sandbox can’t be visible to its peers and com-promised sandboxes can’t corrupt the shared backing store. VenusRL realizes this across two layers: a user-space group page pool and a kernel-side write-protected mapping. 
+
+Group Page Pool At User Space. VenusRL maintains a per-group page pool indexed by guest-memory offset, using the environment template as the sharing key. Pages are pop-ulated lazily: when any sandbox in the group first accesses a page, VenusRL loads that page into the shared pool (Fig-ure 9-middle). For each memory offset, VenusRL allows only one sandbox to perform this first load at a time, so concur-rent sandboxes always share the same populated page. Once populated, a pool entry is immutable: subsequent accesses from any group member find the frame already resident, with no per-sandbox allocation. Because the pool is keyed by template rather than by content hash, VenusRL never scans memory to discover sharing; every read-only snapshot page is shared by construction. 
+
+Per-Sandbox Mapping And CoW At Kernel Level. Each sandbox maps its guest memory as a private, write-protected view over the page pool. Reads behave as ordinary guest-memory accesses, with the sandbox’s PTE silently aliasing a frame in the pool. A write is handled by allocating a private writable frame, copying the page contents, and rebinding only that sandbox’s PTE to the new frame. The pool entry and every other sandbox’s mapping are left untouched (Figure 9-right). Because aliasing is performed at PTE granularity rather than by sharing whole memory regions, divergence is local—isolation is preserved at the same granularity that the sandbox boundary already enforces, and a compromised sandbox can corrupt only its own private frames. 
+
+## 6 Evaluation 
+
+We implemented VenusRL with 24k lines of Python, Rust and Golang atop our internal team’s RL training frame-work, SGLang [63], E2B [13] and Firecracker [1]. Our evalu-ation aims to answer the following questions: (1) How does VenusRL compare to state-of-the-art agentic RL systems in end-to-end training performance (§6.2)? (2) How do the three core techniques in the priority-aware action scheduler con-tribute to performance (§6.3)? (3) How effective is the envi-ronment resource manager in VenusRL (§6.4)? 
+
+## 6.1 Experimental Setup 
+
+Testbed. We conduct our experiments on a cluster of four servers, totaling 32 GPUs. Each node is equipped with eight NVIDIA Hopper GPUs, 180 Intel Xeon CPU cores, and 1.8 TB of host memory. Intra-node GPU communication utilizes 900 GB/s NVLink, while inter-node networking is handled by 400 Gb/s NVIDIA Mellanox InfiniBand. Specifically, we allocate 16 GPUs to generation and another 16 GPUs to training. 
+
+Models and Workloads. We evaluate VenusRL using in-struction-tuned Qwen3-4B and Qwen3-32B models [4], which provide strong tool-use and reasoning capabilities. We con-duct experiments on representative SWE-agent tasks [54] with the OpenSWE dataset [15], which contains 45,320 exe-cutable Docker environments spanning over 12.8K reposi-tories, allowing agents to execute code, run test suites, and check formatting. For all agentic rollouts, we set the maxi-mum output length to 128K tokens and limit each trajectory to at most 300 turns. We generate eight samples per prompt using the GRPO RL algorithm [45]. We set the LLM gener-ation temperature to 0.7 [53] and configure the framework with a weight-version threshold of 2, discarding samples whose generation spans three or more weight versions. 
+
+Baselines. We compare VenusRL against three state-of-the-art agentic RL systems: (1) Slime [68] is one of the most widely used open-source frameworks for agentic RL training. It adopts trajectory-level scheduling and may suffer from turn-level agentic bubbles. (2) RollFlash [33] disaggregates en-vironment controller from rollout controller, adopting action-level scheduling policy. It allows one sample’s tool execution to overlap with the another sample’s generation, thereby improving GPU utilization. (3) ThunderAgent [28] abstracts agentic workflows as programs and adopts a program-aware 0200k 400k      
+
+> 1.07x 1.13x 1.15x 1.14x 1.61x 1.57x 1.15x 1.50x 1.52x
+
+16 32 64 
+
+05k 10k 15k   
+
+> 1.07x 1.08x 1.85x
+
+16 32 64   
+
+> 1.10x 2.89x 3.26x
+
+16 32 64   
+
+> 1.09x 2.40x 2.89x
+
+bsz   
+
+> Throughput
+> Qwen3-4B Qwen3-32B
+> (a) async_factor=1.0 (b) async_factor=1.5 (c) async_factor=2.0
+
+Slime RollFlash ThunderAgent VenusRL Figure 10: Training performance of agentic RL systems under different batchsize and staleness. 0 10 20 30 40 50 
+
+Steps       
+
+> 0.0 0.1 0.2 0.3 0.4 0.5
+> Avg. Reward  Qwen3-4B
+> VenusRL slime RollFlash
+> 0816 24 32
+
+Steps   
+
+> 0.2 0.4 0.6 0.7 Qwen3-32B
+> VenusRL slime RollFlash
+
+Figure 11: Reward score for training. 0–80% 80–90% 90–95% 95–100%                                           
+
+> Length percentile
+> 0123+
+> Version Span  66.9% 22.9% 13.5% 22.9% 30.9% 61.6% 48.7% 14% 1.6% 12.3% 27.9% 16.1% 0.6% 3.2% 9.9% 47%
+> slime
+> 0–80% 80–90% 90–95% 95–100%
+> Length percentile
+> 68% 13.8% 12.8% 16.6% 27% 55.6% 25.1% 11.9% 3.5% 21.7% 29.2% 9.7% 1.5% 8.9% 32.8% 61.8%
+> RollFlash
+> 0–80% 80–90% 90–95% 95–100%
+> Length percentile
+> 79.5% 43.2% 23.3% 19.7% 18.2% 40.4% 35.3% 15.4% 1.9% 13.1% 24.5% 21.7% 0.5% 3.3% 16.9% 43.2%
+> VenusRL
+> 0% 50% 100%
+
+Figure 12: Weight version heatmap comparison. 
+
+scheduler that mitigates KV Cache thrashing by proactively evicting shorter contexts under memory pressure. Notably, given that the SWE-agent workload produces extremely long responses under our setting, we enable the hierarchical cache (HiCache) in SGLang [9] to support of-floading KV Cache to L2 host memory. To ensure fair com-parison, we bump the sglang version to 0.5.17 and keep all the framework or algorithm arguments consistent. 
+
+## 6.2 End-to-End Performance 
+
+Training performance. We first benchmark VenusRL against three state-of-the-art agentic RL systems on training perfor-mance across different settings. The async_factor set here controls the maximum staleness samples allowed in each rollout step. In particular, setting async_factor to 1.0 effec-tively enforces strict on-policy RL training. 1) End-to-End Training Speed. Figure 10 presents the end-to-end training throughput across various batch sizes and 
+
+async_factor configurations. Across both models, VenusRL consistently outperforms all three baselines across all set-tings, achieving 1.07–3.26 × speedup over Slime, 1.06-4.24 ×
+
+speedup over RollFlash, and 1.05–2.67 × speedup over Thun-derAgent. Even under strict on-policy training, i.e., async_fa ctor =1.0, VenusRL improves throughput in every setting: by 1.07–1.15 × for Qwen3-4B and 1.05–1.85 × for Qwen3-32B. This gain mainly comes from the priority-aware KV Cache residency, which prioritizes evicting unused KV pages be-fore evicting prefix pages referenced by in-flight trajecto-ries. In addition, runtime request orchestration balances the sample distribution across rollout workers, further explain-ing the gain. When async_factor increases to 1.5 or 2.0, the speedup at batch size 16 remains modest at 1.06–1.17 ×,consistent with limited KV cache contention and fewer op-portunities for priority-aware scheduling. At batch sizes 32 and 64, VenusRL achieves 1.26–1.71 × speedup for Qwen3-4B and 1.64–4.24 × for Qwen3-32B. The experimental results demonstrate the strong scalability of VenusRL for agentic RL training. 2) Convergence and Stability. Figure 11 presents the reward score of Slime, Rollflash and VenusRL under 1.5 async_factor 
+
+and 32 batch size setting. All three systems converge to nearly identical rewards within comparable steps. We observe simi-lar convergence behavior across all evaluated settings; due to space limitations, we only report this representative setting. Figure 12 shows weight-version heatmaps across trajec-tory length percentiles, accumulated over 100 training steps with Qwen3-4B. VenusRL incurs no higher long-tail discard rate than Slime or Rollflash, justifying our design choice. Notably, we observe higher long-tail discard rate in Rollflash, which stems from action-level scheduling. Without special handling, stale trajectories repeatedly compete with newer 0 30 60 90 120 150 180  
+
+> Time (minutes)
+> 020 40 60 80 100
+> Memory occupancy (%)
+> Targeted migration
+> Native E2B VenusRL
+> Node capacity
+
+Figure 13: Online sandbox Memory occupancy. 256 320 384 
+
+> Environment concurrency
+> 05k 10k
+> Throughput
+> 0.51x 0.81x 1.00x
+
+Figure 14: Throughput un-der limited resources. Table 1: End-to-end training speedup breakdown. 
+
+Method bsz=16 bsz=32 bsz=64 
+
+Baseline 1.00 1.00 1.00 + priority-aware schedule 1.01 × 1.81 × 1.42 ×
+
++ kvcache residency 1.06 × 2.72 × 2.78 ×
+
++ request migration 1.10 × 2.89 × 3.26 ×
+
+samples and their progresses are continuously blocked. 
+
+Environment management. As discussed in §2, memory capacity is the primary bottleneck that caps sandbox deploy-ment density. Figure 13 thus profiles node memory occu-pancy over a three-hour online run case on a 400GB node. Native E2B admits sandboxes by configured peak memory. Occupancy saturates at about 8% and stays flat for the rest of the run, leaving over 90% of node memory unusable. In contrast, VenusRL admits sandbox based on actual memory usage and keeps occupancy in a high band between roughly 80% and 95%. At minute 132, a burst-growth of sandbox foot-print drives the node occupancy to the capacity line within a single control interval. Rather than surrendering the node to the kernel OOM killer, VenusRL triggers targeted sand-box migration and returns occupancy in under 3 seconds (§6.4). In production, such issue is near zero with a well-tuned admission-threshold (specified in Appendix D). We deliberately select a window that contains one such event to show how VenusRL behaves under residual OOM pressure. Figure 14 evaluates how environment concurrency back-pressures rollout efficiency when sandbox resources are con-strained, with 32 batch size and 1.5 async_factor setting. As is depicted, throughput drops to 0.81 × at 320 concurrent sandboxes and to 0.51 × at 256, respectively. The data indi-cates that without high-density sandbox deployment, the limited sandbox resources may directly degrade training per-formance and hide the efficiency of priority-aware scheduler. 
+
+## 6.3 Priority-Aware Action Scheduler 
+
+Performance breakdown. Table 1 presents a detailed break-down of the cumulative speedup from our proposed tech-niques in priority-aware action scheduler across different batch sizes with Qwen3-32B and fixed async_factor of 1.5. 16 32 64     
+
+> bsz
+> 01k 2k 3k 4k
+> Throughput
+> 1.05x 1.86x 1.95x
+> action-level FCFS length-prediction
+
+Figure 15: Scheduling policy comparison. 0 50k 100k  
+
+> Ground Truth (tokens)
+> 050k 100k
+> Predicted (tokens)  Spearman = 0.9802
+> MAE = 3846 MAPE = 17.1%
+> y = x
+
+(a) Predictor accuracy 16 32 64  
+
+> bsz
+> 0.0 0.3 0.6 0.9 1.2 1.5
+> Latency (s)  Prediction Tool execution
+
+(b) Predictor overhead 
+
+Figure 16: Predictor performance. 
+
+• Priority-aware scheduling improves training throughput by prioritizing sample groups that are most likely to un-block the next trainer batch. Its benefit becomes more pronounced as the batch size increases, achieving 1.81 ×
+
+and 1.42 × speedup at batch sizes of 32 and 64, respectively. Notably, the improvement decrease from bsz 32 to 64 in-dicates that without priority-aware KV Cache residency, the scheduling policy may not fully unleash its potential. 
+
+• KV Cache residency further improves performance by reducing unnecessary KV Cache eviction and recomputa-tion for high-priority samples. This component provides substantial gains across all batch sizes, providing a 1.36 ×
+
+performance uplift (from 1.42 × to 2.78 ×) at batch size 64. It also retains its gains for small batch sizes, contributing a 0.91 × improvement (from 1.81 × to 2.72 ×) at batch size 32. 
+
+• Request migration provides additional gains by rebalanc-ing high-priority rollout requests across workers and re-ducing KV contention. In particular, it delivers up to 0.48 ×
+
+(from 2.78 × to 3.26 ×) speedup for batch size of 64 setting. 
+
+Ablation study. We further examine whether the key de-sign choices inside the priority-aware action scheduler are necessary and optimized with Qwen3-32B. 1) Length-prediction scheduling policy. We first evaluate the effectiveness of our length-prediction scheduling policy. In this experiment, we keep the other system components en-abled, fix async_factor to 1.5, and compare three differ-ent scheduling policies. As shown in Figure 15, the length-prediction policy consistently outperforms the other policies across all batch sizes. It achieves up to 95% higher end-to-end training throughput than action-level policy, and up to 58% than FCFS-based priority policy. We then profile the runtime behavior of the length pre-dictor. As shown in Figure 16a, the predictor achieves a Spearman correlation [47] of 0.98, confirming that it reli-ably distinguishes long requests from short ones—sufficient 32 64   
+
+> bsz
+> 01k 2k 3k
+> Throughput
+> HiCache VenusRL w/o priority demotion VenusRL
+
+(a) Training performance 32 64     
+
+> bsz
+> 0% 20% 40% 60% 80% 100%
+> Cache hit ratio
+> HiCache VenusRL w/o priority demotion VenusRL device_hit_ratio host_hit_ratio
+
+(b) Cache hit ratio 
+
+Figure 17: Effectiveness of KV Cache residency. 
+
+for priority-based scheduling. Though absolute generation lengths may shift as the rollout policy evolves, the predictor conditions on the problem specification and accumulated trajectory history to capture task difficulty and execution progress, providing informative cues for relative ordering. Additionally, the predictor can also be updated at training checkpoints using recent trajectories to mitigate policy drift, with fine-tuning typically converging within only minutes (More details in Appendix E). On the other hand, Figure 16b reports the average predictor latency and corresponding tool interaction time. The predictor latency is much smaller than the interaction latency, thus the overhead can be effectively overlapped. 2) Priority-aware KV Cache residency. We next evaluate how different components in VenusRL’s priority-aware KV Cache residency affect training performance. Figure 17a and Fig-ure 17b compare three cache backends across different batch sizes: HiCache, VenusRL ’s trajectory-aware radix cache with LRU eviction for high-priority samples under memory pres-sure, and full VenusRL with residency-aware priority demo-tion. Compared with HiCache, the trajectory-aware radix cache improves end-to-end training throughput by preserv-ing KV Cache state of inflight trajectories and thus increasing the cache hit rate. It maintains a 93% cache hit rate under a batch size of 32, compared with 82% for HiCache, and achieves a 56% speedup. However, the cache hit rate drops to only 79% under the batch size of 64 due to severe KV Cache pressure, achieving sub-optimal performance. VenusRL miti-gates this degradation with residency-aware priority demo-tion, maintaining an over 95% cache hit rate under the same batch size. As a result, VenusRL achieves up to 2.09 × speedup over HiCache and 1.58 × speedup over VenusRL without pri-ority demotion. The experimental result justifies VenusRL’s design choices of priority-aware KV Cache residency. 
+
+## 6.4 Environment Resource Manager 
+
+Ablation study. In this experiment, we validate the neces-sity of the key components of VenusRL’s environment re-source manager. We colocate sandboxes cloned from the same environment template on one node with 400GB of host memory, and compare three different configurations. Fig-ure 18 shows the maximum number of sandboxes a node can sustain. Native E2B saturates at 100 since it admits sandboxes native E2B VenusRL w/o sharing VenusRL 0500 1000 
+
+> Max sandboxes
+> 100 743 905
+
+Figure 18: Deployment Density. native E2B VenusRL 024Time (s)  3.68 2.70   
+
+> snapshot upload resume RDMA migration
+
+Figure 19: Migration Over-head. Table 2: Latency (s) of sandbox lifecycle operations under VenusRL and native E2B.                                 
+
+> 128 256 512 Operation E2B VenusRL E2B VenusRL E2B VenusRL Create 8.1 8.1 13.0 13.7 29.6 29.6 Exec 3.5 4.0 4.3 4.3 3.6 3.6 Pause 4.9 6.8 19.2 24.8 52.3 52.6 Resume 1.7 2.1 4.9 6.2 36.1 36.2
+
+by their declared memory upper limit.Enabling VenusRL’s sandbox placement (§5.1) alone, which admits sandboxes based on their actual physical footprint, lifts the node to 743 sandboxes (643% gain). Adding page sharing (§5.2) fur-ther shrinks each sandbox’s footprint,pushing density to 905, 905% compared with native E2B and 122% compared with VenusRL without page sharing, indicating the strong scalability of VenusRL. 
+
+Sandbox Migration Performance. This experiment eval-uates VenusRL’s RDMA-based sandbox migration mecha-nism. We compare VenusRL with the native E2B’s recovery path and measure the end-to-end recovery latency of both approaches. The baseline pauses sandboxes on the source node, uploads saved snapshot and resumes it on a new node. VenusRL instead pauses the sandbox, migrates its runtime state to the destination node over RDMA, and resumes it there. As shown in Figure 19, VenusRL recovers a sandbox in 2.70 s, compared with 3.68 s for the native E2B path, a 1.4 ×
+
+reduction in cross-node recovery latency. 
+
+Overhead of Environment Resource Management. To evaluate the overhead introduced by Environment Resource Manager, we compare VenusRL with native E2B under four different primitives (i.e., Create, Exec, Pause, and Resume) with the number of concurrent sandboxes from 128 to 512. Table 2 shows the average latency. Overall, VenusRL intro-duces only negligible overhead over native E2B. 
+
+## 7 Related Work 
+
+KV Cache Management. KV cache management has been extensively studied for efficient LLM serving, primarily focus-ing on allocation, reuse, and eviction. PagedAttention [29] manages KV caches with page-like blocks to reduce fragmen-tation, while vAttention [38] further decouples virtual and physical KV allocation. Other works like Mooncake [42] and HiCache [9] extend KV storage across GPU memory, host memory, SSDs, or remote storage. VenusRL’s priority-aware KV cache residency is complementary to these techniques and can be integrated with them. 
+
+Resource Auto-scaling. Auto-scaling is widely used to improve deployment efficiency in cloud systems. For LLM in-ference, recent systems [51, 58, 61] optimize resource scaling for large-scale serving workloads. In RL systems, DistRS [67] uses history-based scaling and timeout-aware mechanisms to adjust resources at batch boundaries. Due to the strong isolation of MicroVM-based environments, VenusRL does not explore dynamic scaling, but we view it as a promising direction for future work. 
+
+## 8 Conclusion 
+
+This paper presents VenusRL, a fully disaggregated agentic RL system with priority scheduling and scalable interaction. VenusRL designs the priority-aware action scheduler for effective multi-turn rollout scheduling and environment re-source manager for scalable and cost-efficient environment interaction. Implementation and evaluations demonstrate that VenusRL accelerates training by up to 4.24 × and reduces environment costs by nearly 89%. 
+
+## References 
+
+[1] Alexandru Agache, Marc Brooker, Alexandra Iordache, Anthony Liguori, Rolf Neugebauer, Phil Piwonka, and Diana-Maria Popa. 2020. Firecracker: Lightweight virtualization for serverless applications. In 
+
+17th USENIX symposium on networked systems design and implementa-tion (NSDI 20) . 419–434. [2] Anthropic. 2025. Claude 3.7 Sonnet and Claude Code. https://www. anthropic.com/news/claude-3-7-sonnet. [3] Hao Bai, Yifei Zhou, Jiayi Pan, Mert Cemri, Alane Suhr, Sergey Levine, and Aviral Kumar. 2024. Digirl: Training in-the-wild device-control agents with autonomous reinforcement learning. Advances in Neural Information Processing Systems 37 (2024), 12461–12495. [4] Jinze Bai, Shuai Bai, Yunfei Chu, Zeyu Cui, Kai Dang, Xiaodong Deng, Yang Fan, Wenbin Ge, Yu Han, Fei Huang, et al. 2023. Qwen technical report. arXiv preprint arXiv:2309.16609 (2023). [5] Shiyi Cao, Dacheng Li, Fangzhou Zhao, Shuo Yuan, Sumanth R Hegde, Connor Chen, Charlie Ruan, Tyler Griggs, Shu Liu, Eric Tang, et al. 2025. Skyrl-agent: Efficient rl training for multi-turn llm agent. arXiv preprint arXiv:2511.16108 (2025). [6] Qiaoling Chen, Zhisheng Ye, Tian Tang, Peng Sun, Boyu Tian, Guoteng Wang, Shenggui Li, Yonggang Wen, Zhenhua Han, and Tianwei Zhang. 2026. CONCUR: High-Throughput Agentic Batch Inference of LLM via Congestion-Based Concurrency Control. arXiv preprint arXiv:2601.22705 (2026). [7] Cloud Hypervisor Project. 2026. Cloud Hypervisor. https://github. com/cloud-hypervisor/cloud-hypervisor. Accessed: 2026-06-07. [8] OpenClaw Contributors. 2026. OpenClaw. https://github.com/ openclaw/openclaw. [9] SGLang/Hicache contributors. 2025. Hierarchical KV. https://github. com/sgl-project/sglang. [10] VeRL Contributors. 2025. VeRL. https://github.com/volcengine/verl. [11] Weinan Dai, Hanlin Wu, Qiying Yu, Huan-ang Gao, Jiahao Li, Chengquan Jiang, Weiqiang Lou, Yufan Song, Hongli Yu, Jiaze Chen, et al. 2026. Cuda agent: Large-scale agentic rl for high-performance cuda kernel generation. arXiv preprint arXiv:2602.24286 (2026). [12] Shihan Dou, Yan Liu, Haoxiang Jia, Enyu Zhou, Limao Xiong, Junjie Shan, Caishuang Huang, Xiao Wang, Xiaoran Fan, Zhiheng Xi, et al. 2024. Stepcoder: improving code generation with reinforcement learn-ing from compiler feedback. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) .4571–4585. [13] E2B Development Team. 2024. E2B Sandbox: Secure cloud sandboxes for AI Agents and LLMs. https://github.com/e2b-dev/E2B. [14] Lang Feng, Zhenghai Xue, Tingcong Liu, and Bo An. 2025. Group-in-group policy optimization for llm agent training. arXiv preprint arXiv:2505.10978 (2025). [15] Dayuan Fu, Shenyu Wu, Yunze Wu, Zerui Peng, Yaxing Huang, Jie Sun, Ji Zeng, Mohan Jiang, Lin Zhang, Yukun Li, Jiarui Hu, Liming Liu, Jinlong Hou, and Pengfei Liu. 2026. daVinci-Env: Open SWE Environment Synthesis at Scale. arXiv:2603.13023 [cs.SE] https:// arxiv.org/abs/2603.13023 [16] Wei Fu, Jiaxuan Gao, Xujie Shen, Chen Zhu, Zhiyu Mei, Chuyi He, Shusheng Xu, Guo Wei, Jun Mei, Jiashu Wang, Tongkai Yang, Binhang Yuan, and Yi Wu. 2025. AReaL: A Large-Scale Asyn-chronous Reinforcement Learning System for Language Reasoning. arXiv:2505.24298 [cs.LG] https://arxiv.org/abs/2505.24298 [17] Alexander Fuerst, Stanko Novaković, Íñigo Goiri, Gohar Irfan Chaudhry, Prateek Sharma, Kapil Arya, Kevin Broas, Eugene Bak, Mehmet Iyigun, and Ricardo Bianchini. 2022. Memory-harvesting vms in cloud platforms. In Proceedings of the 27th ACM International Conference on Architectural Support for Programming Languages and Operating Systems . 583–594. [18] Wei Gao, Yuheng Zhao, Dakai An, Tianyuan Wu, Lunxi Cao, Shaopan Xiong, Ju Huang, Weixun Wang, Siran Yang, Wenbo Su, et al. 2025. RollPacker: Mitigating Long-Tail Rollouts for Fast, Synchronous RL Post-Training. arXiv preprint arXiv:2509.21009 (2025). [19] Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, et al. 2025. Deepseek-r1: Incentivizing reasoning capability in llms via reinforce-ment learning. arXiv preprint arXiv:2501.12948 (2025). [20] Zhenyu Han, Ansheng You, Haibo Wang, Kui Luo, Guang Yang, Wenqi Shi, Menglong Chen, Sicheng Zhang, Zeshun Lan, Chunshi Deng, et al. 2025. AsyncFlow: An Asynchronous Streaming RL Framework for Efficient LLM Post-Training. arXiv preprint arXiv:2507.01663 (2025). [21] Alexander Havrilla, Maksym Zhuravinskyi, Duy Phung, Aman Tiwari, Jonathan Tow, Stella Biderman, Quentin Anthony, and Louis Castricato. 2023. trlX: A framework for large scale reinforcement learning from human feedback. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing . 8578–8595. [22] Jian Hu, Xibin Wu, Wei Shen, Jason Klein Liu, Weixun Wang, Songlin Jiang, Haoran Wang, Hao Chen, Bin Chen, Wenkai Fang, et al. 2025. OpenRLHF: A Ray-based Easy-to-use, Scalable and High-performance RLHF Framework. In Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing: System Demonstrations . 656– 666. [23] Qinghao Hu, Shang Yang, Junxian Guo, Xiaozhe Yao, Yujun Lin, Yuxian Gu, Han Cai, Chuang Gan, Ana Klimovic, and Song Han. 2026. Taming the long-tail: Efficient reasoning rl training with adaptive drafter. In 
+
+Proceedings of the 31st ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 2 .1933–1948. [24] Jialiang Huang, MingXing Zhang, Teng Ma, Zheng Liu, Sixing Lin, Kang Chen, Jinlei Jiang, Xia Liao, Yingdi Shan, Ning Zhang, et al. 2024. Trenv: Transparently share serverless execution environments across different functions and nodes. In Proceedings of the ACM SIGOPS 30th Symposium on Operating Systems Principles . 421–437. [25] Seyyed Ahmad Javadi, Amoghavarsha Suresh, Muhammad Wajahat, and Anshul Gandhi. 2019. Scavenger: A black-box batch workload resource manager for improving utilization in cloud environments. In 
+
+Proceedings of the ACM symposium on cloud computing . 272–285. [26] Carlos E Jimenez, John Yang, Alexander Wettig, Shunyu Yao, Kexin Pei, Ofir Press, and Karthik R Narasimhan. 2024. SWE-bench: Can Language Models Resolve Real-world Github Issues?. In The Twelfth In-ternational Conference on Learning Representations . https://openreview. net/forum?id=VTF8yNQM66 [27] Bowen Jin, Hansi Zeng, Zhenrui Yue, Jinsung Yoon, Sercan Arik, Dong Wang, Hamed Zamani, and Jiawei Han. 2025. Search-r1: Training llms to reason and leverage search engines with reinforcement learning. 
+
+arXiv preprint arXiv:2503.09516 (2025). [28] Hao Kang, Ziyang Li, Xinyu Yang, Weili Xu, Yinfang Chen, Junxiong Wang, Beidi Chen, Tushar Krishna, Chenfeng Xu, and Simran Arora. 2026. Thunderagent: A simple, fast and program-aware agentic infer-ence system. arXiv preprint arXiv:2602.13692 (2026). [29] Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody Hao Yu, Joseph Gonzalez, Hao Zhang, and Ion Stoica. 2023. Efficient memory management for large language model serving with pagedattention. In Proceedings of the 29th symposium on operating systems principles . 611–626. [30] Huaicheng Li, Daniel S Berger, Lisa Hsu, Daniel Ernst, Pantea Zar-doshti, Stanko Novakovic, Monish Shah, Samir Rajadnya, Scott Lee, Ishwar Agarwal, et al. 2023. Pond: Cxl-based memory pooling sys-tems for cloud platforms. In Proceedings of the 28th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 2 . 574–587. [31] Hanchen Li, Runyuan He, Qiuyang Mang, Qizheng Zhang, Huanzhi Mao, Xiaokun Chen, Hangrui Zhou, Alvin Cheung, Joseph Gonza-lez, and Ion Stoica. 2025. Continuum: Efficient and robust multi-turn llm agent scheduling with kv cache time-to-live. arXiv preprint arXiv:2511.02230 (2025). [32] Fanbin Lu, Zhisheng Zhong, Shu Liu, Chi-Wing Fu, and Jiaya Jia. 2025. ARPO: End-to-End Policy Optimization for GUI Agents with Experience Replay. arXiv preprint arXiv:2505.16282 (2025). [33] Han Lu, Zichen Liu, Shaopan Xiong, Yancheng He, Wei Gao, Yanan Wu, Weixun Wang, Jiashun Liu, Yang Li, Haizhou Zhao, Ju Huang, Siran Yang, Xiaoyang Li, Yijia Luo, Zihe Liu, Ling Pan, Junchi Yan, Wei Wang, Wenbo Su, Jiamang Wang, Lin Qu, and Bo Zheng. 2025. Part II: ROLL Flash – Accelerating RLVR and Agentic Training with Asynchrony. arXiv:2510.11345 [cs.LG] https://arxiv.org/abs/2510.11345 [34] Rui Lu, Zhenyu Hou, Zihan Wang, Hanchen Zhang, Xiao Liu, Yujiang Li, Shi Feng, Jie Tang, and Yuxiao Dong. 2025. Deepdive: Advancing deep search agents with knowledge graphs and multi-turn rl. arXiv preprint arXiv:2509.10446 (2025). [35] Michael Noukhovitch, Shengyi Huang, Sophie Xhonneux, Arian Hos-seini, Rishabh Agarwal, and Aaron Courville. 2025. Asynchronous rlhf: Faster and more efficient off-policy rl for language models. In 
+
+International Conference on Learning Representations , Vol. 2025. 4003– 4029. [36] OpenAI. 2022. Introducing chatgpt. https://openai.com/index/ chatgpt/ 
+
+(2022). [37] OpenAI. 2022. Introducing deep research. https://openai.com/ index/introducing-deep-research/ (2022). [38] Ramya Prabhu, Ajay Nayak, Jayashree Mohan, Ramachandran Ramjee, and Ashish Panwar. 2025. vattention: Dynamic memory management for serving llms without pagedattention. In Proceedings of the 30th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 1 . 1133–1150. [39] Zehan Qi, Xiao Liu, Iat Long Iong, Hanyu Lai, Xueqiao Sun, Wenyi Zhao, Yu Yang, Xinyue Yang, Jiadai Sun, Shuntian Yao, et al. 2024. Webrl: Training llm web agents via self-evolving online curriculum reinforcement learning. arXiv preprint arXiv:2411.02337 (2024). [40] Cheng Qian, Emre Can Acikgoz, Qi He, Hongru Wang, Xiusi Chen, Dilek Hakkani-Tür, Gokhan Tur, and Heng Ji. 2025. Toolrl: Reward is all tool learning needs. arXiv preprint arXiv:2504.13958 (2025). [41] Ruoyu Qin, Weiran He, Weixiao Huang, Yangkun Zhang, Yikai Zhao, Bo Pang, Xinran Xu, Yingdi Shan, Yongwei Wu, and Mingxing Zhang. 2025. Seer: Online Context Learning for Fast Synchronous LLM Rein-forcement Learning. arXiv preprint arXiv:2511.14617 (2025). [42] Ruoyu Qin, Zheming Li, Weiran He, Jialei Cui, Feng Ren, Mingxing Zhang, Yongwei Wu, Weimin Zheng, and Xinran Xu. 2025. Mooncake: Trading more storage for less computation—a {KVCache-centric }
+
+architecture for serving {LLM } chatbot. In 23rd USENIX conference on file and storage technologies (FAST 25) . 155–170. [43] Divyanshu Saxena, Tao Ji, Arjun Singhvi, Junaid Khalid, and Aditya Akella. 2022. Memory deduplication for serverless computing with medes. In Proceedings of the Seventeenth European Conference on Com-puter Systems . 714–729. [44] John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. 2017. Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347 (2017). [45] Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, Mingchuan Zhang, YK Li, Yang Wu, et al. 2024. Deepseekmath: Pushing the limits of mathematical reasoning in open language models. arXiv preprint arXiv:2402.03300 (2024). [46] Guangming Sheng, Chi Zhang, Zilingfeng Ye, Xibin Wu, Wang Zhang, Ru Zhang, Yanghua Peng, Haibin Lin, and Chuan Wu. 2025. Hybrid-Flow: A Flexible and Efficient RLHF Framework. In Proceedings of the Twentieth European Conference on Computer Systems (EuroSys ’25) .ACM, 1279–1297. doi:10.1145/3689031.3696075 [47] C Spearman. 1930. C. Spearman. (1930). [48] Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Mandlekar, Chaowei Xiao, Yuke Zhu, Linxi Fan, and Anima Anandkumar. 2023. Voyager: An open-ended embodied agent with large language models. arXiv preprint arXiv:2305.16291 (2023). [49] Xingyao Wang, Boxuan Li, Yufan Song, Frank F Xu, Xiangru Tang, Mingchen Zhuge, Jiayi Pan, Yueqi Song, Bowen Li, Jaskirat Singh, et al. 2025. Openhands: An open platform for ai software developers as gen-eralist agents. In International Conference on Learning Representations ,Vol. 2025. 65882–65919. [50] Zhixin Wang, Tianyi Zhou, Liming Liu, Ao Li, Jiarui Hu, Dian Yang, Yinhui Lu, Jinlong Hou, Siyuan Feng, Yuan Cheng, et al. 2025. DistFlow: A Fully Distributed RL Framework for Scalable and Efficient LLM Post-Training. arXiv preprint arXiv:2507.13833 (2025). [51] Yuxing Xiang, Xue Li, Kun Qian, Yufan Yang, Diwen Zhu, Wenyuan Yu, Ennan Zhai, Xuanzhe Liu, Xin Jin, and Jingren Zhou. 2025. Aegaeon: Effective GPU pooling for concurrent LLM serving on the market. In 
+
+Proceedings of the ACM SIGOPS 31st Symposium on Operating Systems Principles . 1030–1045. [52] Bangjun Xiao, Yihao Zhao, Xiangwei Deng, Shihua Yu, Yuxing Xiang, Huaqiu Liu, Qiying Wang, Liang Zhao, Hailin Zhang, Xuanzhe Liu, et al. 2026. ARL-Tangram: Unleash the Resource Efficiency in Agentic Reinforcement Learning. arXiv preprint arXiv:2603.13019 (2026). [53] An Yang, Baosong Yang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang Zhou, Chengpeng Li, Chengyuan Li, Dayiheng Liu, Fei Huang, Guant-ing Dong, Haoran Wei, Huan Lin, Jialong Tang, Jialin Wang, Jian Yang, Jianhong Tu, Jianwei Zhang, Jianxin Ma, Jin Xu, Jingren Zhou, Jinze Bai, Jinzheng He, Junyang Lin, Kai Dang, Keming Lu, Keqin Chen, Kexin Yang, Mei Li, Mingfeng Xue, Na Ni, Pei Zhang, Peng Wang, Ru Peng, Rui Men, Ruize Gao, Runji Lin, Shijie Wang, Shuai Bai, Sinan Tan, Tianhang Zhu, Tianhao Li, Tianyu Liu, Wenbin Ge, Xiaodong Deng, Xiaohuan Zhou, Xingzhang Ren, Xinyu Zhang, Xipin Wei, Xu-ancheng Ren, Yang Fan, Yang Yao, Yichang Zhang, Yu Wan, Yunfei Chu, Yuqiong Liu, Zeyu Cui, Zhenru Zhang, and Zhihao Fan. 2024. Qwen2 Technical Report. arXiv preprint arXiv:2407.10671 (2024). [54] John Yang, Carlos E Jimenez, Alexander Wettig, Kilian Lieret, Shunyu Yao, Karthik Narasimhan, and Ofir Press. 2024. Swe-agent: Agent-computer interfaces enable automated software engineering. Advances in Neural Information Processing Systems 37 (2024), 50528–50652. [55] Feng Yao, Liyuan Liu, Dinghuai Zhang, Chengyu Dong, Jingbo Shang, and Jianfeng Gao. 2025. On the rollout-training mismatch in modern RL systems. In OPT 2025: Optimization for Machine Learning .[56] Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan, and Yuan Cao. 2022. React: Synergizing reasoning and acting in language models. arXiv preprint arXiv:2210.03629 (2022). [57] Gyeong-In Yu, Joo Seong Jeong, Geon-Woo Kim, Soojeong Kim, and Byung-Gon Chun. 2022. Orca: A Distributed Serving System for Transformer-Based Generative Models. In 16th USENIX Symposium on Operating Systems Design and Implementation (OSDI 22) .[58] Minchen Yu, Rui Yang, Chaobo Jia, Zhaoyuan Su, Sheng Yao, Tingfeng Lan, Yuchen Yang, Zirui Wang, Yue Cheng, Wei Wang, et al. 2025. 
+
+{\ lambda } Scale: Enabling Fast Scaling for Serverless Large Language Model Inference. arXiv preprint arXiv:2502.09922 (2025). [59] Zili Zhang, Yinmin Zhong, Chengxu Yang, Chao Jin, Bingyang Wu, Xin-ming Wei, Yuliang Liu, and Xin Jin. 2026. Heddle: A Distributed Orches-tration System for Agentic RL Rollout. arXiv preprint arXiv:2603.28101 
+
+(2026). [60] Xin Zhao, Yongkang Liu, Kuan Xu, Jia Guo, Zihao Wang, Yan Sun, Xinyu Kong, Qianggang Cao, Liang Jiang, Zujie Wen, et al. [n. d.]. Small leak can sink a great ship–boost rl training on moe with icepop!, Sep 2025. URL https://ringtech. notion. site/icepop ([n. d.]). [61] Yihao Zhao, Jiadun Chen, Peng Sun, Lei Li, Xuanzhe Liu, and Xin Jin. 2025. SeaLLM: Service-Aware and Latency-Optimized Re-source Sharing for Large Language Model Inference. arXiv preprint arXiv:2504.15720 (2025). [62] Haizhong Zheng, Yizhuo Di, Jiahui Wang, Shuowei Jin, Xueshen Liu, Yongji Wu, Z Morley Mao, Ion Stoica, Jiawei Zhao, and Beidi Chen. 2026. AstraFlow: Dataflow-Oriented Reinforcement Learning for Agen-tic LLMs. arXiv preprint arXiv:2605.15565 (2026). [63] Lianmin Zheng, Liangsheng Yin, Zhiqiang Xie, Chuyue Sun, Jeff Huang, Cody H Yu, Shiyi Cao, Christos Kozyrakis, Ion Stoica, Joseph E Gonzalez, et al. 2024. Sglang: Efficient execution of structured lan-guage model programs. Advances in neural information processing systems 37 (2024), 62557–62583. [64] Yuxiang Zheng, Dayuan Fu, Xiangkun Hu, Xiaojie Cai, Lyumanshan Ye, Pengrui Lu, and Pengfei Liu. 2025. Deepresearcher: Scaling deep research via reinforcement learning in real-world environments. arXiv preprint arXiv:2504.03160 (2025). [65] Yinmin Zhong, Zili Zhang, Xiaoniu Song, Hanpeng Hu, Chao Jin, Bingyang Wu, Nuo Chen, Yukun Chen, Yu Zhou, Changyi Wan, et al. 2025. StreamRL: Scalable, Heterogeneous, and Elastic RL for LLMs with Disaggregated Stream Generation. arXiv preprint arXiv:2504.15930 
+
+(2025). [66] Yuzhen Zhou, Jiajun Li, Yusheng Su, Gowtham Ramesh, Zilin Zhu, Xiang Long, Chenyang Zhao, Jin Pan, Xiaodong Yu, Ze Wang, et al. 2025. April: Active partial rollouts in reinforcement learning to tame long-tail generation. arXiv preprint arXiv:2509.18521 (2025). [67] Ruidong Zhu, Mingcong Han, Yinmin Zhong, Wencong Xiao, Xuanzhe Liu, and Xin Jin. 2026. {DistRS }: Disaggregated Reward Service for 
+
+{RLVR } with {Batch-Level } Constraint. In 23rd USENIX Symposium on Networked Systems Design and Implementation (NSDI 26) . 1517–1531. [68] Zilin Zhu, Chengxing Xie, Xin Lv, and slime Contributors. 2025. slime: An LLM post-training framework for RL Scaling. https://github.com/ THUDM/slime. GitHub repository. Corresponding author: Xin Lv. Appendix A Analysis on sandbox density bottleneck 
+
+Memory, not CPU or network, is the deployment bottleneck. On a representative node in production (128 vCPUs, 512 GiB RAM, 400 GiB for sandboxes; 2 vCPU/4 GB per sandbox), memory caps the node at 100 sandboxes while CPU is only 1.56x oversubscribed. Sandbox memory (hugetlb-backed) cannot be swapped or compressed. Once exhausted, sandbox creation fails, limiting rollout batchsize and staleness, which back-pressures training throughput. CPU, by contrast, is a tunable QoS-for-density tradeoff. VenusRL’s 905-sandbox density implies 14× oversubscription, viable because agentic sandboxes mostly idle waiting for tools. Table 2 confirms primitive latencies match native E2B. Network is likewise a QoS-for-density tradeoff-contention degrades rather than failing sandbox operation, and is rarely observed in produc-tion because network bursts seldom time-aligns. 
+
+## B NP-Hardness of Critical-Group identification 
+
+We consider the decision version of the objective in Sec-tion 4.1 of the main paper: given unfinished groups, a target 
+
+𝐵 , and a deadline 𝐷 , does there exist a schedule that com-pletes at least 𝐵 groups by 𝐷 ?We use a stateful execution model. Initial request place-ment is unrestricted, and a request may be preempted and resumed on the same worker. After a request has performed positive processing on one worker, continuation on another worker requires either state transfer or reconstruction. Un-der state transfer, if the request last executes on its source worker at time 𝑠 , its latest state becomes available for contin-uation on the destination no earlier than 𝑠 +𝜆 , where 𝜆 > 0 is a handoff-delay parameter of the instance. This delay applies only to the migrating request; other requests may execute concurrently. Alternatively, reconstructing the missing state requires strictly positive additional GPU work. Requests do not have free coherent replicas of their execution state. 
+
+Theorem. Computing an optimal group-completion sched-ule is NP-hard under this model, even with two identical unit-capacity GPU slots, single-request groups, known processing times, no environment delays, and sufficient KV-cache ca-pacity. 
+
+Proof. We reduce from Partition. Given positive integers 
+
+𝑎 1, . . . , 𝑎 𝑛 with 𝑛 ∑︁ 
+
+> 𝑗 =1
+
+𝑎 𝑗 = 2𝑇 , 
+
+construct 𝑛 groups, each containing one request with pro-cessing requirement 𝑝 𝑗 = 𝑎 𝑗 . All requests are ready at time zero and initially have no cached execution state. Their pro-cessing cannot be reduced through cross-request state reuse. Set 
+
+𝐵 = 𝑛, 𝐷 = 𝑇 , 𝜆 = 𝑇 + 1.
+
+The two GPU slots can perform at most 2 𝑇 units of GPU work before the deadline, exactly equal to the total processing requirement. If the Partition instance has a solution, assign the re-quests corresponding to each subset to one GPU slot. Each slot receives exactly 𝑇 units of work. Executing its requests sequentially completes all groups by 𝐷 = 𝑇 , without requir-ing migration or reconstruction. Conversely, suppose a feasible schedule completes all 𝑛 
+
+groups by 𝑇 . No request can continue on another worker using transferred state: after any source execution ending at 
+
+𝑠 ≥ 0, destination execution cannot begin before 
+
+𝑠 + 𝜆 = 𝑠 + 𝑇 + 1 > 𝑇 . 
+
+State reconstruction cannot enable cross-worker continua-tion either. It would add strictly positive GPU work beyond the required 2 𝑇 units, exceeding the total capacity available before the deadline. This remains true even if reconstruc-tion overlaps other computation, since it consumes the same aggregate GPU-slot capacity. Therefore, every request performs all its required process-ing on the worker where it first executes, although it may be preempted and resumed there. Let 𝑆 denote the requests executed on the first slot. Feasibility requires ∑︁  
+
+> 𝑗 ∈𝑆
+
+𝑎 𝑗 ≤ 𝑇 , ∑︁ 
+
+> 𝑗 ∉𝑆
+
+𝑎 𝑗 ≤ 𝑇 . 
+
+Since the two sums total 2 𝑇 , both equal 𝑇 . Thus 𝑆 defines a valid solution to the Partition instance. The construction has polynomial encoding size, including the handoff delay 𝜆 = 𝑇 + 1. Hence the deadline-feasibility problem is NP-hard, and so is minimizing the time at which 
+
+𝐵 groups become ready. 
+
+## C Effect of priority scheduling on model learning 
+
+Though there are concerns that favoring easy-to-complete groups could persistently starve long trajectories, biasing the training data. Actually, this does not occur, due to following reasons. First, priority scheduling does not directly introduce ad-ditional off-policy behavior. In fully asynchronous RL, the off-policy degree of a sample is determined by the mismatch between the behavior policy 𝜋 𝑏 that generates it and the cur-rent policy 𝜋 𝜃 used for optimization, typically characterized by the importance ratio 𝑟 (𝑠, 𝑎 ) = 𝜋 𝜃 (𝑎 |𝑠 )    
+
+> 𝜋 𝑏 (𝑎 |𝑠 )
+
+. Scheduling only changes the execution and completion order of outstanding trajectories; it does not modify either policy itself. Its only possible effect on 𝑟 (𝑠, 𝑎 ) is indirect, through the number of weight updates that occur before a trajectory is consumed, i.e., its policy staleness. Therefore, priority scheduling may change the realized staleness of individual trajectories within this window, but does not introduce a new source of off-policy behavior beyond the staleness already present in fully asynchronous training. Second, long low-priority trajectories are not continuously blocked. Fully asynchronous RL does not allow rollout gener-ation to advance arbitrarily far ahead of training. With global batch size 𝐵 and maximum staleness 𝜂 , only 𝑂 (( 𝜂 + 1)𝐵 )
+
+outstanding trajectories can remain within the admissible asynchronous window. Length-based priority therefore only reorders a finite competing set. Short trajectories may tem-porarily overtake a long trajectory, but they leave the active set once completed, while the staleness controller prevents an unbounded stream of new trajectories from continuously entering ahead of it. Additionally, the staleness ratio is delib-erately kept low to preserve algorithmic stability. Prior works like Asynchronous RLHF [35] and StreamRL [65] recommend that accumulated stale samples should not exceed one global batch size. As the step progresses, the higher-priority com-peting set shrinks, allowing long trajectories to continue generation rather than being repeatedly demoted. Thus, the stale long trajectory naturally becomes high-priority samples when step progresses. Third, VenusRL adds a hard safeguard for the tail case. Once a trajectory reaches its last admissible weight version, VenusRL immediately promotes it to the highest priority until completion. At this point, ordinary length-based pri-ority no longer applies, preventing newer short trajecto-ries from further delaying it. Thus, bounded staleness al-ready limits the opportunity for persistent deprioritization, while staleness-boundary promotion provides an explicit safety guard against priority-induced starvation. Moreover, VenusRL is fully compatible with off-policy correction meth-ods such as TIS [55] and IcePop [60], further preserving stability. 
+
+## D Impact of OOM Recovered Behaviour 
+
+VenusRL does not rely on a single mechanism to prevent OOM. Admission Threshold Adaption (Algorithm 1) serves as the primary safeguard: a sandbox creation request is ad-mitted only when the projected memory footprint of resident sandboxes remains below a workload-specific safety thresh-old. The reserved headroom is intended to absorb memory growth that occurs after admission and between consecutive control intervals. In practice, such growth is both sparse and small. In our production trace, fewer than 0 .5% of the sandboxes on a node exhibited concurrent memory bursts within a control interval, and each burst increased memory usage by at most roughly 100 MiB. These events were primarily caused by on-demand package installation triggered by agent tool calls and were therefore short-lived rather than sustained. Conse-quently, the aggregate unaccounted memory growth within a control interval is usually well within the headroom reserved by the safety threshold. With the threshold empirically tuned for each workload, the observed OOM frequency is therefore near zero. Additionally, rather than provisioning substantially more memory for these rare cases, VenusRL treats OOM as a re-coverable event. When it occurs, the affected sandbox is recovered on another node by transferring its full memory state over P2P RDMA and resuming execution there. This recovery takes approximately 2 .7 s (Figure 19), substantially less than the duration of a single RL step, making its over-head negligible at the RL timescale. We also further manu-ally inspected recovered sandboxes and verified that both filesystem contents and running process state were preserved across recovery. 
+
+## E Robustness of the predictor 
+
+VenusRL uses predicted remaining generation lengths to separate long and short samples and prioritize them accord-ingly. Thus, the scheduler primarily relies on the relative ordering of predictions rather than accurate absolute token counts. Prediction errors are therefore tolerable as long as they preserve the ordering relevant to scheduling. The pre-dictor conditions on both the problem specification and the accumulated trajectory history: the former provides signals about task difficulty, while the latter—including intermedi-ate reasoning, tool calls, and environment observations— reveals the sample’s current progress and remaining work. As execution proceeds, the predictor updates its estimate at turn boundaries, allowing scheduling decisions to track the evolving trajectory state. Policy updates during RL may shift absolute generation lengths, but they do not necessarily change the relative ordering across samples. Consequently, a lightweight predictor fine-tuned before training can remain effective as the rollout policy evolves. The Spearman correla-tion of 0 .98 reported in the main paper further confirms that the predictor accurately recovers the ordering required for priority scheduling. Additionally, the predictor can also be updated at training checkpoints using recent trajectories to mitigate policy drift, with fine-tuning typically converging within only minutes. We train the predictor using trajectories collected at the same sampling temperature as the target rollout workload. For each temperature, we collect a separate set of trajecto-ries and construct the corresponding (messages, length) 
+
+pairs for fine-tuning. This matching avoids distribution shift between predictor training and rollout-time sampling be-havior. Supporting a different rollout temperature therefore only requires fine-tuning on trajectories collected under that temperature; the prediction mechanism itself is not tied to any particular setting. We report results at temperature 0 .7since this is the SWE-agent configuration used throughout our evaluation, rather than a limitation of the predictor.
