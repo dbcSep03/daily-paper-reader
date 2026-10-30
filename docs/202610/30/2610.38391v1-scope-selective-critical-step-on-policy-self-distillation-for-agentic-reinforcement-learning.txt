@@ -1,0 +1,1177 @@
+Title: SCOPE: Selective Critical-Step On-Policy Self-Distillation for Agentic Reinforcement Learning
+
+URL Source: https://arxiv.org/pdf/2610.38391v1
+
+Published Time: Fri, 30 Oct 2026 01:13:53 GMT
+
+Number of Pages: 23
+
+Markdown Content:
+# SCOPE: Selective Critical-Step On-Policy Self-Distillation for Agentic Reinforcement Learning 
+
+Qirui Liu 1,∗, Wei Cao 1,∗, Yu Mi 1, Yichen Sun 1, Xuekun Zhang 1, Lei Liu 2, Yue Shen 2,
+
+Zhixuan Chu 1,†
+
+∗Equal contribution , †Corresponding author , zhixuanchu@zju.edu.cn 
+
+1Zhejiang University , 2Ant Group 
+
+Abstract 
+
+Outcome-based reinforcement learning (RL) improves long-horizon LLM agents through task-level feed-back, but provides limited supervision over intermediate decisions. Our analysis reveals an outcome– step mismatch : successful trajectories can contain erroneous steps, while failed trajectories may include correct decisions. To provide finer-grained guidance, recent methods incorporate hindsight skills into on-policy self-distillation. However, we further find that applying trajectory-level skills across all steps can introduce off-target distillation signals at decisions unrelated to the intended corrections. Moti-vated by these observations, we introduce SCOPE , a framework for Selective Critical-Step On-Policy Self-Distillation . SCOPE first equips the policy with error-localization and skill-generation capabilities through lightweight supervised initialization. During online RL, the policy analyzes its own trajectories, generates step-specific corrective skills, and distills their guidance exclusively at selected error steps. A bounded signed distillation coefficient stabilizes auxiliary updates while preserving both reinforcement and suppression, and a success-relative pairwise length reward encourages efficient task completion. Experiments across three smaller backbones on ALFWorld and WebShop demonstrate consistent im-provements. With Qwen2.5-3B, SCOPE achieves 97.7% and 85.2% success, outperforming SEED by 5.9 and 6.3 percentage points, respectively. On Qwen3-32B, SCOPE achieves 99.2% ALFWorld success versus 85.2% for GRPO, while reducing average interactions by 65.0%. 
+
+ Project Page: https://neuqrui.github.io/SCOPE-page Selective self-distillation 
+
+Analyzer warm-up · Step-specific skills · Bounded signed OPSD 
+
+Efficiency-aware GRPO 
+
+Pairwise length reward · Shorter successful trajectories SC OPE 
+
+a Mismatch: Outcome ≠ step quality Off-target signals from trajectory skills 
+
+d Task performance 
+
+Long-horizon agent tasks        
+
+> Correct Error
+> 025 50 75 100
+> Step ratio (%)
+> Success (536) Failure (864)
+> 70.2 29.8 42.4 57.6
+
+29.8% errors in successes; 42.4% correct steps in failures Off-target signals: 57.9% 
+
+WebShop ALFWorld     
+
+> 050 100
+> Success (%)
+> 0.8 0.8
+> 63.3
+> 69.5 68.0 74.2 76.5
+> 78.9 85.2
+> 050 100
+> Avg. success (%)
+> 21.9 28.9
+> 75.0
+> 84.4 84.4 84.3 86.7
+> 91.8 97.7
+
+Vanilla Skill-Prompt* GRPO AgentOPSD SDAR OPID GRSD SEED 
+
+SCOPE ★
+
+vs. SEED: +6.3 pp WebShop, +5.9 pp ALFWorld 
+
+> Action Observation
+
+MOTIVATION 
+
+★ ★  
+
+> ★Highest success * Evaluation with skills
+
+Signed log-probability gap, \(\Delta\) (nats)          
+
+> −0.4 −0.2 0.0 0.2
+> All · related
+> All · unrelated
+> Success · related
+> Success · unrelated
+> Failure · related
+> Failure · unrelated
+> −0.400 +0.249
+> −0.378 +0.230
+> −0.421 +0.249
+> −0.431 +0.262
+> −0.399 +0.249
+> −0.374 +0.227
+
+RESULTS 
+
+c Training dynamics 
+
+GRPO SCOPE Unbounded SCOPE 
+
+ALFWorld WebShop    
+
+> 060 120 180
+> Training step
+> 025 50 75 100
+> Success (%)
+> 60.0% fewer steps
+> 150 → 60 steps · target 63.0%
+> +21.1 pp @ 150
+
+Step 150: 84.1% vs. 63.0% (+21.1 pp)  
+
+> Error Step Recovery Correct Step
+
+Success Traj. Failure Traj.  
+
+> Correct Prefix Error Step
+
+Trajectory-level skill Teacher one skill → all steps 
+
+\(a_{1}\) \(a_{2}\) \(a_{3}\) \(a_{4}\) \(a_{5}\) 
+
+> negative signal positive signal Annotator
+
+b   
+
+> Skill-related Skill-unrelated
+> 060 120 180
+> Training step
+> 025 50 75 100
+> Success (%)
+> 82.8% fewer steps
+> 145 → 25 steps · target 76.6%
+> +21.1 pp
+> Collapse
+
+Step 180: 97.7% vs. 76.6% (+21.1 pp) 
+
+Figure 1 Motivation and results of SCOPE. (a) Outcome–step mismatch. (b) Off-target skill signals. (c) Training dynamics (mean ± std. across seeds); Unbounded SCOPE uses raw-gap OPSD. (d) Qwen2.5-3B results at step 150. 
+
+1arXiv:2610.38391v1 [cs.AI] 28 Oct 2026 1 Introduction 
+
+LLM agents solve tasks through sequences of tool calls and environment interactions [12, 20, 38]. Reinforce-ment learning (RL) improves these decisions using task feedback [8, 17, 27]. In particular, GRPO [22] converts the outcomes of sampled trajectories into relative advantages, providing a scalable training signal without step-level annotations [15, 27, 30]. However, an outcome reward reveals whether a task was completed, with little indication of which intermediate decisions were sound or required correction. This distinction matters because trajectory success and step quality do not always agree . A successful agent may recover from invalid or mistaken actions, while a failed agent may make useful progress before a consequential error. We examine this outcome–step mismatch in annotated WebShop trajectories. Figure 1(a) shows 29.8% erroneous steps in the successful group and 42.4% correct steps in the failed group. These ob-servations motivate identifying errors independently of the final outcome. When an outcome-level advantage is shared across a trajectory, it cannot distinguish these local differences in decision quality [5, 6, 10]. To compensate for coarse outcome feedback, recent methods introduce hindsight-based supervision to pro-vide additional guidance on agent decisions. On-policy self-distillation (OPSD) [42] enables such guidance: a teacher branch receives privileged context and scores actions sampled by the ordinary policy [1, 11]. Trajectory-derived skills summarize useful hindsight [3], and methods such as SEED train the policy to gen-erate this guidance from its own experience [26, 29]. However, privileged skill context can induce off-target probability shifts at steps unrelated to the skill . A trajectory-level skill may address a particular mistake or subgoal, yet conditioning the teacher on it throughout the trajectory can also change token probabilities at other steps. EOPSA [11] highlights a related issue: privileged prompts can introduce task-irrelevant discrep-ancies that dilute useful distillation signals. In our agentic setting, Figure 1(b) shows that skill-unrelated steps account for 57.9% of nonzero sampled-token gaps. Among these off-target signals, 53.9% are negative and 46.1% are positive. Distilling across all steps assigns auxiliary updates to these probability shifts even where the skill offers no correction for the current decision. Together, these observations raise a central question:  
+
+> Key Question.
+
+How can an agent identify critical errors independently of trajectory outcomes and apply corrective guidance only at relevant steps? We introduce SCOPE , a framework for Selective Critical-Step On-Policy Self-Distillation . A lightweight su-pervised warm-up teaches the policy to locate errors and generate corrective skills. During online RL, the policy analyzes its own trajectories to identify critical errors in both successful and failed episodes and gen-erates corresponding step-specific skills. A skill-conditioned self-teacher then provides corrective supervision exclusively at the selected steps, aligning distillation with the decisions that require correction. During training, however, we observe occasional abrupt performance collapses with unbounded OPSD up-dates, as illustrated in Figure 1(c). Large teacher–student log-probability gaps can amplify auxiliary updates and destabilize optimization. To mitigate this instability, SCOPE employs a bounded signed distillation coeffi-cient that limits extreme updates while preserving both reinforcement and suppression. Moreover, successful trajectories may still contain redundant interactions, motivating a success-relative pairwise length reward to encourage efficient task completion. Together, these designs enable stable, targeted, and efficiency-aware agentic RL. Experiments on ALFWorld and WebShop across three backbones demonstrate consistent improvements. With Qwen2.5-3B, SCOPE achieves 97.7% and 85.2% success, outperforming SEED by 5.9 and 6.3 per-centage points, respectively. On unseen ALFWorld tasks, SCOPE achieves 89.6% success (+23.2 points) with 46.7% fewer interactions. Extending to Qwen3-32B, SCOPE reaches 99.2% ALFWorld success (+14.0 points over GRPO) with 65.0% fewer interactions. In summary, our contributions are fourfold: • We reveal two limitations of trajectory-level supervision in agentic RL: outcome–step mismatch, where trajectory success does not reliably reflect individual decision quality, and off-target distillation signals induced by privileged skills at unrelated steps. 2• We propose SCOPE , a selective on-policy self-distillation framework that bootstraps critical-step analysis from supervised warm-up, generates step-specific corrective skills from online trajectories, and distills their guidance exclusively at identified error steps. • We introduce a bounded signed distillation coefficient to mitigate unstable auxiliary updates while pre-serving both positive and negative corrections, together with a success-relative pairwise length reward to encourage efficient task completion. • We validate SCOPE on ALFWorld and WebShop across three backbones and further extend it to Qwen3-32B. On unseen ALFWorld tasks, SCOPE improves success by 23.2 points with 46.7% fewer interactions. With Qwen3-32B, it achieves 99.2% seen and 94.0% unseen ALFWorld success. 
+
+2 Related Work 
+
+2.1 Reinforcement Learning for LLM Agents 
+
+Reinforcement learning trains LLM agents through feedback from tool use and environment interaction [14, 31, 33]. ToolRL [17], RAGEN [27], and Search-R1 [8] apply this approach to tool selection, interactive planning, and information seeking. GRPO [22] provides a common optimization backbone by comparing trajectory outcomes within a sampled group. However, trajectory-level advantages offer limited resolution over intermediate decisions in long interactions. GiGPO [6] estimates step-level advantages through hierar-chical grouping, while GraphGPO [5] leverages state-transition graphs to refine credit assignment. Rather than directly re-estimating step-level RL advantages, SCOPE complements outcome-based RL with hindsight error localization and targeted corrective distillation. 
+
+2.2 Hindsight Skills for LLM Agents 
+
+Experience can guide agents through verbal reflection, reusable skills, or explicit memory, as demonstrated by Reflexion [23], Voyager [25], and ExpeL [41]. Recent methods further internalize such guidance through policy training [16, 26, 28, 36]. SDAR [13] retrieves skills from an external skill bank to provide privileged teacher context, while Skill-SD [26] derives teacher-only skills from completed agent trajectories. OPID [36] constructs hierarchical episode- and step-level skills through critical-first routing, falling back to episode-level guidance at non-critical steps. SEED [29] introduces a policy-synchronized hindsight analyzer. After a supervised warm-up, the policy acts as both actor and analyzer, generating trajectory-level skills that evolve with online training. However, conditioning distillation on such skills across all steps can introduce off-target signals at unrelated deci-sions. GRSD [43] contrasts policy-generated reflections from successful and failed trajectories to construct group-level guidance for turn-level credit assignment. In contrast, SCOPE internalizes critical-step analysis, generates step-specific corrective skills, and restricts their supervision to identified errors in both successful and failed trajectories. 
+
+2.3 On-Policy Self-Distillation 
+
+Knowledge distillation transfers teacher guidance to a student model [7, 9]. On-policy distillation instead evaluates student-generated sequences, reducing the distribution mismatch associated with offline demonstra-tions [1, 19]. On-policy self-distillation (OPSD) constructs a teacher from the same model under privileged context [11, 42]. RLSD [35] uses teacher–student discrepancies to modulate token-level update magnitudes while retaining reward-determined optimization directions. SDAR [13] employs a sigmoid gate that em-phasizes positive teacher endorsements while attenuating negative rejections, improving auxiliary training stability. AgentOPSD [28] aggregates token-level discrepancies and recursively updates belief states for turn-level credit assignment. SOD [44] adaptively weights step-level distillation according to teacher–student divergence. However, teacher–student discrepancies do not necessarily reflect task-relevant corrections. EOPSA [11] highlights how privileged prompting can introduce task-irrelevant stylistic shifts that dilute useful distillation signals. In agentic tasks, skill conditioning may similarly affect decisions unrelated to the intended correction. Unlike divergence-based weighting, SCOPE identifies critical errors through self-generated hindsight analysis 3Analyzer Initialization 
+
+Base Policy 
+
+Agentic Tasks 
+
+Environment 
+
+Action Observation 
+
+Offline Trajectories …. 
+
+External Annotator 
+
+> Failure Trajectories
+> Successful Reference
+
++
+
+Error Steps + Step-level Skills 
+
+Actor Policy 
+
+> Lightweight SFT
+
+Self-Bootstrapped Selective Distillation  
+
+> 1. Self-Bootstrapped Analysis
+> Actor (Policy) Environment
+> Action Observation
+> On-policy group (N trajectories)
+
+…. 
+
+🔥 
+
+Sparse error selection on trajectory  
+
+> Actor Analyzer Reference Conditioning
+> Target trajectory +Env feedback
+> Other successful actions (same group)
+
+…
+
+S! S"
+
+> Step-level Skills
+> 2. Selective Bounded Signed OPSD
+> Teacher
+> (h + s !)
+> Shared weights
+> Sampled action tokens
+
+a! a" a# a$
+
+> Step-selection mask
+> Selective Distillation
+
+𝑀 %,' = 1 𝑡 ∈ 𝐶 %
+
+…
+
+🔥              
+
+> Trajectories Collection
+> Input
+> Salient Error Steps
+> 3. Efficiency-Aware GRPO
+> (shorter) (longer) (failed) b!= 0 b!< 0.5 b!> 0.5
+> 𝑝 !" = 𝜎 log 𝑇 "/𝑇 !
+> 𝜏 len ,𝑏 !=1𝑆 #− 1 1𝑝 !" "∈% !∖{!}
+> Internalize Critical-Step Analysis
+> Student
+> (h)
+
+🔥 a! a" a# a$ …
+
+Joint Training Objective 
+
+> Reward
+> 𝑃 "#
+> 0.5
+
+𝑹 ˆ 𝒊 = 𝑹 𝒊 + 𝝀 len 𝒃 𝒊  
+
+> log 𝑇 "/𝑇 !Advantage estimator
+> Same initial snapshot
+
+𝑎 )!
+
+𝑎 * 𝑎 ! 𝑎 #𝑎 " 𝑎 $ 𝑎 +          
+
+> ℒ!"#$ = −𝔼 %,',ℓ 𝑚 %,' 𝑐 tanh 𝛼 𝑐 sg log 𝑃 %,',ℓ )𝑎 %,',ℓ − log 𝑃 %,',ℓ *𝑎 %,',ℓ log 𝑃 %,',ℓ *𝑎 %,',ℓ
+
+ℒ!"!#$ 𝜃 = −𝔼 𝒯 min 𝜌𝐴 &' , clip 𝜌, 1 − 𝜖, 1 + 𝜖 𝐴 &' + 𝛽 ()* 𝐷 +' 𝜋 ,‖𝜋 ()* − 𝜆 -ℋ, + 𝜆ℒ ./01 𝜃 Figure 2 Overview of SCOPE. Supervised initialization teaches the policy to analyze trajectories and generate corrective skills. During online training, the policy collects and analyzes its own rollouts, assigns skills to selected error steps, and combines selective self-distillation with efficiency-aware GRPO. 
+
+and restricts auxiliary distillation to these steps. A bounded signed coefficient further limits extreme teacher– student updates while preserving both positive and negative corrections. 
+
+3 Method 
+
+SCOPE supplements outcome-based RL with corrective supervision at selected error steps (Figure 2). Asupervised warm-up teaches the policy to locate mistakes and generate corrective skills. During online training, the same policy analyzes its rollouts, and a skill-conditioned self-teacher scores the sampled actions at the selected steps. Bounded signed self-distillation transfers these corrections to the student, while a success-relative length reward encourages efficient task completion. 
+
+3.1 Agent Interaction and Policy Snapshots 
+
+For a task q, the agent receives observation ot and generates a response at = ( yt, 1, . . . , y t,L t ) from its available interaction history ht:
+
+ht = ( q, o 1, a 1, . . . , o t), at ∼ πθ (· | ht). (1) The response contains the model-generated reasoning and action tokens for one environment interaction. The environment executes the action and returns ot+1 . A completed trajectory τi = {(hi,t , a i,t , o i,t +1 )}Ti
+
+t=1 contains 
+
+Ti interaction steps and receives a task reward Ri. We denote its binary success indicator by zi ∈ { 0, 1},where zi = 1 indicates successful task completion. Interaction length Ti and response-token length Li,t are distinct quantities. At outer iteration u, we take a policy snapshot ¯θu = θu and sample N trajectories for each task: 
+
+G(u)
+
+q = {τi}Ni=1 , τi ∼ π¯θu (· | q). (2) This snapshot supplies the actor, the hindsight analyzer, and the privileged teacher used to construct the update data. The trainable student starts from this checkpoint and updates its parameters θ across successive minibatches, while ¯θu remains fixed for the current outer iteration. 43.2 Self-Bootstrapped Error Analysis 
+
+Supervised initialization We first train the policy to analyze trajectories through supervised fine-tuning, following SEED [29]. GLM-5.2 [40] labels errors in a small pool of base-policy trajectories and writes a short corrective skill for each error or group of related errors. A skill entry is represented as (Di,k , s i,k , e i,k ), where 
+
+Di,k is a nonempty set of target-step indices, si,k is the corrective skill, and ei,k contains the error explanation and supporting evidence. A singleton target set describes one mistake; several steps may share a skill when they require the same correction. Let xi be the serialized analysis input and Yi its structured annotation. The warm-up minimizes the autore-gressive objective 
+
+LSFT (θ) = −E(xi,Y i)∼D SFT 
+
+
+
+> |Yi|
+
+X
+
+> r=1
+
+log πθ (Yi,r | xi, Y i,<r )
+
+ , (3) where Yi,r is an annotation token. The resulting checkpoint initializes online training. External annotation is confined to this offline stage. Appendix B describes data preparation, and Appendix C gives the SFT and analyzer prompt templates. 
+
+Online hindsight analysis The analyzer inspects successful and failed trajectories separately. For a success-ful trajectory, it uses the trajectory’s own observations, responses, and action-validity feedback to identify avoidable mistakes. For a failed trajectory, it additionally receives the action sequences of successful trajec-tories from the same on-policy task group. With Act( τ ) denoting an extracted action sequence, the reference context is 
+
+Ri =
+
+(
+
+{Act( τj ) : τj ∈ G (u) 
+
+> q
+
+, z j = 1 }, zi = 0 ,
+
+∅, zi = 1 . (4) Successful references demonstrate feasible task progress. The analyzer judges each decision using the infor-mation available at that step and the resulting environmental feedback, allowing valid alternative strategies and reasonable exploration. The policy snapshot generates the analysis under an analysis-specific prompt: 
+
+bYi ∼ A ¯θu (· | τi, Ri),
+
+bYi = {(Di,k , bsi,k , bei,k )}Ji
+
+> k=1
+
+, Ji ≤ Kmax . (5) The limit Kmax bounds the number of skill entries, not the total number of selected steps. Parsing removes nonexistent target indices and duplicate assignments, so the retained target sets are disjoint. The selected-step set is 
+
+Ci =
+
+> Ji
+
+[
+
+> k=1
+
+Di,k , mi,t = I[t ∈ C i]. (6) Each selected step receives the skill of its assigned entry, denoted bsi,t . The analyzer may return an empty set when no clear error is supported, including when a failed group supplies no successful reference. An unselected step receives no auxiliary distillation signal. At the next outer iteration, the updated policy supplies both the actor and analyzer. 
+
+3.3 Bounded Signed Self-Distillation 
+
+Step-specific teacher guidance We use skill-conditioned on-policy self-distillation to transfer hindsight guid-ance into the ordinary policy [26, 36]. For each selected step, a context augmentation function H inserts its assigned skill into the ordinary policy input: ehi,t = H(hi,t , bsi,t ). We retain the original sampled response and its within-response prefix. Teacher and student score the same token, using parameters ϑT = ¯θu and ϑS = θ
+
+and contexts hTi,t = ehi,t and hSi,t = hi,t :
+
+ℓbi,t,ℓ = log πϑb (yi,t,ℓ | hbi,t , y i,t,<ℓ ), b ∈ { T, S }. (7) Teacher log-probabilities are computed once before actor optimization and cached for the selected steps. Student log-probabilities are recomputed at each training forward pass as θ changes. 50 10 20 30 40 50 
+
+> Training update
+> −0.1 00.1
+> 10 1
+> 10 3
+> Mean gap (nats)
+> 2,715.5 NaN grad norm 0.284
+
+(a) Teacher –student gap      
+
+> Pre-update In-training 010 20 30 40 50
+> Training update
+> −3,000
+> −1,500 0
+> Mean log-prob. (nats)
+> −2,716.0
+> −0.440
+
+(b) Sampled-token scores   
+
+> Student Cached teacher Figure 3 Anomaly during minibatch optimization.
+
+(a) Pre-optimization and training-stage gaps (symmetric-log axis). (b) Current student and cached teacher sampled-token log-probabilities. Dashed lines mark outer update 26. 
+
+Bounding the signed learning signal Figure 3 shows an anomaly during minibatch optimization. At outer update 26, the pre-optimization gap is 0.284 nats. During training, the student’s mean sampled-token log-probability drops to −2716 .0 nats, while the cached teacher mean remains at −0.440 nats. The training-stage gap reaches 2715.5 nats, with a non-finite recorded gradient norm. Teacher scores are cached before actor optimization. Successive minibatch updates change θ, so training forwards compare updated student scores with the fixed teacher cache. A sharp drop in student probabilities on sampled tokens can therefore turn a moderate pre-optimization gap into an extreme training-stage discrep-ancy. In our training runs, the observed instability arises from the raw-gap OPSD auxiliary loss rather than the GRPO objective: the discrepancy directly scales the student’s score gradient and can amplify auxiliary updates. We control gap-driven amplification by replacing the raw gap with a bounded signed coefficient: 
+
+∆i,t,ℓ (θ) = sg[ ℓTi,t,ℓ − ℓSi,t,ℓ (θ)] ,
+
+bAdist  
+
+> i,t,ℓ
+
+= c tanh 
+
+ α∆i,t,ℓ 
+
+c
+
+
+
+, (8) where sg stops gradients through the coefficient. The parameters α > 0 and c > 0 control the slope at zero and saturation magnitude: bAdist ≈ α∆ for small gaps, and | bAdist | < c for finite gaps. This symmetric transformation preserves the gap’s sign and gives zero guidance when teacher and student agree on the sampled token. We optimize a sampled-token surrogate rather than a full-distribution KL, using tokens from the sampled responses. Let T denote the valid, retained response-token positions in the current training microbatch, and let Tsel contain only those positions belonging to selected error steps. Writing Nsel = |T sel |, the distillation loss is simply the mean over these selected tokens: 
+
+LOPSD (θ) = − cNsel 
+
+X
+
+> (i,t,ℓ )∈T
+
+mi,t · tanh 
+
+ αc sg[ ℓTi,t,ℓ − ℓSi,t,ℓ (θ)] 
+
+
+
+ℓSi,t,ℓ (θ). (9) Unselected steps do not enter this loss or its token count. If Nsel = 0 , we set LOPSD = 0 .For each selected token, the contribution to the policy gradient is − bAdist ∇θ ℓS /N sel . The derivative with respect to its student log-probability has magnitude at most c/N sel . With c = 1 , the coefficient is confined to [−1, 1] , controlling the influence of extreme teacher–student discrepancies on distillation updates. The signed transformation reinforces positive-gap tokens and suppresses negative-gap tokens, retaining corrective guidance in both directions. SDAR [13] also addresses OPSD instability with a bounded sigmoid gate. Its nonnegative auxiliary coef-ficient attenuates teacher rejections without retaining their suppressive direction. SCOPE preserves this 6negative guidance at selected error steps through a signed coefficient, while bounding both update directions. Appendix A.1 derives the fixed-data log-cosh interpretation and auxiliary-gradient bounds; Appendix A.2 bounds the contribution of irrelevant selected tokens. 
+
+3.4 Success-Relative Pairwise Efficiency 
+
+Selective distillation corrects identified errors. Successful trajectories can also contain redundant interactions. Length-aware rewards have been explored to balance correctness and computational cost in reasoning models. L1 [2] combines correctness with adherence to a specified token-length budget, while ShorterBetter [39] uses the shortest correct response in a sampled group as a dynamic length reference. For multi-turn agents, we measure efficiency by the number of environment interactions and compare successful trajectories for the same task within the current rollout group. This provides a policy-relative reference as successful interaction lengths evolve during training. Let Sq = {i : τi ∈ G (u) 
+
+> q
+
+, z i = 1 }. For two distinct successful trajectories, we use a Bradley–Terry pairwise comparison [4] with utility − log Ti/τ len :
+
+pij = σ
+
+ log Tj − log Ti
+
+τlen 
+
+
+
+, (10) where σ(x) = (1 + e−x)−1 and τlen > 0 controls the smoothness of the preference. The score exceeds 1/2
+
+when trajectory i is shorter than trajectory j. Averaging over the other successful trajectories gives 
+
+bi =
+
+
+
+1
+
+|S q | − 1
+
+X 
+
+> j∈S q\{ i}
+
+pij , |S q | ≥ 2, 
+
+> 12
+
+, |S q | = 1 ,i ∈ S q . (11) Each complete trajectory enters this comparison once, regardless of how many turn records it produces. We add the resulting efficiency bonus to the original task reward Ri:
+
+Rpair  
+
+> i
+
+=
+
+(
+
+Ri + λlen bi, zi = 1 ,Ri, zi = 0 . (12) Here λlen > 0 controls the bonus strength, and length preferences apply only to successes. A lone success receives bi = 1 /2, yielding Ri +λlen /2 without relative-length information. A group with no successes receives no efficiency bonus. The comparison is invariant to a common positive rescaling of all lengths, because log( aT j ) − log( aT i) = log Tj − log Ti. The score therefore depends on proportional length differences, without requiring an absolute target length. Moreover, pij + pji = 1 , so the mean bi over successes is 1/2. The pairwise term allocates a bounded efficiency bonus among successful trajectories with mean bonus λlen /2. Appendix A.3 proves the ordering, scale invariance, and bonus-conservation properties of this reward. 
+
+3.5 Joint Policy Optimization 
+
+We combine GRPO with selective self-distillation. For each task q, we normalize the task-and-length reward 
+
+Rpair  
+
+> i
+
+across N sampled trajectories: 
+
+ARL  
+
+> i
+
+= Rpair  
+
+> i
+
+− μq
+
+σq + ϵA
+
+, (13) where μq and σq denote the mean and standard deviation of the rewards within the task group, and ϵA > 0
+
+ensures numerical stability. All steps and tokens in trajectory τi share the same advantage ARL  
+
+> i
+
+. With the clipped surrogate from PPO [21], the GRPO objective is 
+
+LGRPO (θ) = − ET
+
+ min {ρA RL , clip( ρ, 1 − ϵ, 1 + ϵ)ARL }
+
++ βref DKL (πθ ∥πref ) − λH Hθ . (14) 7Here ET averages over retained response tokens, with ARL = ARL  
+
+> i
+
+for tokens belonging to trajectory i; token indices are omitted inside the expectation. The importance ratio is ρi,t,ℓ (θ) = exp( ℓSi,t,ℓ (θ) − ℓold 
+
+> i,t,ℓ
+
+), where ℓold 
+
+is the sampled-token log-probability under the rollout policy. The parameter ϵ is the clipping radius. The coefficients βref and λH weight the KL penalty to the fixed reference policy πref and the policy entropy Hθ ,respectively. The entropy bonus encourages continued exploration. We add the selective OPSD loss to the RL objective: 
+
+Ltotal (θ) = LGRPO (θ) + λLOPSD (θ). (15) The coefficient λ balances outcome-based learning with corrective supervision at selected error steps. After each outer iteration, the updated policy serves as actor and analyzer for the next round. 
+
+4 Experiments 
+
+We evaluate SCOPE through six research questions: • RQ1: Overall Effectiveness. Does SCOPE outperform outcome-based RL and skill-guided baselines across tasks and backbones? (Section 4.2) • RQ2: Error Localization. What limitations arise from trajectory-level supervision, and can SCOPE reliably identify critical error steps? (Sections 4.3 and 4.7) • RQ3: Component Contributions. How do supervised initialization, selective skill guidance, and pairwise length rewards affect performance and efficiency? (Section 4.4) • RQ4: Optimization Behavior. How do training efficiency, stability, and hyperparameter choices affect SCOPE? (Sections 4.5 and 4.6) • RQ5: Unseen Generalization. Does SCOPE generalize to unseen tasks while improving interaction effi-ciency? (Section 4.8) • RQ6: Larger-Model Scalability. Can SCOPE maintain its effectiveness and interaction efficiency when extended to Qwen3-32B? (Section 4.9) 
+
+4.1 Experimental Setup 
+
+Benchmarks and metrics We evaluate SCOPE on ALFWorld and WebShop, following the evaluation pro-tocols of SDAR [13]. ALFWorld [24] tests household task completion through text-based interaction. Each validation round contains 128 episodes from the seen split, covering six task families: Pick, Look, Clean, Heat, Cool, and Pick2. We report success rates by family and the overall success rate across the 128 episodes (micro-average). WebShop [37] requires agents to search, inspect, and purchase products satisfying a user’s requirements. We evaluate on the same fixed set of 128 tasks and report two metrics: the mean normalized task score, which measures how well the purchased product meets the requirements, and the success rate, which counts fully completed tasks. All reported scores are percentages. 
+
+Backbones and evaluation context We use Qwen2.5-3B-Instruct, Qwen2.5-7B-Instruct [18], and Qwen3-1.7B [34] to examine performance across model sizes and generations. Comparisons are made within each backbone. At evaluation, SCOPE acts from the ordinary interaction history without hindsight skills or analyzer calls. For the main ALFWorld and WebShop comparison, we report SCOPE’s validation metrics logged at training step 150. The corresponding single-run validation curves for both Qwen2.5 backbones are provided in Appendix B.2. An asterisk marks a baseline that receives skills at evaluation; the other baselines use their ordinary policy inputs. Key training settings and diagnostic protocols are provided in Appendix B. 
+
+Baselines We compare against eight baselines. Vanilla evaluates the original backbone without additional agentic training. Skill-Prompt* supplies retrieved skills in the evaluation prompt without updating the model, following the prompting baseline in SDAR [13]. GRPO [22] learns from group-relative task rewards without an auxiliary distillation objective. The remaining methods incorporate self-distillation or hindsight guidance into agentic RL. AgentOPSD [28] ag-gregates teacher–student gaps by turn and uses recursive belief updates to assign turn-level credit. SDAR [13] 8Table 1 Main results on ALFWorld and WebShop (%). ALFWorld reports task success; WebShop reports normalized score and success rate. * denotes skills at evaluation. Best and second-best results are highlighted. 
+
+ALFWorld WebShop Method Skill Type Pick Look Clean Heat Cool Pick2 Avg Score Succ. 
+
+Qwen2.5-3B-Instruct 
+
+Vanilla (Qwen et al., 2025) None 44.4 11.1 6.2 15.4 28.6 12.5 21.9 6.7 0.8 Skill-Prompt* (Xia et al., 2026) Skill bank 51.7 66.7 48.4 0.0 4.3 10.0 28.9 0.2 0.8 GRPO (Shao et al., 2024) None 91.2 62.5 96.2 61.9 65.0 47.4 75.0 79.8 63.3 AgentOPSD (Wang et al., 2026) Skill bank 100.0 68.8 86.4 66.7 84.6 73.7 84.4 90.4 69.5 SDAR (Lu et al., 2026) Skill bank 97.1 62.5 100.0 61.9 75.0 84.2 84.4 85.0 68.0 OPID (Yang et al., 2026) Hybrid skills 92.7 100.0 88.9 70.0 84.2 70.0 84.3 85.0 74.2 GRSD (Zheng et al., 2026) Traj. skill 100.0 81.3 91.3 88.2 70.8 85.7 86.7 86.9 76.5 SEED (Wu et al., 2026) Traj. skill 100.0 100.0 100.0 100.0 70.6 80.0 91.8 88.5 78.9 
+
+SCOPE (Ours) Step skills 100.0 100.0 100.0 100.0 85.7 100.0 97.7 87.9 85.2 
+
+Qwen2.5-7B-Instruct 
+
+Vanilla (Qwen et al., 2025) None 36.1 22.2 3.1 0.0 0.0 0.0 12.5 5.9 1.6 Skill-Prompt* (Xia et al., 2026) Skill bank 51.7 50.0 32.3 5.3 4.3 0.0 23.4 1.7 0.8 GRPO (Shao et al., 2024) None 91.2 87.5 96.2 81.0 65.0 57.9 81.2 80.9 72.6 AgentOPSD (Wang et al., 2026) Skill bank 91.2 87.5 100.0 90.5 75.0 84.2 89.1 90.2 79.7 SDAR (Lu et al., 2026) Skill bank 94.7 75.0 100.0 86.7 68.2 78.9 85.9 89.4 82.8 OPID (Yang et al., 2026) Hybrid skills 100.0 81.8 97.1 100.0 80.8 80.0 90.0 85.3 79.7 GRSD (Zheng et al., 2026) Traj. skill 100.0 100.0 100.0 93.4 66.7 82.4 92.2 91.6 82.8 SEED (Wu et al., 2026) Traj. skill 100.0 100.0 96.3 80.0 100.0 100.0 96.1 89.7 78.1 
+
+SCOPE (Ours) Step skills 100.0 100.0 100.0 100.0 95.2 94.7 98.4 89.6 84.4 
+
+Qwen3-1.7B 
+
+Vanilla (Yang et al., 2025) None 25.0 22.2 3.1 0.0 21.4 4.2 12.5 46.5 4.7 Skill-Prompt* (Xia et al., 2026) Skill bank 10.3 50.0 16.1 0.0 0.0 5.0 9.4 23.0 2.3 GRPO (Shao et al., 2024) None 71.1 41.7 36.4 40.0 31.8 31.6 46.1 67.3 38.3 AgentOPSD (Wang et al., 2026) Skill bank 35.5 50.0 31.6 30.0 46.2 25.0 35.9 66.8 47.7 SDAR (Lu et al., 2026) Skill bank 73.5 25.0 76.9 33.3 40.0 36.8 53.9 76.8 58.6 OPID (Yang et al., 2026) Hybrid skills 65.9 72.7 66.7 40.0 63.2 45.0 58.9 79.6 64.8 GRSD (Zheng et al., 2026) Traj. skill 92.5 100.0 100.0 91.3 81.3 88.2 92.2 84.5 66.4 SEED (Wu et al., 2026) Traj. skill 97.6 100.0 100.0 80.0 84.2 90.0 92.0 87.1 77.3 
+
+SCOPE (Ours) Step skills 100.0 100.0 96.9 100.0 66.7 89.5 92.2 83.2 78.9 
+
+retrieves teacher guidance from a skill bank and controls auxiliary self-distillation with bounded token-level gates. OPID [36] uses an external analyzer to construct hierarchical skills, retaining episode-level guidance at non-critical steps. GRSD [43] uses policy-generated reflections scored by an external judge to construct group-level guidance and refine turn-level credit assignment. SEED [29] initializes hindsight analysis through SFT and iteratively uses the updated policy to generate and distill trajectory-level skills. 
+
+4.2 Main Results 
+
+Table 1 compares SCOPE with eight baselines across three backbones, grouped by their auxiliary guidance types. SCOPE achieves the highest WebShop success across all backbones and the highest or tied highest ALFWorld success. 
+
+Beyond outcome-level supervision Compared with GRPO, SCOPE improves ALFWorld success by 22.7, 17.2, and 46.1 percentage points on Qwen2.5-3B, Qwen2.5-7B, and Qwen3-1.7B, respectively. The corre-90 60 120 180                      
+
+> Training step
+> 10 40 70 100
+> Success (%)
+> (A) Components
+> All Skill bank w/o SFT init. w/o length reward Traj.-level guidance Absolute length bonus w/o Step-Skill
+> 060 120 180
+> Training step
+> 40 60 80 100
+> (B) Gap slope α
+> α= 1
+> α= 2.5
+> α= 5
+> 060 120 180
+> Training step
+> 40 60 80 100
+> (C) Bound c
+> c= 0.1
+> c= 1
+> c= 10
+> 060 120 180
+> Training step
+> 40 60 80 100
+> (D) Temperature τlen
+> τlen = 0.05
+> τlen = 0.1
+> τlen = 0.2
+
+Figure 4 Training dynamics on ALFWorld with Qwen2.5-3B. (A) Component ablations. (B) Signed-gap slope α. (C) Tanh saturation bound c. (D) Pairwise length temperature τlen . The full setting is α = 2 .5, c = 1 , and τlen = 0 .1,labeled All in (A) and by its parameter value in (B)–(D). Trajectory-level guidance uses one skill per trajectory and distills all steps. Lines connect observed checkpoints; the success axes start at 10% in (A) and 40% in (B)–(D). 
+
+sponding WebShop gains are 21.9, 11.8, and 40.6 points. These consistent improvements suggest the benefit of complementing coarse outcome rewards with localized corrective supervision, rather than relying solely on trajectory-level feedback. 
+
+Self-bootstrapped error analysis versus external supervision OPID relies on an external analyzer to identify critical steps and generate hierarchical skills, while GRSD uses an external judge to evaluate policy-generated reflections. In contrast, SCOPE internalizes error localization and skill generation through supervised initial-ization, enabling the policy to provide its own corrective guidance during online RL. Compared with OPID, SCOPE improves ALFWorld success by 13.4, 8.4, and 33.3 percentage points across the three backbones. It also outperforms GRSD by 11.0 and 6.2 points on Qwen2.5-3B and Qwen2.5-7B, respectively, while matching its ALFWorld success on Qwen3-1.7B. These results support the effectiveness of self-bootstrapped corrective guidance without external online analysis. 
+
+Selective step guidance versus trajectory-level skills Compared with trajectory-level SEED, SCOPE improves ALFWorld success by 5.9 and 2.3 points on the Qwen2.5-3B and Qwen2.5-7B backbones, respectively, while gaining 6.3 points on WebShop for both. On Qwen3-1.7B, SCOPE ties GRSD at 92.2% ALFWorld success and exceeds SEED and GRSD on WebShop success. Notably, SCOPE achieves the highest WebShop success across all backbones without consistently leading in normalized task score, suggesting stronger exact task completion rather than uniformly better partial matches. These results are consistent with the value of aligning distillation with selected error steps instead of applying trajectory-level guidance broadly. We further examine whether these improvements extend to a larger 32B backbone in Section 4.9. 
+
+4.3 Diagnosing Trajectory-Level Supervision 
+
+To examine the limitations of trajectory-level supervision, we analyze the alignment between task outcomes, step quality, and skill-conditioned distillation signals. Figure 1(a) reveals substantial outcome–step mismatch in annotated WebShop trajectories: 29.8% of steps in successful trajectories are erroneous, while 42.4% of steps in failed trajectories are correct. This disagreement indicates that terminal outcomes alone cannot reliably identify which decisions require correction. Figure 1(b) further reveals that skill-unrelated steps account for 57.9% of nonzero sampled-token teacher– student gaps. Notably, their negative and positive gaps have similar magnitudes to those at skill-relevant steps ( −0.378 /+0 .230 versus −0.400 /+0 .249 nats). This suggests that gap magnitude alone provides limited information about the relevance of corrective guidance. Together, these findings motivate explicit error localization and selective error-step distillation, rather than applying skill-conditioned supervision broadly. Detailed diagnostic protocols are provided in Appendix B.5. 10 Table 2 Ablation results on ALFWorld (%). Qwen2.5-3B at training step 180. We evaluate the effects of supervised initialization, skill guidance, and length-reward design. Traj.-level guidance assigns one skill per trajectory and distills across all steps; skill-bank guidance uses retrieved skills. Overall success is micro-averaged across evaluation episodes. Best values, including ties, are bold. 
+
+ALFWorld Variant Pick Look Clean Heat Cool Pick2 Overall Full SCOPE 100.0 100.0 100.0 100.0 100.0 92.0 98.4 
+
+Initialization and guidance 
+
+w/o SFT initialization 100.0 92.9 100.0 70.6 83.3 94.7 92.2 w/o Step-Skill 100.0 92.9 100.0 94.1 94.4 89.5 96.1 Traj.-level guidance 100.0 92.9 100.0 88.2 100.0 89.5 96.1 Skill-bank guidance 100.0 100.0 96.6 76.5 100.0 94.7 95.3 
+
+Length-reward design 
+
+w/o length reward 96.8 91.7 100.0 100.0 92.3 75.0 93.0 Absolute length bonus 100.0 100.0 100.0 94.1 100.0 89.5 97.7 
+
+4.4 Ablation Studies 
+
+We evaluate six variants with Qwen2.5-3B on ALFWorld (Table 2) to examine the contributions of SCOPE’s components and different forms of guidance. Together with the parameter sweeps in Section 4.6, these experiments also examine the effect of guidance strength. All endpoint comparisons in this section use training step 180, where the full configuration achieves 98.4% overall success. 
+
+Supervised initialization supports subsequent self-analysis Removing SFT initialization lowers overall success from 98.4% to 92.2%, a 6.3-point drop. Its effect is also visible during training: at step 100, the full configuration reaches 96.1%, compared with 78.1% without SFT (Figure 4(A)). Heat is especially affected at the final checkpoint, falling from 100.0% to 70.6%. These results highlight the need to first equip the model to locate errors and generate corrective guidance before relying on its own analyses for online supervision. 
+
+Matching skills to target steps improves guidance Replacing step-specific skills and selective coverage with one skill per trajectory and distillation over all steps reduces success to 96.1%, a 2.3-point drop. Replacing the generated guidance with skill-bank guidance yields 95.3%, a 3.1-point drop. Together with the unrelated-step signals in Section 4.3, these results support constructing guidance from the current trajectory and restricting its application to the relevant decisions. The trajectory-level variant changes skill granularity and coverage jointly, so its result supports their design. 0 60 120 180   
+
+> Training step
+> 020 40 60
+> Mean steps
+> All
+> GRPO w/o length reward Absolute length bonus w/o Step-Skill
+> Figure 5 Interaction efficiency during train-ing.
+
+Mean environment interaction steps on ALF-World across different training configurations. 
+
+Pairwise length rewards promote sustained efficiency Re-moving the length reward reduces overall success from 98.4% to 93.0%, while replacing the pairwise reward with an absolute length bonus yields 97.7%. Unlike absolute length shaping, our pairwise reward compares successful trajectories within each on-policy group, adapting its pref-erences as the policy improves. Figure 5 shows that SCOPE rapidly reduces interaction steps during early training and maintains low interaction counts in later stages, consis-tently outperforming GRPO in efficiency. Compared with removing length rewards, pairwise shaping generally main-tains shorter trajectories after the initial training phase. Together, these results support efficient task completion without sacrificing success. 11 1 2.5 5                                                              
+
+> α
+> 90 95 100
+> Success (%)
+> 89.8
+> 98.4 97.7
+> (a) Gap slope
+> 0.1 110
+> c(log scale)
+> 94.5
+> 98.4 98.4
+> (b) Saturation bound
+> 0.05 0.1 0.2
+> τlen
+> 93.8
+> 98.4
+> 96.1
+> (c) Pairwise temperature
+> Default setting Other settings Pick Look Clean Heat Cool Pick2 Overall Full
+> α= 1
+> α= 5
+> c= 0.1
+> c= 10
+> τlen = 0.05
+> τlen = 0.2
+> 100 100 100 100 100 92 98.4
+> 100 85.7 96.6 88.2 77.8 79 89.8
+> 100 100 100 100 88.9 94.7 97.7
+> 100 100 100 82.4 88.9 89.5 94.5
+> 100 100 100 94.1 94.4 100 98.4
+> 100 92.9 100 70.6 100 89.5 93.8
+> 100 92.9 96.6 94.1 94.4 94.7 96.1
+> 70 80 90 100
+> Success (%)
+
+Figure 6 Parameter sensitivity of SCOPE. Left: effects of gap slope α, saturation bound c, and pairwise temperature 
+
+τlen on task success. Right: task-wise performance under different parameter settings, where Full denotes the default configuration ( α = 2 .5, c = 1 , τlen = 0 .1). 
+
+4.5 Training Dynamics 
+
+To examine learning efficiency and optimization stability, we compare the training trajectories of SCOPE and GRPO and investigate the impact of unbounded OPSD updates. 
+
+SCOPE reaches strong performance with fewer updates Figure 1(c) shows that SCOPE reaches 65.1% mean success on WebShop at step 60, surpassing GRPO’s final 63.0% at step 150, requiring 60.0% fewer online updates. On ALFWorld, SCOPE first exceeds GRPO’s final success rate of 76.6% at step 25, compared with step 145 for GRPO, reducing the required updates by 82.8%. At step 180, SCOPE achieves 98.4% success, compared with 76.6% at GRPO’s final checkpoint. These comparisons measure online updates after supervised initialization, demonstrating faster performance improvement under a smaller RL update budget. 
+
+Bounded signed distillation stabilizes training Figure 1(c) further shows that Unbounded SCOPE suffers an abrupt performance collapse after initial improvement, whereas bounded SCOPE maintains stable training. Figure 3 reveals the underlying numerical instability: sharply reduced student log-probabilities produce ex-treme teacher–student gaps, amplifying raw-gap OPSD updates during minibatch optimization. The bounded signed coefficient in Equation 8 limits this gap-driven amplification while preserving both positive and nega-tive corrections. Together, these results support stable and efficient online optimization. 
+
+4.6 Parameter Sensitivity 
+
+To examine the sensitivity of corrective supervision and length-aware optimization, we vary the signed-gap slope α, saturation bound c, and pairwise temperature τlen individually. The remaining parameters follow the default configuration ( α = 2 .5, c = 1 , τlen = 0 .1). Figure 6 reports overall and task-wise ALFWorld success at training step 180. 
+
+The signed-gap slope controls corrective strength Reducing α to 1 lowers overall success from 98.4% to 89.8%, with notable declines on Cool and Look. A smaller slope weakens the coefficient for moderate teacher–student gaps, potentially limiting corrective supervision. Increasing α to 5 maintains 97.7% success, suggesting that effective learning does not depend on the exact default slope. 
+
+Overly tight saturation limits correction Reducing c to 0.1 lowers overall success to 94.5%, with Heat drop-ping to 82.4%. This suggests that early coefficient saturation can restrict useful corrective updates. Both 
+
+c = 1 and c = 10 achieve 98.4% overall success, indicating that SCOPE performs well across different saturation bounds. 
+
+Moderate pairwise preferences favor performance Setting τlen to 0.05 or 0.2 yields 93.8% and 96.1% success, respectively, compared with 98.4% at the default 0.1. Lower temperatures produce sharper length preferences, while higher temperatures soften pairwise differences. The intermediate setting achieves the highest success in this sweep, supporting a balance between length discrimination and corrective learning. 12 Micro-F1 (0 –100%)         
+
+> Micro-P
+> 0–100%
+> Micro-R
+> 0–100%
+> Macro-F1 (0 –100%)
+> Exact match
+> 0–100%
+> Parse rate
+> 0–100%
+> Micro-F1 (0 –100%)
+> Micro-P
+> 0–100%
+> Micro-R
+> 0–100%
+> Macro-F1 (0 –100%)
+> Exact match
+> 0–100%
+> Parse rate
+> 0–100%
+> (a) WebShop (b) ALFWorld
+> 3B Base 7B Base 3B SFT 7B SFT SEED analyzer (3B)
+
+Figure 7 Error-step localization. Comparison of base, SFT-initialized, and SEED analyzers on WebShop and ALFWorld, eval-uated using precision, recall, F1, and parsing accuracy. 20 40 60 80 100  
+
+> Success Rate (%)
+> Avg
+> Pick Look Heat Cool Pick2 Clean
+> +23.2
+> +7.9 +73.3 +9.5 +32.4 +50.0 +2.1
+> Gain (pp)
+> 46.7% Fewer Turns
+> SCOPE GRPO
+
+Figure 8 Unseen ALFWorld. Generalization to unseen instances across six task families, comparing success and efficiency with GRPO. 
+
+4.7 Error-Localization Capability 
+
+Since SCOPE relies on self-generated error analysis to select critical steps, reliable error localization is essential for effective corrective supervision. We therefore evaluate the localization capability of base and SFT-initialized models on WebShop and ALFWorld, alongside a SEED-style analyzer. Figure 7 reveals three key findings. First, larger models generally exhibit stronger error-step localization, with 7B outperforming 3B across most metrics. Second, SFT substantially improves both backbones, with 3B SFT even surpassing 7B Base in micro-F1, demonstrating that smaller models can acquire effective error-analysis capabilities. Third, the SEED-style analyzer exhibits markedly weaker localization than our step-specific analyzer, particularly on ALFWorld, suggesting that trajectory-level hindsight training may be less effective for fine-grained error identification. These results support supervised initialization for reliable online self-analysis. Metric definitions are provided in Appendix B.4. 
+
+4.8 Generalization to Unseen Tasks 
+
+SCOPE generalizes to unseen task instances To examine whether SCOPE transfers beyond the tasks en-countered during training, we evaluate its performance on the unseen ALFWorld split, covering six household task families. As shown in Figure 8, SCOPE achieves 89.6% overall success compared with 66.4% for GRPO, a gain of 23.2 percentage points. Improvements span all six families, particularly Look (+73.3 points), Pick2 (+50.0), and Cool (+32.4). These results demonstrate that SCOPE’s learned corrective behavior generalizes to unfamiliar task instances across diverse household routines. 
+
+Generalization gains accompany greater efficiency Beyond higher task success, SCOPE also reduces average interactions from 18.86 to 10.06 turns, a 46.7% reduction relative to GRPO. This improvement indicates that SCOPE generalizes without relying on longer interaction sequences, achieving more successful completions with fewer environment interactions. Together with the length-reward ablation, these findings support the effectiveness of efficiency-aware agentic RL. 
+
+4.9 Scaling SCOPE to Qwen3-32B 
+
+To investigate whether SCOPE remains effective at a larger model scale, we extend our evaluation to Qwen3-32B on ALFWorld, covering both seen and unseen task instances. We compare SCOPE against GRPO using the same backbone. Table 3 reports the results, while Figure 9 presents single-run training dynamics on the seen split. 
+
+SCOPE remains effective at larger model scale At step 150, SCOPE achieves 99.2% overall success on Qwen3-32B, outperforming GRPO (85.2%) by 14.0 percentage points. Improvements extend across all six task families, with particularly large gains on Pick2 (+30.0 points), Look (+25.0), and Cool (+19.2). These results 13 Table 3 Qwen3-32B results on ALFWorld. Seen results are reported at training step 150, while unseen evaluation covers 134 episodes. Task-family and overall success rates are percentages; mean steps measure environment interac-tions per episode. Best values within each split are bold. 
+
+ALFWorld ↑
+
+Method Pick Look Clean Heat Cool Pick2 Overall Mean steps ↓
+
+Seen evaluation 
+
+GRPO 96.8 75.0 89.5 90.0 80.8 70.0 85.2 22.0 
+
+SCOPE (Ours) 100.0 100.0 100.0 95.0 100.0 100.0 99.2 7.7 
+
+Unseen evaluation 
+
+GRPO 87.5 83.3 77.4 78.3 85.7 76.5 81.3 17.4 
+
+SCOPE (Ours) 83.3 100.0 93.5 91.3 100.0 100.0 94.0 9.2 0.00 0.25 0.50 0.75 1.00              
+
+> Success rate
+> 0.852
+> 0.992
+> Overall
+> 0.00 0.25 0.50 0.75 1.00
+> 0.968
+> 1.000
+> Pick
+> 0.00 0.25 0.50 0.75 1.00
+> 0.750
+> 1.000
+> Look
+> 0.00 0.25 0.50 0.75 1.00
+> 0.895
+> 1.000
+> Clean
+> 050 100 150
+> Training step
+> 0.00 0.25 0.50 0.75 1.00
+> Success rate
+> 0.900
+> 0.950
+> Heat
+> 050 100 150
+> Training step
+> 0.00 0.25 0.50 0.75 1.00
+> 0.808
+> 1.000
+> Cool
+> 050 100 150
+> Training step
+> 0.00 0.25 0.50 0.75 1.00
+> 0.700
+> 1.000
+> Pick Two
+> 050 100 150
+> Training step
+> 010 20 30 40 50
+> 21.97
+> 7.66
+> Mean Steps
+> GRPO-32B SCOPE-32B
+
+Figure 9 Training dynamics with Qwen3-32B. Single-run ALFWorld seen-evaluation curves comparing SCOPE and GRPO across six task families, overall success, and mean interaction steps. The dotted line marks step 150, corresponding to the seen results in Table 3. 
+
+indicate that SCOPE’s targeted corrective supervision remains effective when extended to a substantially larger Qwen3 backbone. 
+
+Higher success with fewer interactions Figure 9 shows that SCOPE improves rapidly during early training and maintains near-ceiling success in later stages. On seen tasks, average interactions decrease from 22.0 to 7.7, a 65.0% reduction. The gains also extend to 134 unseen ALFWorld episodes, where SCOPE achieves 94.0% success versus 81.3% for GRPO (+12.7 points), while reducing average interactions by 47.2%. Together, these results demonstrate that SCOPE retains both performance and efficiency advantages at larger model scale, including on unseen tasks. 
+
+5 Conclusion 
+
+In this work, we identify two limitations of trajectory-level supervision for LLM agents: trajectory outcomes obscure intermediate decision quality, while trajectory-level skills can introduce off-target distillation signals. To address these challenges, we propose SCOPE , which internalizes error localization and applies self-generated, step-specific corrective guidance only at selected error steps. Bounded signed distillation controls gap-driven updates, while success-relative pairwise rewards encourage efficient task completion. Experiments on ALF-14 World and WebShop across three backbones demonstrate consistent improvements over outcome-based RL and strong performance against skill-guided methods. On unseen ALFWorld tasks, SCOPE achieves 89.6% success, outperforming GRPO by 23.2 percentage points while reducing reported interactions by 46.7%. These results highlight the importance of aligning corrective supervision with the decisions that require it, without additional guidance at inference time. 
+
+References 
+
+[1] R. Agarwal, N. Vieillard, Y. Zhou, P. Stanczyk, S. Ramos Garea, M. Geist, and O. Bachem. On-policy dis-tillation of language models: Learning from self-generated mistakes. In International Conference on Learning Representations , volume 2024, pages 21246–21263, 2024. [2] P. Aggarwal and S. Welleck. L1: Controlling how long a reasoning model thinks with reinforcement learning. 
+
+arXiv preprint arXiv:2503.04697 , 2025. [3] M. Andrychowicz, F. Wolski, A. Ray, J. Schneider, R. Fong, P. Welinder, B. McGrew, J. Tobin, O. Pieter Abbeel, and W. Zaremba. Hindsight experience replay. Advances in neural information processing systems , 30, 2017. [4] R. A. Bradley and M. E. Terry. Rank analysis of incomplete block designs: I. the method of paired comparisons. 
+
+Biometrika , 39(3/4):324–345, 1952. [5] X. Cheng, S. He, L. Feng, H. Xu, M. Yan, L. Feng, and B. An. Beyond trajectory-level attribution: Graph-based credit assignment for agentic reinforcement learning. arXiv preprint arXiv:2605.26684 , 2026. [6] L. Feng, Z. Xue, T. Liu, and B. An. Group-in-group policy optimization for llm agent training. Advances in Neural Information Processing Systems , 38:46375–46408, 2026. [7] G. Hinton, O. Vinyals, and J. Dean. Distilling the knowledge in a neural network. arXiv preprint arXiv:1503.02531 , 2015. [8] B. Jin, H. Zeng, Z. Yue, J. Yoon, S. Arik, D. Wang, H. Zamani, and J. Han. Search-r1: Training llms to reason and leverage search engines with reinforcement learning. arXiv preprint arXiv:2503.09516 , 2025. [9] Y. Kim and A. M. Rush. Sequence-level knowledge distillation. In Proceedings of the 2016 conference on empirical methods in natural language processing , pages 1317–1327, 2016. [10] Q. Liu, Y. Sun, Y. Wang, Z. Chu, L. Jiang, J. Lin, and K. Ren. Deshortcut-align: Decoupling spurious shortcuts for robust safety alignment in large reasoning models. arXiv preprint arXiv:2609.34896 , 2026. [11] Q. Liu, Y. Sun, Y. Wang, Y. Mi, W. Cao, Y. Shen, Z. Chu, and K. Ren. Eopsa: Efficient on-policy self-distilled safety alignment. arXiv preprint arXiv:2609.34519 , 2026. [12] X. Liu, H. Yu, H. Zhang, Y. Xu, X. Lei, H. Lai, Y. Gu, H. Ding, K. Men, K. Yang, et al. Agentbench: Evaluating llms as agents. In International Conference on Learning Representations , volume 2024, pages 52989–53046, 2024. [13] Z. Lu, Z. Yao, Z. Han, Z.-H. Wang, J. Wu, Q. Gu, X. Cai, W. Lu, J. Xiao, Y. Zhuang, et al. Self-distilled agentic reinforcement learning. arXiv preprint arXiv:2605.15155 , 2026. [14] J. Luo, W. Zhang, Y. Yuan, Y. Zhao, J. Yang, Y. Gu, B. Wu, B. Chen, Z. Qiao, Q. Long, et al. Large language model agent: A survey on methodology, applications and challenges. arXiv preprint arXiv:2503.21460 , 2025. [15] X. Luo, Y. Zhang, Z. He, Z. Wang, S. Zhao, D. Li, L. K. Qiu, and Y. Yang. Agent lightning: Train any ai agents with reinforcement learning. arXiv preprint arXiv:2508.03680 , 2025. [16] A. Madaan, N. Tandon, P. Gupta, S. Hallinan, L. Gao, S. Wiegreffe, U. Alon, N. Dziri, S. Prabhumoye, Y. Yang, et al. Self-refine: Iterative refinement with self-feedback. Advances in neural information processing systems , 36: 46534–46594, 2023. [17] C. Qian, E. C. Acikgoz, Q. He, H. Wang, X. Chen, D. Hakkani-Tur, G. Tur, and H. Ji. Toolrl: Reward is all tool learning needs. Advances in Neural Information Processing Systems , 38:105523–105553, 2026. [18] Qwen, :, A. Yang, B. Yang, B. Zhang, B. Hui, B. Zheng, B. Yu, C. Li, D. Liu, F. Huang, H. Wei, H. Lin, J. Yang, J. Tu, J. Zhang, J. Yang, J. Yang, J. Zhou, J. Lin, K. Dang, K. Lu, K. Bao, K. Yang, L. Yu, M. Li, M. Xue, P. Zhang, Q. Zhu, R. Men, R. Lin, T. Li, T. Tang, T. Xia, X. Ren, X. Ren, Y. Fan, Y. Su, Y. Zhang, Y. Wan, Y. Liu, Z. Cui, Z. Zhang, and Z. Qiu. Qwen2.5 technical report, 2025. URL https://arxiv.org/abs/2412.15115 .[19] S. Ross, G. Gordon, and D. Bagnell. A reduction of imitation learning and structured prediction to no-regret online learning. In Proceedings of the fourteenth international conference on artificial intelligence and statistics ,pages 627–635. JMLR Workshop and Conference Proceedings, 2011. [20] T. Schick, J. Dwivedi-Yu, R. Dessì, R. Raileanu, M. Lomeli, E. Hambro, L. Zettlemoyer, N. Cancedda, and T. Scialom. Toolformer: Language models can teach themselves to use tools. Advances in neural information processing systems , 36:68539–68551, 2023. [21] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov. Proximal policy optimization algorithms. 
+
+arXiv preprint arXiv:1707.06347 , 2017. [22] Z. Shao, P. Wang, Q. Zhu, R. Xu, J. Song, X. Bi, H. Zhang, M. Zhang, Y. Li, Y. Wu, et al. Deepseekmath: Pushing the limits of mathematical reasoning in open language models. arXiv preprint arXiv:2402.03300 , 2024. 
+
+15 [23] N. Shinn, F. Cassano, A. Gopinath, K. Narasimhan, and S. Yao. Reflexion: Language agents with verbal reinforcement learning. Advances in neural information processing systems , 36:8634–8652, 2023. [24] M. Shridhar, X. Yuan, M.-A. Côté, Y. Bisk, A. Trischler, and M. Hausknecht. Alfworld: Aligning text and embodied environments for interactive learning. arXiv preprint arXiv:2010.03768 , 2020. [25] G. Wang, Y. Xie, Y. Jiang, A. Mandlekar, C. Xiao, Y. Zhu, L. Fan, and A. Anandkumar. Voyager: An open-ended embodied agent with large language models. arXiv preprint arXiv:2305.16291 , 2023. [26] H. Wang, G. Wang, H. Xiao, Y. Zhou, Y. Pan, J. Wang, K. Xu, Y. Wen, X. Ruan, X. Chen, et al. Skill-sd: Skill-conditioned self-distillation for multi-turn llm agents. arXiv preprint arXiv:2604.10674 , 2026. [27] Z. Wang, K. Wang, Q. Wang, P. Zhang, L. Li, Z. Yang, X. Jin, K. Yu, M. N. Nguyen, L. Liu, et al. Ragen: Un-derstanding self-evolution in llm agents via multi-turn reinforcement learning. arXiv preprint arXiv:2504.20073 ,2025. [28] Z.-H. Wang, Z. Lu, Z. Yao, J. Wu, J. Wu, Z. Cai, Y. Sun, Z. Ye, L. Hao, Q. Gu, et al. Agentopsd: Recursive self-distillation for agentic reinforcement learning. arXiv preprint arXiv:2608.05987 , 2026. [29] J. Wu, S. Yang, Z. Lu, F. Zhang, Y. Shen, L. Feng, H. Luo, Z. Lian, S. Zhang, Z. Wen, et al. Seed: Self-evolving on-policy distillation for agentic reinforcement learning. arXiv preprint arXiv:2607.14777 , 2026. [30] J. Wu, S. Yang, Y. Shen, S. Zhang, Z. Wen, and J. Tao. Spark: Strategic policy-aware exploration via dynamic branching for long-horizon agentic learning. In Proceedings of the 64th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 23981–24004, 2026. [31] J. Wu, G. Zhai, R. Jin, J. Yuan, Y. Shen, S. Zhang, Z. Wen, and J. Tao. Atlas: Orchestrating heterogeneous mod-els and tools for multi-domain complex reasoning. In Findings of the Association for Computational Linguistics: ACL 2026 , pages 17503–17535, 2026. [32] P. Xia, J. Chen, H. Wang, J. Liu, K. Zeng, Y. Wang, S. Han, Y. Zhou, X. Zhao, H. Chen, et al. Skillrl: Evolving agents via recursive skill-augmented reinforcement learning. arXiv preprint arXiv:2602.08234 , 2026. [33] H. Yan, F. Xu, Q. Sun, J. Wu, Z. Huang, M. Huang, J. Gong, Z. Ding, K. Cheng, Y. Wang, et al. Odysse-yarena: Benchmarking large language models for long-horizon, active and inductive interactions. arXiv preprint arXiv:2602.05843 , 2026. [34] A. Yang, A. Li, B. Yang, B. Zhang, B. Hui, B. Zheng, B. Yu, C. Gao, C. Huang, C. Lv, et al. Qwen3 technical report. arXiv preprint arXiv:2505.09388 , 2025. [35] C. Yang, C. Qin, Q. Si, M. Chen, N. Gu, D. Yao, Z. Lin, W. Wang, J. Wang, and N. Duan. Self-distilled rlvr. 
+
+arXiv preprint arXiv:2604.03128 , 2026. [36] S. Yang, J. Wu, Z. Lu, Y. Shen, F. Zhang, L. Feng, S. Zhang, H. Luo, Z. Lian, Z. Wen, et al. Opid: On-policy skill distillation for agentic reinforcement learning. arXiv preprint arXiv:2606.26790 , 2026. [37] S. Yao, H. Chen, J. Yang, and K. Narasimhan. Webshop: Towards scalable real-world web interaction with grounded language agents. Advances in Neural Information Processing Systems , 35:20744–20757, 2022. [38] S. Yao, J. Zhao, D. Yu, N. Du, I. Shafran, K. Narasimhan, and Y. Cao. React: Synergizing reasoning and acting in language models. arXiv preprint arXiv:2210.03629 , 2022. [39] J. Yi, J. Wang, and S. Li. Shorterbetter: Guiding reasoning models to find optimal inference length for efficient reasoning. Advances in Neural Information Processing Systems , 38:39011–39043, 2026. [40] Z.ai. GLM-5.2: Built for long-horizon tasks, June 2026. URL https://z.ai/blog/glm-5.2 . Accessed: 2026-10-23. [41] A. Zhao, D. Huang, Q. Xu, M. Lin, Y.-J. Liu, and G. Huang. Expel: Llm agents are experiential learners. In 
+
+Proceedings of the AAAI Conference on Artificial Intelligence , volume 38, pages 19632–19642, 2024. [42] S. Zhao, Z. Xie, M. Liu, J. Huang, G. Pang, F. Chen, and A. Grover. Self-distilled reasoner: On-policy self-distillation for large language models. arXiv preprint arXiv:2601.18734 , 2026. [43] B. Zheng, Z. Xie, G. Zhao, E. Gong, X. Ma, X. Fu, and Z. Chen. Group-reflective self-distillation for agentic reinforcement learning. arXiv preprint arXiv:2607.28076 , 2026. [44] Q. Zhong, M. Zheng, M. Song, X. Lin, J. Sun, H. Jiang, X. Wang, and J. Fang. Sod: Step-wise on-policy distillation for small language model agents. arXiv preprint arXiv:2605.07725 , 2026. 
+
+16 Appendix Overview   
+
+> SECTION CONTENTS PAGE
+
+Appendix A Theoretical Analysis 17  
+
+> A.1
+
+Bounded Signed Distillation 17  
+
+> A.2
+
+Influence of Irrelevant Selected Tokens 18  
+
+> A.3
+
+Properties of Success-Relative Efficiency Rewards 19 
+
+Appendix B Experimental Details 20  
+
+> B.1
+
+Training Configuration 20  
+
+> B.2
+
+Validation Curves Across Backbones 20  
+
+> B.3
+
+Supervised Data and Hindsight Analysis 20  
+
+> B.4
+
+Error-Localization Evaluation Metrics 21  
+
+> B.5
+
+Motivation Diagnostics 22 
+
+Appendix C SFT and Analyzer Prompt Templates 22  
+
+> C.1
+
+Outcome-Specific User Template 23 
+
+A Theoretical Analysis 
+
+We analyze three properties of SCOPE: bounded signed updates, the influence of irrelevant distillation tokens, and the success-relative length reward. The distillation results hold for a fixed training microbatch and characterize its auxiliary update, not the convergence of the full RL objective. 
+
+A.1 Bounded Signed Distillation 
+
+Let I = Tsel be the selected token set, with n = |I| > 0. For each token k ∈ I , define 
+
+rk(θ) = ℓTk − ℓSk (θ),vk(θ) = ∇θ ℓSk (θ),f (r) = c tanh( αr/c ), α, c > 0.
+
+(16) We hold the sampled tokens, selected steps, and teacher scores fixed. As in Equation 8, gradients do not pass through f (rk). The resulting auxiliary gradient is 
+
+g(θ) = − 1
+
+n
+
+X
+
+> k∈I
+
+f (rk(θ)) vk(θ). (17) For n = 0 , we define the auxiliary loss and gradient to be zero. 
+
+Proposition A.1 (Log-cosh gradient equivalence) . Define 
+
+φ(r) = c2
+
+α log cosh( αr/c ),
+
+Φ( θ) = 1
+
+n
+
+X
+
+> k∈I
+
+φ(rk(θ)) .
+
+(18) 
+
+Then ∇θ Φ( θ) = g(θ). The scalar potential φ is nonnegative, symmetric, and strictly convex, with its unique minimum at r = 0 . Moreover, 
+
+φ(r) = α
+
+2 r2 + O(r4), r → 0,φ(r) = c|r| − c2
+
+α log 2 + o(1) , |r| → ∞ .
+
+(19) 17 Proof. Differentiation gives 
+
+φ′(r) = f (r), φ′′ (r) = α
+
+cosh 2(αr/c ) > 0. (20) Since ℓTk is fixed, ∇θ rk = −vk. Thus ∇θ Φ = − 1
+
+> n
+
+P 
+
+> k
+
+f (rk)vk = g. Nonnegativity and symmetry follow from cosh x ≥ 1 and cosh( −x) = cosh x. Finally, the expansions log cosh x = x2/2 + O(x4) near zero and 
+
+log cosh x = |x| − log 2 + o(1) at infinity give Equation 19. This result interprets the detached distillation update as a log-cosh gradient: small gaps receive approximately linear signed coefficients, while large gaps have bounded influence. 
+
+Proposition A.2 (Bounded auxiliary gradient) . For any finite r,
+
+|f (r)| < c, f (0) = 0 ,
+
+sign f (r) = sign r, 
+
+0 < f ′(r) ≤ α. 
+
+(21) 
+
+If ∥vk∥ ≤ Bk for each selected token, then 
+
+∥g∥ ≤ cn
+
+X
+
+> k∈I
+
+Bk. (22) 
+
+In particular, ∥g∥ ≤ cB when Bk ≤ B for all k.Proof. The coefficient bounds follow from the range and monotonicity of tanh , together with f ′(r) =
+
+α/ cosh 2(αr/c ). By the triangle inequality, 
+
+∥g∥ ≤ 1
+
+n
+
+X
+
+> k∈I
+
+|f (rk)|∥ vk∥ ≤ cn
+
+X
+
+> k∈I
+
+Bk.
+
+Corollary A.3 (Sensitivity to teacher scores) . Suppose the cached teacher score for token k changes by ek,while the student and selected set remain fixed. If ∥vk∥ ≤ B, the resulting gradient eg satisfies 
+
+∥eg − g∥ ≤ Bn
+
+X
+
+> k∈I
+
+min {α|ek|, 2c}. (23) 
+
+Proof. Since |f ′(r)| ≤ α and |f (r)| < c , |f (r + e) − f (r)| ≤ min {α|e|, 2c}. Substituting this bound into Equation 17 and applying the triangle inequality proves the claim. Together, these bounds show that α controls local sensitivity and c limits gap-dependent amplification. They assume bounded token score gradients and do not imply a global stability guarantee for RL training. 
+
+A.2 Influence of Irrelevant Selected Tokens 
+
+Step selection removes unselected tokens from the auxiliary loss. To examine the effect of imperfect selection, partition I = Irel ∪ I off into relevant and irrelevant selected tokens, and let ηoff = |I off |/n .
+
+Proposition A.4 (Off-target gradient contribution) . Assume ∥vk∥ ≤ B. The gradient contribution from irrelevant tokens, 
+
+goff = − 1
+
+n
+
+X
+
+> k∈I off
+
+f (rk)vk,
+
+satisfies 
+
+∥goff ∥ ≤ cBη off . (24) 
+
+If Irel ̸ = ∅, let grel be the mean auxiliary gradient over relevant tokens alone. Then 
+
+∥g − grel ∥ ≤ 2cBη off . (25) 18 Proof. Each token contributes a vector of norm at most cB before normalization, proving Equation 24. Moreover, 
+
+g = (1 − ηoff )grel + goff .
+
+Since ∥grel ∥ ≤ cB , the triangle inequality gives ∥g − grel ∥ ≤ ηoff cB + cBη off .Thus, reducing the fraction of irrelevant selected tokens tightens a worst-case bound on their effect. This result quantifies the role of selection but does not assume that the analyzer is always correct. 
+
+A.3 Properties of Success-Relative Efficiency Rewards 
+
+Consider a task group with M = |S q | successful trajectories and positive interaction lengths Ti. The pairwise score bi is defined in Equation 11. 
+
+Proposition A.5 (Pairwise reward properties) . For M ≥ 2 and τlen > 0, the scores satisfy: (i) Length ordering: 0 < b i < 1, and Ti < T j implies bi > b j ; equal lengths give equal scores. (ii) Scale invariance: replacing all Ti with aT i for any a > 0 leaves every bi unchanged. (iii) Mean-bonus conservation: X
+
+> i∈S q
+
+bi = M
+
+2 ,
+
+X
+
+> i∈S q
+
+(Rpair  
+
+> i
+
+− Ri) = λlen M
+
+2 .
+
+(26) 
+
+The last identities also hold for M = 1 and M = 0 under the conventions in Equation 11. Proof. For distinct successes i, j , Equation 10 gives pij > p ji whenever Ti < T j . The sigmoid is strictly monotone, so pik > p jk for each other success k. Hence 
+
+(M − 1)( bi − bj ) = pij − pji 
+
++ X 
+
+> k∈S q\{ i,j }
+
+(pik − pjk ) > 0. (27) Equal lengths give equality, and 0 < p ij < 1 implies 0 < b i < 1. This proves (i). For (ii), log( aT j )−log( aT i) = log Tj − log Ti. Finally, pij + pji = 1 , so 
+
+X
+
+> i∈S q
+
+bi = 1
+
+M − 1
+
+X
+
+> i<j
+
+(pij + pji ) = M
+
+2 .
+
+Multiplying by λlen proves (iii). The cases M = 0 , 1 follow from the definitions. 
+
+Corollary A.6 (Success–failure reward ordering) . If Ri ≥ Rj for every successful trajectory i and failed trajectory j, then for λlen > 0, Rpair  
+
+> i
+
+> R pair  
+
+> j
+
+. Among successes with equal original rewards, shorter trajectories receive larger shaped rewards. Proof. For a success i, bi > 0, whereas a failure receives no length bonus. Therefore, 
+
+Rpair  
+
+> i
+
+− Rpair  
+
+> j
+
+= ( Ri − Rj ) + λlen bi > 0.
+
+The ordering among equally rewarded successes follows from Proposition A.5(i). The pairwise reward therefore favors shorter successes without a fixed length target. Its mean bonus is always 
+
+λlen /2 across successes, while the relative allocation changes with the current rollout group. 19 B Experimental Details 
+
+B.1 Training Configuration 
+
+SCOPE follows the supervised-initialization and online-training workflow of SEED [29]. Table 4 summarizes the key coefficients used by the full method. The policy snapshot supplies both the actor and the online analyzer; its skill-conditioned teacher scores are cached before student optimization. Online analysis has no separate supervised loss: the policy is updated through the joint objective in Equation 15. For the smaller backbones, training uses two NVIDIA H200 GPUs on WebShop and four on ALFWorld. The Qwen3-32B experiments use 16 NVIDIA H200 GPUs.                         
+
+> Table 4 Key settings of full SCOPE. Parameter sweeps vary one of α,c, or τlen at a time.
+> Parameter Value
+> Maximum skill entries Kmax 5Signed-gap slope α2.5 Saturation bound c1Distillation weight λ0.01 Length-preference temperature τlen 0.1 Length-bonus weight λlen 5PPO clipping radius ϵ0.2 Reference KL weight βref 0.01 Entropy weight λH0.001
+
+The main comparison uses the step-150 checkpoint. ALFWorld ablations and parameter sweeps use step 180. Training-step savings in Figure 1(c) compare the first observed checkpoints reaching GRPO’s final mean success rate. 
+
+B.2 Validation Curves Across Backbones 
+
+To complement the multi-seed training dynamics in Figure 1(c), we report single-run validation curves for SCOPE with Qwen2.5-3B-Instruct and Qwen2.5-7B-Instruct on ALFWorld and WebShop. Both figures mark training step 150, the checkpoint used for the main comparison in Table 1. As shown in Figures 10 and 11, both backbones improve substantially during online training while reducing interaction steps. At step 150, SCOPE-3B and SCOPE-7B reach 97.7% and 98.4% overall ALFWorld success, respectively. On WebShop, they achieve 85.2% and 84.4% success, with normalized task scores of 87.9% and 89.6%, respectively. The corresponding mean interaction counts are 8.24 and 7.73 on ALFWorld, and 6.02 and 5.95 on WebShop. These results provide single-run training context for the main-table checkpoint values. 
+
+B.3 Supervised Data and Hindsight Analysis 
+
+GLM-5.2 generates the offline annotations used for SFT. Each input contains the task description, episode outcome, and the recorded sequence of observations and responses, together with action-validity feedback when available. Successful trajectories are analyzed for avoidable errors. Failed trajectories may additionally receive up to three successful action sequences from the same task as reference context. These offline references can come from separate runs of that task; online references are drawn from the current on-policy group. The annotation configuration uses temperature 0, an output limit of 8,192 tokens, and disabled thinking. Observations are retained without character-level truncation. An annotation contains a trajectory summary and at most five skill entries, each with target-step indices, an error explanation, and a short reusable corrective instruction. Entries that require the same correction can cover multiple steps. The prompt asks the annotator to judge decisions using the information available at each step and to preserve reasonable exploration. An empty skill list is returned when no clear error is supported. The data pipeline checks the JSON structure, nonempty required fields, and valid, unique target indices before export. Each SFT example is a system–user–assistant conversation: the input is the analysis prompt, 20 0.00 0.25 0.50 0.75 1.00              
+
+> Success rate
+> Overall
+> 0.977 0.984
+> 0.00 0.25 0.50 0.75 1.00
+> Pick
+> 1.000 1.000
+> 0.00 0.25 0.50 0.75 1.00
+> Look
+> 1.000 1.000
+> 0.00 0.25 0.50 0.75 1.00
+> Clean
+> 1.000 1.000
+> 050 100 150
+> Training step
+> 0.00 0.25 0.50 0.75 1.00
+> Success rate
+> Heat
+> 1.000 1.000
+> 050 100 150
+> Training step
+> 0.00 0.25 0.50 0.75 1.00
+> Cool
+> 0.857 0.952
+> 050 100 150
+> Training step
+> 0.00 0.25 0.50 0.75 1.00
+> Pick Two
+> 0.947 1.000
+> 050 100 150
+> Training step
+> 0510 15 20
+> Mean Steps
+> 7.73 8.24
+> SCOPE-3B SCOPE-7B
+
+Figure 10 Single-run validation curves on ALFWorld. Overall and task-family success rates, together with mean environment interaction steps, for SCOPE-3B and SCOPE-7B. The dotted vertical line indicates step 150, whose overall success rates match Table 1. 0 50 100 150 
+
+Training step 
+
+> 0.00 0.25 0.50 0.75 1.00
+> Success rate
+
+Success Rate    
+
+> 0.844 0.852
+> 050 100 150
+
+Training step 
+
+> 0.00 0.25 0.50 0.75 1.00
+
+Task Score    
+
+> 0.879 0.896
+> 050 100 150
+
+Training step  
+
+> 0246810 12 14
+
+Mean Response Steps  
+
+> 5.95 6.02
+> SCOPE-3B SCOPE-7B
+
+Figure 11 Single-run validation curves on WebShop. Success rate, normalized task score, and mean environment interaction steps for SCOPE-3B and SCOPE-7B. The dotted vertical line indicates step 150; the success rates and normalized scores match Table 1. 
+
+and the assistant target contains only the structured summary and skill entries. Successful reference action lists remain in the input rather than in the prediction target. The same analysis instructions and output schema are used by the online analyzer, which is the current policy snapshot. If a failed group contains no success, the reference block is omitted and the analyzer judges the recorded trajectory directly. Appendix C provides the templates. 
+
+B.4 Error-Localization Evaluation Metrics 
+
+We evaluate error-step localization against reference annotations. For each trajectory i, let Ei and bEi denote the reference and predicted error-step sets, respectively. Predictions are extracted from the target_steps 
+
+fields of generated skill entries. 
+
+Step-level metrics Micro-precision and micro-recall are defined as P = TP TP+FP and R = TP TP+FN , with counts aggregated across all trajectories. Micro-F1 is 2P R P +R , while Macro-F1 averages the F1 scores computed 21 separately for each trajectory. 
+
+Trajectory-level metrics Exact Match measures the fraction of trajectories with bEi = Ei. Parse Rate mea-sures the fraction of outputs satisfying the required JSON schema. All metrics are reported as percentages. 
+
+B.5 Motivation Diagnostics 
+
+Outcome–step mismatch The WebShop study in Figure 1(a) uses GLM-5.3 to identify erroneous steps in 1,400 trajectories: 536 successful and 864 failed episodes. Local decision quality is judged separately from episode outcome: an eventual success can contain avoidable mistakes, and an eventual failure can contain correct decisions. The figure reports error and correct-step proportions separately for the two outcome groups. GLM-5.2 supplies the offline SFT annotations described above; GLM-5.3 supplies these diagnostic error-step labels. 
+
+Off-target probability shifts The skill-influence analysis scores 33,602 steps and 4,035,655 response tokens from 177 task groups. The recorded relevance labels divide steps into 14,081 related and 19,521 unrelated steps according to the applicability of the trajectory-level skill. On the sampled response tokens, we compute the signed gap ∆ = log πT (y | h, s ) − log πS (y | h). Within each outcome and relevance group, positive and negative bars are pooled-token means conditional on ∆ > 0 and ∆ < 0, respectively. Zero gaps are excluded from these conditional means. The 57.9% off-target share divides the number of nonzero-gap tokens at unrelated steps by the number of nonzero-gap tokens at all steps. The negative and positive shares of 53.9% and 46.1% use nonzero-gap tokens at unrelated steps as their denominator. Error bars show 95% task-group bootstrap intervals from 2,000 resamples with random seed 0. Task descrip-tions and initial observations define the grouping proxy; each resample draws complete groups rather than individual tokens. This preserves within-group dependence when estimating uncertainty in the conditional means. 
+
+C SFT and Analyzer Prompt Templates 
+
+The offline annotator and online analyzer share the system message, analysis instructions, and JSON schema below. A user message consists of the appropriate outcome-specific opening, the shared instructions, and the episode context. Placeholders in angle brackets are replaced with the recorded task and trajectory. The reference block is included only for failures with available successful references. In the serialized trajectory, each step contains its index, observation, response, and action-validity flag when recorded. 
+
+System message 
+
+> You analyze agent episodes and extract concise, policy-facing skills for specific error steps. Return ONLY valid JSON.
+
+Shared analysis instructions and output schema 
+
+> First write a concise trajectory_summary. Then return up to 5 step_skills. For each: 1. Identify clear error steps in target_steps; steps requiring the same correction share one skill. 2. Write one short policy-facing skill that extracts the correction into a reusable workflow: the core decision rule and action ordering that would avoid the mistake. 3. Write a one-sentence error_reason that cites the erroneous steps and explains why the actions at those steps were mistakes. Important constraints: - Judge errors using information available at each target step; do not label reasonable exploration. - Write skill as one short, natural instruction, not a retrospective explanation or a list of labeled sections. - Generalize beyond this task without names, IDs, exact values, or step numbers; keep the advice concrete and applicable at every target step. - Use existing step indices, sorted and unique; sort entries by first target step. - If no clear error is supported, still write trajectory_summary and return {"step_skills":[]}. - Return only the top-level fields trajectory_summary and step_skills.
+
+22 Return format (replace string placeholders and 0 with actual text and existing integer step indices): {"trajectory_summary":"string","step_skills":[{"target_steps":[0],"error_reason":"string","skill":"string"}] }
+
+C.1 Outcome-Specific User Template 
+
+The same template is used for successful and failed trajectories. Outcome-specific instructions are selected accordingly, while successful references are included only for failures when available. 
+
+User template: successful / failed trajectory 
+
+Analyze the following <SUCCESSFUL/FAILED> trajectory. <IF SUCCESSFUL: It may still contain avoidable mistakes.> <IF FAILED: Successful references are hints; differences alone do not prove mistakes.> <SHARED ANALYSIS INSTRUCTIONS AND OUTPUT SCHEMA> Episode context: - Task description: <TASK> - episode_success: <success/failure> - Interaction trajectory: Step <STEP_INDEX> Observation: <OBSERVATION> Response: <RESPONSE> Action valid: <true_or_false> <REMAINING RECORDED STEPS> <IF FAILED AND REFERENCES AVAILABLE: Successful reference trajectories (actions only): Successful reference 1: Action 0: <ACTION> Action 1: <ACTION> <REMAINING REFERENCE ACTIONS> <ADDITIONAL SUCCESSFUL REFERENCES, IF AVAILABLE> >
+
+23

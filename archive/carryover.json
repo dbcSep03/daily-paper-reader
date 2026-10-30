@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-10-29T23:20:30.871069+00:00",
-  "updated_date": "20261029",
+  "generated_at": "2026-10-30T23:18:50.475198+00:00",
+  "updated_date": "20261030",
   "carryover_days": 9,
   "tag_states": {
     "agentic-rl": {
-      "updated_date": "20261029",
+      "updated_date": "20261030",
       "carryover_days": 9,
       "items": [
         {
@@ -33,13 +33,13 @@
             "query:agentic-rl"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "decision-grounded synthesis and curation of tool-use agent trajectories for supervision",
-          "llm_evidence_cn": "面向工具使用智能体的决策接地轨迹合成与数据筛选",
-          "llm_evidence": "面向工具使用智能体的决策接地轨迹合成与数据筛选",
-          "canonical_evidence": "面向工具使用智能体的决策接地轨迹合成与数据筛选",
-          "llm_tldr_en": "Trajectory2Gym constructs executable interactions around under-supported compositional structures and derives supervision only from decision-grounded actions, improving trajectory data quality for tool-use agents.",
-          "llm_tldr_cn": "成功的工具使用轨迹未必是有效监督，可能缺失多步依赖或包含在决策时无法被信息支撑的动作。本文指出轨迹监督需同时满足组合覆盖与决策接地两项要求，并提出Trajectory2Gym框架，围绕支撑不足的组合结构构造可执行交互，仅从有据可依的决策中提取监督信号。实验表明该方法生成的轨迹数据能更有效地训练工具使用智能体。该工作为智能体训练数据的构造与筛选提供了原则化方法。",
-          "llm_tldr": "成功的工具使用轨迹未必是有效监督，可能缺失多步依赖或包含在决策时无法被信息支撑的动作。本文指出轨迹监督需同时满足组合覆盖与决策接地两项要求，并提出Trajectory2Gym框架，围绕支撑不足的组合结构构造可执行交互，仅从有据可依的决策中提取监督信号。实验表明该方法生成的轨迹数据能更有效地训练工具使用智能体。该工作为智能体训练数据的构造与筛选提供了原则化方法。",
+          "llm_evidence_en": "constructing grounded executable interaction data for tool-use agents",
+          "llm_evidence_cn": "为工具使用智能体构建可落地的交互数据",
+          "llm_evidence": "为工具使用智能体构建可落地的交互数据",
+          "canonical_evidence": "为工具使用智能体构建可落地的交互数据",
+          "llm_tldr_en": "Trajectory2Gym synthesizes executable tool-use interactions that ensure compositional coverage and decision grounding, deriving supervision only from grounded decisions.",
+          "llm_tldr_cn": "论文指出现有工具使用轨迹虽成功却未必是好的监督数据，既可能遗漏多步依赖，也可能包含决策时无法被信息支撑的动作。作者提出Trajectory2Gym，围绕覆盖不足的组合结构合成可执行交互，并只从真实执行中可落地的决策提取监督信号，同时兼顾组合覆盖与决策落地两条准则。该工作为智能体训练数据的构建与筛选提供了更可靠、可验证的生成方式，有助于提升工具使用智能体的学习质量。",
+          "llm_tldr": "论文指出现有工具使用轨迹虽成功却未必是好的监督数据，既可能遗漏多步依赖，也可能包含决策时无法被信息支撑的动作。作者提出Trajectory2Gym，围绕覆盖不足的组合结构合成可执行交互，并只从真实执行中可落地的决策提取监督信号，同时兼顾组合覆盖与决策落地两条准则。该工作为智能体训练数据的构建与筛选提供了更可靠、可验证的生成方式，有助于提升工具使用智能体的学习质量。",
           "llm_tags": [
             "query:agentic-rl"
           ],
@@ -48,139 +48,6 @@
           "matched_requirement_id": "req-2",
           "selection_source": "carryover_cache",
           "paper_id": "2610.33568v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2610.29426v1",
-          "source": "arxiv",
-          "title": "BIRD-RL: Scaling Agentic Reinforcement Learning over Stateful Data-Centric Environments",
-          "abstract": "While agentic reinforcement learning (RL) has emerged as a promising paradigm for training small language models (SLMs), existing frameworks are predominantly tool-centric and struggle with data-centric environments. Specifically, applying tool-centric frameworks to stateful tasks like SQL debugging introduces severe spatial inefficiencies since proper environment isolation typically requires a separate database container per rollout. Naively reusing databases without tracking evolving states across multi-turn interactions causes trajectory contamination and cross-trajectory interference, which severely destabilizes policy updates. To overcome these bottlenecks, we introduce BIRD-RL, a novel four-stage agentic RL curriculum that alternately enhances foundational agent reasoning and trajectory-adaptive on-policy exploration to circumvent the instability inherently associated with direct end-to-end learning. Crucially, to support this curriculum, BIRD-RL is driven by a Trajectory-scoped Persistent Execution Infrastructure, which enables safe database replica reuse while preserving trajectory isolation. This design improves spatial RL efficiency by 12.8x, successfully enabling scalable agentic RL for complex data-centric tasks without needs of Kubernettes. Empirical evaluations on the BIRD-CRITIC-SQLite benchmark demonstrate that our 7B and 14B models achieve Success Rates of 44.40% and 48.00%, respectively, showing competitive performance against strong proprietary model-based agents such as Claude-Opus-4.6 Agent (48.20%). Furthermore, BIRD-RL successfully trains unified SLMs capable of both advanced SQL debugging and generation, highlighting its broader potential for multi-objective optimization across heterogeneous, real-world data-centric tasks.",
-          "authors": [
-            "Ge Qu",
-            "Jinyang Li",
-            "Xiaohan Xu",
-            "Xiaolong Li",
-            "Bowen Qin",
-            "Nan Huo",
-            "Ziwei Tang",
-            "Chenhao Ma",
-            "Reynold Cheng"
-          ],
-          "primary_category": "cs.LG",
-          "categories": [
-            "cs.LG",
-            "cs.CL"
-          ],
-          "published": "2026-10-21T08:50:39+00:00",
-          "link": "https://arxiv.org/pdf/2610.29426v1",
-          "tags": [
-            "keyword:agentic-rl",
-            "query:agentic-rl"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "agentic RL over stateful multi-turn data-centric environments",
-          "llm_evidence_cn": "面向有状态多轮数据环境的智能体强化学习",
-          "llm_evidence": "面向有状态多轮数据环境的智能体强化学习",
-          "canonical_evidence": "面向有状态多轮数据环境的智能体强化学习",
-          "llm_tldr_en": "BIRD-RL targets agentic RL in stateful data-centric environments like SQL debugging, using a four-stage curriculum and state tracking to avoid trajectory contamination across multi-turn rollouts and stabilize policy updates.",
-          "llm_tldr_cn": "现有智能体强化学习框架多为工具中心式，难以处理SQL调试等有状态的数据中心任务：环境隔离需为每次 rollout 单独开数据库容器，导致严重的空间低效，而直接复用数据库又会使多轮交互中的状态漂移造成轨迹污染与跨轨迹干扰，破坏策略更新稳定性。为此作者提出BIRD-RL，设计四阶段智能体强化学习课程，并显式追踪跨轮次的环境状态演化以隔离轨迹。实验表明该方法在保证训练稳定性的同时显著提升小语言模型在有状态任务上的表现，为数据中心环境的智能体RL提供了可扩展范式。",
-          "llm_tldr": "现有智能体强化学习框架多为工具中心式，难以处理SQL调试等有状态的数据中心任务：环境隔离需为每次 rollout 单独开数据库容器，导致严重的空间低效，而直接复用数据库又会使多轮交互中的状态漂移造成轨迹污染与跨轨迹干扰，破坏策略更新稳定性。为此作者提出BIRD-RL，设计四阶段智能体强化学习课程，并显式追踪跨轮次的环境状态演化以隔离轨迹。实验表明该方法在保证训练稳定性的同时显著提升小语言模型在有状态任务上的表现，为数据中心环境的智能体RL提供了可扩展范式。",
-          "llm_tags": [
-            "query:agentic-rl"
-          ],
-          "matched_query_tag": "query:agentic-rl",
-          "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
-          "matched_requirement_id": "req-5",
-          "selection_source": "carryover_cache",
-          "paper_id": "2610.29426v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2610.27847v1",
-          "source": "arxiv",
-          "title": "SAPD: Learning from Agent Experience without Environment Interaction",
-          "abstract": "Scaling the training of Large Language Model (LLM) agents typically requires a large collection of executable environments, whose construction, maintenance, and operation constrain the expansion of training experience. Existing offline trajectories offer an opportunity to reuse interaction experience, yet effectively refining the current policy without revisiting these environments remains challenging: supervised fine-tuning (SFT) can lead to catastrophic forgetting, while online reinforcement learning requires real-time interaction with the environment. To address this challenge, we propose Step-Advantage Policy Distillation (SAPD), a method for learning from offline trajectories using relative step advantages. SAPD decomposes multi-turn trajectories into individual decision contexts for on-policy distillation, allowing the student to generate responses conditioned on recorded histories, and introduces relative step advantage signals to stabilize training. The entire process requires neither new environment observations nor additional multi-turn interactions. Experiments on ALFWorld, WebShop, and Search-based QA show that SAPD improves performance across different teacher configurations, mitigates catastrophic forgetting compared with SFT, and runs at least $4.7\\times$ faster per training step than online OPD. We will release our code soon.",
-          "authors": [
-            "Juncheng Diao",
-            "Haibin Wang",
-            "Wei Shi",
-            "Yifan Ding",
-            "Qingbin Li",
-            "Rongxiang Weng",
-            "Xunliang Cai"
-          ],
-          "primary_category": "cs.AI",
-          "categories": [
-            "cs.AI",
-            "cs.LG"
-          ],
-          "published": "2026-10-20T08:30:30+00:00",
-          "link": "https://arxiv.org/pdf/2610.27847v1",
-          "tags": [
-            "keyword:agentic-rl",
-            "query:agentic-rl"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "offline multi-turn policy distillation using step advantages",
-          "llm_evidence_cn": "利用步级优势的离线多轮策略蒸馏",
-          "llm_evidence": "利用步级优势的离线多轮策略蒸馏",
-          "canonical_evidence": "利用步级优势的离线多轮策略蒸馏",
-          "llm_tldr_en": "SAPD addresses costly environment-dependent LLM agent training by distilling offline multi-turn trajectories with relative step advantages, avoiding online interaction while mitigating SFT forgetting and enabling policy refinement from reused experience.",
-          "llm_tldr_cn": "针对LLM智能体训练依赖大量可执行环境、离线轨迹难以在不重访环境时改进策略的问题，本文提出步级优势策略蒸馏SAPD，将多轮轨迹分解并利用相对步级优势从离线经验中学习。该方法避免在线强化学习的实时交互，同时缓解监督微调的灾难性遗忘。摘要表明其可复用已有交互经验来持续优化当前策略，为降低智能体训练环境成本提供了新思路。",
-          "llm_tldr": "针对LLM智能体训练依赖大量可执行环境、离线轨迹难以在不重访环境时改进策略的问题，本文提出步级优势策略蒸馏SAPD，将多轮轨迹分解并利用相对步级优势从离线经验中学习。该方法避免在线强化学习的实时交互，同时缓解监督微调的灾难性遗忘。摘要表明其可复用已有交互经验来持续优化当前策略，为降低智能体训练环境成本提供了新思路。",
-          "llm_tags": [
-            "query:agentic-rl"
-          ],
-          "matched_query_tag": "query:agentic-rl",
-          "matched_query_text": "on-policy distillation methods that train student agents using trajectories generated by their current policy",
-          "matched_requirement_id": "req-6",
-          "selection_source": "carryover_cache",
-          "paper_id": "2610.27847v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2610.29458v2",
-          "source": "arxiv",
-          "title": "Harness Scaling for Generalizable Agentic Reinforcement Learning",
-          "abstract": "Agent harnesses have become a central component of modern agentic systems, shaping how models use tools, manage context, and coordinate long-horizon interaction. Realizing the benefits of these harnesses depends on how effectively the underlying model can make use of them, motivating reinforcement learning directly through the harness. While recent efforts have explored harness diversification to reduce specialization to particular execution settings, how to systematically construct and organize harness diversity for cross-harness generalization remains insufficiently understood. This work studies Harness Scaling as a distinct scaling dimension for agentic RL, focusing on structured variation in how policies execute and interact with the same underlying task and environment. Concretely, we construct a factorized harness space, select a compact training subset with balanced factorial coverage, and organize cross-harness training through locality-aware task assignment. Across multiple benchmarks, model scales, and RL algorithms, Harness Scaling consistently improves generalization to unseen harness combinations. Moreover, policies trained through structured white-box harness variation transfer effectively to unseen external black-box harnesses, outperforming policies trained through a single complex black-box harness. These results establish harness diversity as a meaningful scaling dimension for agentic RL and highlight the importance of how this diversity is organized for cross-harness generalization.",
-          "authors": [
-            "Fei Bai",
-            "Huatong Song",
-            "Chuan Hao",
-            "Ran Tao",
-            "Jian Yang",
-            "Bryan Dai",
-            "Wayne Xin Zhao",
-            "Ji-Rong Wen"
-          ],
-          "primary_category": "cs.LG",
-          "categories": [
-            "cs.LG",
-            "cs.AI",
-            "cs.CL"
-          ],
-          "published": "2026-10-21T09:15:50+00:00",
-          "link": "https://arxiv.org/pdf/2610.29458v2",
-          "tags": [
-            "keyword:agentic-rl",
-            "query:agentic-rl"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "reinforcement learning through agent harnesses with tool use and long-horizon interaction",
-          "llm_evidence_cn": "通过智能体执行框架进行强化学习，涉及工具使用与长程交互",
-          "llm_evidence": "通过智能体执行框架进行强化学习，涉及工具使用与长程交互",
-          "canonical_evidence": "通过智能体执行框架进行强化学习，涉及工具使用与长程交互",
-          "llm_tldr_en": "Harness Scaling treats agent harness diversity as a scaling dimension for agentic RL, systematically varying execution structure to improve cross-harness generalization of policies trained through the harness.",
-          "llm_tldr_cn": "智能体执行框架决定了模型如何使用工具、管理上下文并进行长程交互，但如何系统构建框架多样性以实现跨框架泛化仍不清楚。本文将Harness Scaling作为智能体强化学习的一个独立扩展维度，通过结构化地变化同一任务下策略的执行与交互方式来训练模型。研究聚焦于跨框架泛化能力的提升。该工作把框架多样性确立为可扩展的智能体RL训练维度。",
-          "llm_tldr": "智能体执行框架决定了模型如何使用工具、管理上下文并进行长程交互，但如何系统构建框架多样性以实现跨框架泛化仍不清楚。本文将Harness Scaling作为智能体强化学习的一个独立扩展维度，通过结构化地变化同一任务下策略的执行与交互方式来训练模型。研究聚焦于跨框架泛化能力的提升。该工作把框架多样性确立为可扩展的智能体RL训练维度。",
-          "llm_tags": [
-            "query:agentic-rl"
-          ],
-          "matched_query_tag": "query:agentic-rl",
-          "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
-          "matched_requirement_id": "req-10",
-          "selection_source": "carryover_cache",
-          "paper_id": "2610.29458v2",
           "carry_days": 1
         },
         {
@@ -207,13 +74,13 @@
             "query:agentic-rl"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "annotation-free agentic training data construction from executable environments before agentic RL",
-          "llm_evidence_cn": "利用可执行环境无标注构建智能体训练数据并衔接强化学习",
-          "llm_evidence": "利用可执行环境无标注构建智能体训练数据并衔接强化学习",
-          "canonical_evidence": "利用可执行环境无标注构建智能体训练数据并衔接强化学习",
-          "llm_tldr_en": "EnvLunch turns executable environments into a free source of verifiable agentic training tasks, providing a warm-up stage before agentic reinforcement learning without any human or model-written task descriptions.",
-          "llm_tldr_cn": "智能体数据分析训练通常依赖大量人工标注任务，成本高昂，而可执行环境本身已蕴含丰富的交互结构与可验证结果。本文提出EnvLunch热身阶段，从环境中采样有效动作轨迹并执行获得最终观测，从而在不使用人工或模型生成任务描述的情况下构造训练数据。该数据可直接用于下游智能体强化学习之前的预热训练。工作表明环境信号可作为免费的智能体数据来源，显著降低数据构建成本。",
-          "llm_tldr": "智能体数据分析训练通常依赖大量人工标注任务，成本高昂，而可执行环境本身已蕴含丰富的交互结构与可验证结果。本文提出EnvLunch热身阶段，从环境中采样有效动作轨迹并执行获得最终观测，从而在不使用人工或模型生成任务描述的情况下构造训练数据。该数据可直接用于下游智能体强化学习之前的预热训练。工作表明环境信号可作为免费的智能体数据来源，显著降低数据构建成本。",
+          "llm_evidence_en": "environment-generated verifiable tasks and trajectories as warm-up agentic data before RL",
+          "llm_evidence_cn": "利用环境自动生成可验证任务与轨迹作为强化学习前的智能体数据",
+          "llm_evidence": "利用环境自动生成可验证任务与轨迹作为强化学习前的智能体数据",
+          "canonical_evidence": "利用环境自动生成可验证任务与轨迹作为强化学习前的智能体数据",
+          "llm_tldr_en": "Annotated agentic tasks are costly, but executable environments already provide rich verifiable structure. EnvLunch samples and executes valid action trajectories to create warm-up training data before agentic RL, avoiding manual task annotation.",
+          "llm_tldr_cn": "面向智能体数据分析的训练通常需要大量人工标注任务，成本高昂，而可执行环境本身已蕴含丰富的交互结构与可验证结果。作者提出EnvLunch预热阶段，直接从环境中采样并执行有效动作轨迹，无需人工或模型生成的任务描述即可构造训练数据。该方法在下游智能体强化学习之前提供可验证的智能体训练信号，降低了对标注数据的依赖，为环境驱动的数据构造提供了新范式。",
+          "llm_tldr": "面向智能体数据分析的训练通常需要大量人工标注任务，成本高昂，而可执行环境本身已蕴含丰富的交互结构与可验证结果。作者提出EnvLunch预热阶段，直接从环境中采样并执行有效动作轨迹，无需人工或模型生成的任务描述即可构造训练数据。该方法在下游智能体强化学习之前提供可验证的智能体训练信号，降低了对标注数据的依赖，为环境驱动的数据构造提供了新范式。",
           "llm_tags": [
             "query:agentic-rl"
           ],
@@ -222,125 +89,6 @@
           "matched_requirement_id": "req-2",
           "selection_source": "carryover_cache",
           "paper_id": "2610.33817v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2610.35801v1",
-          "source": "arxiv",
-          "title": "FOCUS: Active Critic Learning for Long-Horizon Language Model Agents",
-          "abstract": "Sparse outcome rewards make it difficult for long-horizon language-model agents to assign credit to earlier actions. Learned critics provide value estimates for intermediate states, but these estimates can be inaccurate, while estimating intermediate values with repetitive continuation samples from points within a trajectory incurs substantial costs. To mitigate these issues, we introduce FOCUS, an RL method that uses selective branching to help the critic network learn its value estimator. The rollout controller facilitates active learning for the critic by sampling continuations from states that are expected to most reduce the critic's estimation error. These refined value estimates then score the segment between consecutive states with a TD($λ$) advantage, while the sampled evidence supplies training targets for the critic. FOCUS supports long-horizon agentic reinforcement learning through a modular context-management interface that decouples context management from rollout allocation. Our experiments show that using compaction-induced segment boundaries for value estimation and credit assignment, FOCUS outperforms GRPO and VinePPO with matched per-step generation budgets on legal reasoning, deep search, and code localization benchmarks, improving held-out accuracy at Qwen3.5-9B scale by 7.2 points over the strongest baseline on BrowseComp-Plus (55.4 vs. 48.2) and by 4.1 points on DeonticBench (56.5 vs. 52.4).",
-          "authors": [
-            "Zhengping Jiang",
-            "William Jurayj",
-            "Liaoyaqi Wang",
-            "Chunsheng Zuo",
-            "Anqi Liu",
-            "Benjamin Van Durme"
-          ],
-          "primary_category": "cs.LG",
-          "categories": [
-            "cs.LG"
-          ],
-          "published": "2026-10-26T17:34:47+00:00",
-          "link": "https://arxiv.org/pdf/2610.35801v1",
-          "tags": [
-            "keyword:agentic-rl",
-            "query:agentic-rl"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "RL with active critic learning for long-horizon language model agents",
-          "llm_evidence_cn": "面向长程语言模型智能体的主动评论家学习强化学习",
-          "llm_evidence": "面向长程语言模型智能体的主动评论家学习强化学习",
-          "canonical_evidence": "面向长程语言模型智能体的主动评论家学习强化学习",
-          "llm_tldr_en": "FOCUS is an RL method that uses selective branching and an active rollout controller to train a critic for long-horizon LM agents, reducing the cost of value estimation while improving credit assignment under sparse rewards.",
-          "llm_tldr_cn": "稀疏结果奖励使长程语言模型智能体难以把信用分配给早期动作，而学习到的评论家估值不准，用重复续写采样估计中间价值又代价高昂。作者提出FOCUS，通过选择性分支与主动式回滚控制器，从最能降低估值误差的状态采样续写，再用TD(lambda)优势为片段打分。该方法在控制成本的同时改善了长程智能体的信用分配。",
-          "llm_tldr": "稀疏结果奖励使长程语言模型智能体难以把信用分配给早期动作，而学习到的评论家估值不准，用重复续写采样估计中间价值又代价高昂。作者提出FOCUS，通过选择性分支与主动式回滚控制器，从最能降低估值误差的状态采样续写，再用TD(lambda)优势为片段打分。该方法在控制成本的同时改善了长程智能体的信用分配。",
-          "llm_tags": [
-            "query:agentic-rl"
-          ],
-          "matched_query_tag": "query:agentic-rl",
-          "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
-          "matched_requirement_id": "req-10",
-          "selection_source": "carryover_cache",
-          "paper_id": "2610.35801v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2610.28069v1",
-          "source": "arxiv",
-          "title": "Training the Whole Agent, Not Just the Model",
-          "abstract": "Training coding agents typically updates the policy while keeping the harness fixed. During training, trajectories reveal flawed repair strategies and interaction problems that vary across tasks and change as the policy learns. We introduce HarnessAdapt-RL, which trains the policy and adapts its harness during reinforcement learning. For flawed repair strategies, a frozen teacher generates task-specific mechanism-level skills. For interaction problems recurring across tasks, a separate teacher model evolves tools and hooks, keeping each change only if it improves the observed pass rate or the observed trainable rate without lowering either. The policy trains with the adapted harness, and its new trajectories guide further adaptation. With a 9B base model, HarnessAdapt-RL improves pass@1 over GRPO by 9.8, 12.6, and 6.4 percentage points on SWE-bench Verified, Multilingual, and Pro, and outperforms GRPO with the human-designed OpenHands harness. Gains from mechanism-level skills persist after their removal at evaluation. Re-evolving tools and hooks as the policy changes outperforms freezing early versions. Removing them at deployment, in contrast, costs up to 7.7 percentage points. Training therefore produces a model-harness pair: the trained policy and the evolved tools and hooks, with skills removed at deployment.",
-          "authors": [
-            "Lingxiao Tang",
-            "Wei Tao",
-            "Yiwen Guo",
-            "Lingfeng Bao"
-          ],
-          "primary_category": "cs.SE",
-          "categories": [
-            "cs.SE"
-          ],
-          "published": "2026-10-20T11:51:23+00:00",
-          "link": "https://arxiv.org/pdf/2610.28069v1",
-          "tags": [
-            "keyword:agentic-rl",
-            "query:agentic-rl"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "reinforcement learning that trains policy and adapts harness for coding agents",
-          "llm_evidence_cn": "同时训练策略并自适应工具环境的编码智能体强化学习",
-          "llm_evidence": "同时训练策略并自适应工具环境的编码智能体强化学习",
-          "canonical_evidence": "同时训练策略并自适应工具环境的编码智能体强化学习",
-          "llm_tldr_en": "HarnessAdapt-RL trains the coding agent's policy jointly with its harness during RL, using a frozen teacher for mechanism-level skills and a separate teacher to evolve tools, improving pass and trainable rates.",
-          "llm_tldr_cn": "训练编码智能体通常只更新策略而固定工具环境，轨迹中暴露的修复策略缺陷与交互问题被忽视。作者提出HarnessAdapt-RL，在强化学习中同时训练策略并自适应工具与钩子，用冻结教师生成任务级技能、另一教师演化工具，仅在指标不降时保留改动。基于9B模型，该方法提升了通过率与可训练率，说明联合优化策略与工具环境对智能体训练至关重要。",
-          "llm_tldr": "训练编码智能体通常只更新策略而固定工具环境，轨迹中暴露的修复策略缺陷与交互问题被忽视。作者提出HarnessAdapt-RL，在强化学习中同时训练策略并自适应工具与钩子，用冻结教师生成任务级技能、另一教师演化工具，仅在指标不降时保留改动。基于9B模型，该方法提升了通过率与可训练率，说明联合优化策略与工具环境对智能体训练至关重要。",
-          "llm_tags": [
-            "query:agentic-rl"
-          ],
-          "matched_query_tag": "query:agentic-rl",
-          "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
-          "matched_requirement_id": "req-10",
-          "selection_source": "carryover_cache",
-          "paper_id": "2610.28069v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2610.27142v1",
-          "source": "arxiv",
-          "title": "ICLHerd: Herding-Based Data Selection for LLMs with In-Context Learning as a Proxy",
-          "abstract": "Data selection plays a central role in modern large language model training, as the quality of training data strongly influences downstream performance. A common approach is to curate a development set that encodes the desired skills (e.g., reasoning or multilinguality) and select data that are similar to them. Existing methods compute similarity using cosine distance over either the model's hidden states or gradients. However, we observe that this max-similarity strategy induces a mode-seeking bias: the selected data clusters tightly around the development samples. To address this, we propose ICLHerd, a data selection framework that leverages the von Mises-Fisher kernel to balance mode-seeking with mode-averaging. We further introduce in-context learning as a validation proxy, enabling efficient hyperparameter search over the balance trade-off. Results show that ICLHerd outperforms existing LLM data selection algorithms, highlighting the importance of balancing mode-seeking and mode-averaging.",
-          "authors": [
-            "Yuqiao Wen",
-            "Lili Mou"
-          ],
-          "primary_category": "cs.CL",
-          "categories": [
-            "cs.CL",
-            "cs.AI",
-            "cs.LG"
-          ],
-          "published": "2026-10-19T18:36:59+00:00",
-          "link": "https://arxiv.org/pdf/2610.27142v1",
-          "tags": [
-            "keyword:agentic-rl",
-            "query:agentic-rl"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "data selection framework for LLM training data curation",
-          "llm_evidence_cn": "面向LLM训练数据筛选的数据选择框架",
-          "llm_evidence": "面向LLM训练数据筛选的数据选择框架",
-          "canonical_evidence": "面向LLM训练数据筛选的数据选择框架",
-          "llm_tldr_en": "ICLHerd selects LLM training data with a von Mises-Fisher kernel that balances mode-seeking and mode-averaging, avoiding the clustered bias of max-similarity selection.",
-          "llm_tldr_cn": "现有数据选择方法用余弦相似度挑选与开发集相近的样本，容易产生模式寻求偏差，使选中数据过度聚集。本文提出ICLHerd框架，借助von Mises-Fisher核在模式寻求与模式平均之间取得平衡，并引入上下文学习作为选择代理。该方法缓解了数据多样性不足的问题，提升了训练数据选择的效果。",
-          "llm_tldr": "现有数据选择方法用余弦相似度挑选与开发集相近的样本，容易产生模式寻求偏差，使选中数据过度聚集。本文提出ICLHerd框架，借助von Mises-Fisher核在模式寻求与模式平均之间取得平衡，并引入上下文学习作为选择代理。该方法缓解了数据多样性不足的问题，提升了训练数据选择的效果。",
-          "llm_tags": [
-            "query:agentic-rl"
-          ],
-          "matched_query_tag": "query:agentic-rl",
-          "matched_query_text": "pretraining data selection and mixture for language models",
-          "matched_requirement_id": "req-4",
-          "selection_source": "carryover_cache",
-          "paper_id": "2610.27142v1",
           "carry_days": 1
         },
         {
@@ -380,13 +128,13 @@
             "query:agentic-rl"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "turn-level RL credit assignment for long-horizon LLM agents with tool use",
-          "llm_evidence_cn": "面向长程LLM智能体工具使用的轮次级强化学习信用分配",
-          "llm_evidence": "面向长程LLM智能体工具使用的轮次级强化学习信用分配",
-          "canonical_evidence": "面向长程LLM智能体工具使用的轮次级强化学习信用分配",
-          "llm_tldr_en": "MPO addresses coarse credit assignment in long-horizon LLM agents by anchoring optimization at the turn scale, combining multiscale advantage estimation with turn-level importance sampling and beating strong RL baselines on search, tool-use and automation tasks.",
-          "llm_tldr_cn": "长程LLM智能体按token生成动作、按轮次与环境交互，现有强化学习难以在轮次层面正确分配信用。作者提出多尺度策略优化（MPO），结合多尺度优势估计与轮次级重要性采样，使信用分配与策略更新对齐到轮次尺度。在搜索、工具使用和自动化任务上，4B与30B-A3B模型均稳定优于强RL基线。该工作为多轮智能体训练提供了更契合交互结构的优化范式。",
-          "llm_tldr": "长程LLM智能体按token生成动作、按轮次与环境交互，现有强化学习难以在轮次层面正确分配信用。作者提出多尺度策略优化（MPO），结合多尺度优势估计与轮次级重要性采样，使信用分配与策略更新对齐到轮次尺度。在搜索、工具使用和自动化任务上，4B与30B-A3B模型均稳定优于强RL基线。该工作为多轮智能体训练提供了更契合交互结构的优化范式。",
+          "llm_evidence_en": "turn-level RL optimization for long-horizon LLM agents on tool-use and search tasks",
+          "llm_evidence_cn": "面向长程LLM智能体工具使用与搜索任务的回合级强化学习优化",
+          "llm_evidence": "面向长程LLM智能体工具使用与搜索任务的回合级强化学习优化",
+          "canonical_evidence": "面向长程LLM智能体工具使用与搜索任务的回合级强化学习优化",
+          "llm_tldr_en": "MPO combines multiscale advantage estimation with turn-level importance sampling to align credit assignment with turn-level policy updates, improving long-horizon LLM agents on search and tool use.",
+          "llm_tldr_cn": "长程LLM智能体以完整回合与环境交互，却逐token生成动作，导致信用分配与优化粒度不匹配。作者观察到评论家价值主要在回合间变化，提出多尺度策略优化MPO，结合多尺度优势估计与回合级重要性采样，把信用分配与策略更新对齐到回合尺度。在搜索、工具使用与自动化任务上，4B与30B-A3B模型均稳定优于强RL基线。这表明回合级优化对长程智能体RL至关重要。",
+          "llm_tldr": "长程LLM智能体以完整回合与环境交互，却逐token生成动作，导致信用分配与优化粒度不匹配。作者观察到评论家价值主要在回合间变化，提出多尺度策略优化MPO，结合多尺度优势估计与回合级重要性采样，把信用分配与策略更新对齐到回合尺度。在搜索、工具使用与自动化任务上，4B与30B-A3B模型均稳定优于强RL基线。这表明回合级优化对长程智能体RL至关重要。",
           "llm_tags": [
             "query:agentic-rl"
           ],
@@ -395,91 +143,6 @@
           "matched_requirement_id": "req-10",
           "selection_source": "carryover_cache",
           "paper_id": "2610.35013v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2610.30933v1",
-          "source": "arxiv",
-          "title": "ReflectPO: Reflection-Guided Policy Optimization for Long-Horizon LLM Agents",
-          "abstract": "With external tools, large language models (LLMs) can tackle complex tasks through sustained environmental interaction. LLM-based agents are therefore increasingly used to tackle complex long-horizon tasks in real-world environments. However, these tasks involve sequential, interdependent decisions and changes in environmental states. Early execution errors affect subsequent interaction histories and environmental states, and their effects accumulate along the decision chain. To address this challenge, we propose Reflection-Guided Policy Optimization (ReflectPO), a reinforcement learning framework for autonomous error recovery in long-horizon tasks. ReflectPO comprises two core components. The first is Reflection-Guided Sampling. We use branch differences and repeated visits in interaction trajectories to construct hints for error recovery. The second is Tree-Structured Credit Assignment. We organize sampled trajectories into trees and assign action-level credit using parent--child reward differences and recovery gains. Experiments over two long-horizon tool-use benchmarks show that ReflectPO outperforms multiple existing baselines in most domains. It also achieves the best overall performance on average. Further analyses show that ReflectPO effectively improves agents' ability to recognize their own deviations, recover from erroneous states, and continue making progress toward task completion.",
-          "authors": [
-            "Rumei Li",
-            "Xunliang Cai"
-          ],
-          "primary_category": "cs.CL",
-          "categories": [
-            "cs.CL"
-          ],
-          "published": "2026-10-22T08:54:24+00:00",
-          "link": "https://arxiv.org/pdf/2610.30933v1",
-          "tags": [
-            "keyword:agentic-rl",
-            "query:agentic-rl"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "RL framework for long-horizon LLM agents with tools and error recovery",
-          "llm_evidence_cn": "面向带工具长程LLM智能体的强化学习与错误恢复框架",
-          "llm_evidence": "面向带工具长程LLM智能体的强化学习与错误恢复框架",
-          "canonical_evidence": "面向带工具长程LLM智能体的强化学习与错误恢复框架",
-          "llm_tldr_en": "ReflectPO is an RL framework for long-horizon tool-using LLM agents that uses reflection-guided sampling with branch rollouts to enable autonomous error recovery when early mistakes accumulate.",
-          "llm_tldr_cn": "带外部工具的LLM智能体在长程任务中面临顺序依赖决策与环境状态变化，早期错误会沿决策链累积。作者提出ReflectPO强化学习框架，用反思引导采样与分支式回滚实现自主错误恢复，使智能体在后续交互中纠正先前失误。该工作提升了多轮工具使用智能体在长程任务中的鲁棒性。",
-          "llm_tldr": "带外部工具的LLM智能体在长程任务中面临顺序依赖决策与环境状态变化，早期错误会沿决策链累积。作者提出ReflectPO强化学习框架，用反思引导采样与分支式回滚实现自主错误恢复，使智能体在后续交互中纠正先前失误。该工作提升了多轮工具使用智能体在长程任务中的鲁棒性。",
-          "llm_tags": [
-            "query:agentic-rl"
-          ],
-          "matched_query_tag": "query:agentic-rl",
-          "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
-          "matched_requirement_id": "req-10",
-          "selection_source": "carryover_cache",
-          "paper_id": "2610.30933v1",
-          "carry_days": 1
-        },
-        {
-          "id": "2610.37609v1",
-          "source": "arxiv",
-          "title": "EnvSched: Environment-Aware Scheduling for Rollout-Efficient Agent Reinforcement Learning",
-          "abstract": "As executable environments for language agents scale, generating and verifying their rollouts becomes increasingly expensive. Under finite rollout budgets, this raises an important question: can data management at the environment level make agentic reinforcement learning (RL) more efficient by organizing, evaluating, and scheduling task instances together with the environments that determine their tools, states, transitions, and verification? To address this question, we introduce EnvSched (Environment-aware Scheduling), an online scheduler that learns from rollout history. EnvSched assigns scheduling value through two complementary modeling choices: exploitation prioritizes tasks likely to provide informative reward differences, while coverage spreads each batch across underobserved environments and interaction patterns. EnvSched organizes environment--task pairs as nodes in a dual-relation graph, with within-environment edges capturing task semantics and shared tool, state, and verifier structure, and cross-environment edges capturing abstract execution and reward topology. By propagating historical rollout statistics along both edge types, it predicts within-task reward variance. These predictions guide a scheduler that allocates each batch to tasks with high predicted reward variance and underobserved environments and tasks. Environment quotas and a similarity penalty further limit concentration and redundancy, yielding informative and diverse batches without additional pilot rollouts. In RL on Qwen3-8B, EnvSched achieves an average score of 48.81 across BFCL-v3, tau-Bench, and ACEBench-Agent after 40 training steps, exceeding the highest score attained by random task selection after 120 steps. It also improves downstream performance across model sizes at the same training budget.",
-          "authors": [
-            "Sihan Yang",
-            "Weichen Bai",
-            "Ruichuan An",
-            "Yiming Cheng",
-            "Zhiyuan Feng",
-            "Tianyi Jiang",
-            "Renye Yan",
-            "Ning Ding",
-            "Yifan Zhang",
-            "Renrui Zhang",
-            "Yehui Tang",
-            "Wentao Zhang"
-          ],
-          "primary_category": "cs.LG",
-          "categories": [
-            "cs.LG",
-            "cs.CL"
-          ],
-          "published": "2026-10-27T17:38:52+00:00",
-          "link": "https://arxiv.org/pdf/2610.37609v1",
-          "tags": [
-            "keyword:agentic-rl",
-            "query:agentic-rl"
-          ],
-          "llm_score": 8.0,
-          "llm_evidence_en": "environment-level scheduling of tasks and environments to make agentic RL rollout-efficient",
-          "llm_evidence_cn": "在环境层面对任务与环境调度以提升智能体强化学习回放效率",
-          "llm_evidence": "在环境层面对任务与环境调度以提升智能体强化学习回放效率",
-          "canonical_evidence": "在环境层面对任务与环境调度以提升智能体强化学习回放效率",
-          "llm_tldr_en": "EnvSched introduces an online scheduler that learns from rollout history to prioritize tasks and environments under finite rollout budgets, making agentic reinforcement learning more rollout-efficient.",
-          "llm_tldr_cn": "随着语言智能体可执行环境规模扩大，回放的生成与验证成本日益高昂，有限预算下如何管理数据成为关键。本文提出EnvSched在线调度器，依据历史回放为任务及其环境分配调度价值，在利用信息性奖励差异与探索之间取得平衡。实验表明环境级数据调度可提升智能体强化学习的训练效率。该工作说明有组织地调度任务与环境是提升智能体RL效率的有效手段。",
-          "llm_tldr": "随着语言智能体可执行环境规模扩大，回放的生成与验证成本日益高昂，有限预算下如何管理数据成为关键。本文提出EnvSched在线调度器，依据历史回放为任务及其环境分配调度价值，在利用信息性奖励差异与探索之间取得平衡。实验表明环境级数据调度可提升智能体强化学习的训练效率。该工作说明有组织地调度任务与环境是提升智能体RL效率的有效手段。",
-          "llm_tags": [
-            "query:agentic-rl"
-          ],
-          "matched_query_tag": "query:agentic-rl",
-          "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
-          "matched_requirement_id": "req-10",
-          "selection_source": "carryover_cache",
-          "paper_id": "2610.37609v1",
           "carry_days": 1
         },
         {
@@ -525,41 +188,80 @@
           "matched_requirement_id": "req-6",
           "selection_source": "carryover_cache",
           "paper_id": "2610.30105v1",
-          "carry_days": 1
+          "carry_days": 2
         },
         {
-          "id": "2610.32770v1",
+          "id": "2610.39251v1",
           "source": "arxiv",
-          "title": "On-Policy Self-Training: Data-Free Self-Improvement in Large Language Models",
-          "abstract": "On-policy self-distillation enables post-training foundation models without relying on stronger external teachers. However, existing approaches rely on ground-truth question-answer pairs, human-curated problem sets, or other supervised signals. In this work, we reformulate on-policy self-distillation as a self-training framework, driven by self-generated question-answer pairs and privileged reasoning demonstrations. We push supervision to the limit: guided solely by coarse, high-level topic descriptions, the model synthesizes its own curriculum of queries and privileged reasoning traces without access to any human-curated prompts or answers. We find that self-distillation on fully synthetic privileged information enables a model to improve across multiple domains while retaining its capabilities on domains it is not self-trained on. We demonstrate the generality of this framework across text and multimodal domains, achieving consistent self-improvement on standard language benchmarks and Visual Question Answering. Our findings demonstrate that foundation models possess rich latent capabilities that can be amplified without external task supervision or curated problem distributions.",
+          "title": "Where to Learn and How Far to Roll Out: Efficient Adaptive Training for GUI Agents",
+          "abstract": "Trajectory-level GRPO is a common approach for training multi-step GUI agents, but repeatedly rolling out complete trajectories from the task root can be inefficient: task-level rewards provide coarse supervision over which intermediate decisions require improvement, while already-mastered prefixes are repeatedly re-executed before reaching difficult states. We introduce a two-stage adaptive training framework that jointly addresses where to learn and how far to roll out. We first construct reusable intermediate checkpoints from successful expert trajectories and select informative pivots using action disagreement, which measures uncertainty directly from sampled GUI actions. Stage I performs one-step RL at these pivots to improve uncertain local decisions. Stage II then progressively expands policy responsibility through adaptive Local, Suffix, and Root training according to task progress. Recoverable checkpoints enable repeated training from intermediate states without replaying the preceding trajectory. Across MobileGym and CUA-Gym-Hub, our method reduces environment interaction by 56-61% relative to Vanilla GRPO while improving task performance, demonstrating that jointly allocating training across states and rollout ranges can substantially improve GUI-agent RL efficiency.",
           "authors": [
-            "Leon Sick",
-            "Lukas Hoyer",
-            "Yannick Strümpler",
-            "Christian Reisswig",
-            "Timo Ropinski",
-            "Federico Tombari"
+            "Yuxiang Chai",
+            "Quyu Kong",
+            "Panrong Tong",
+            "Steven Hoi",
+            "Yue Wang"
           ],
-          "primary_category": "cs.CL",
+          "primary_category": "cs.AI",
           "categories": [
-            "cs.CL",
-            "cs.AI",
-            "cs.LG"
+            "cs.AI"
           ],
-          "published": "2026-10-23T15:12:03+00:00",
-          "link": "https://arxiv.org/pdf/2610.32770v1",
+          "published": "2026-10-29T03:03:29+00:00",
+          "link": "https://arxiv.org/pdf/2610.39251v1",
           "tags": [
             "keyword:agentic-rl",
             "query:agentic-rl"
           ],
           "llm_score": 8.0,
-          "llm_evidence_en": "on-policy self-distillation reformulated as data-free self-training",
-          "llm_evidence_cn": "将在线自蒸馏重构为无数据自训练",
-          "llm_evidence": "将在线自蒸馏重构为无数据自训练",
-          "canonical_evidence": "将在线自蒸馏重构为无数据自训练",
-          "llm_tldr_en": "Reformulates on-policy self-distillation as data-free self-training, using self-generated QA and privileged reasoning traces.",
-          "llm_tldr_cn": "现有在线自蒸馏依赖真实问答对或人工题目集等监督信号。本文将在线自蒸馏重构为自训练框架，仅凭粗略主题描述让模型自生成问题与特权推理演示，并在此合成数据上做自蒸馏。实验表明完全合成的特权信息即可提升模型能力，为无需人工标注的自我改进提供了新路径。",
-          "llm_tldr": "现有在线自蒸馏依赖真实问答对或人工题目集等监督信号。本文将在线自蒸馏重构为自训练框架，仅凭粗略主题描述让模型自生成问题与特权推理演示，并在此合成数据上做自蒸馏。实验表明完全合成的特权信息即可提升模型能力，为无需人工标注的自我改进提供了新路径。",
+          "llm_evidence_en": "adaptive GRPO training for multi-step GUI agents with one-step RL at informative pivots",
+          "llm_evidence_cn": "面向多步GUI智能体的自适应GRPO训练与关键节点单步强化学习",
+          "llm_evidence": "面向多步GUI智能体的自适应GRPO训练与关键节点单步强化学习",
+          "canonical_evidence": "面向多步GUI智能体的自适应GRPO训练与关键节点单步强化学习",
+          "llm_tldr_en": "Trajectory-level GRPO for GUI agents re-executes mastered prefixes and gives coarse rewards. This two-stage framework builds reusable checkpoints, selects informative pivots by action disagreement, and applies one-step RL there for efficient adaptive training.",
+          "llm_tldr_cn": "轨迹级GRPO是训练多步GUI智能体的常用方法，但从任务根节点反复展开完整轨迹效率低下，且任务级奖励对中间决策的监督过于粗糙。作者提出两阶段自适应训练框架，先由专家成功轨迹构建可复用中间检查点，并利用动作分歧选出信息量高的关键节点，再在这些节点执行单步强化学习。该方法同时回答在哪里学习和展开多远的问题，提升了多步交互智能体的训练效率与效果。",
+          "llm_tldr": "轨迹级GRPO是训练多步GUI智能体的常用方法，但从任务根节点反复展开完整轨迹效率低下，且任务级奖励对中间决策的监督过于粗糙。作者提出两阶段自适应训练框架，先由专家成功轨迹构建可复用中间检查点，并利用动作分歧选出信息量高的关键节点，再在这些节点执行单步强化学习。该方法同时回答在哪里学习和展开多远的问题，提升了多步交互智能体的训练效率与效果。",
+          "llm_tags": [
+            "query:agentic-rl"
+          ],
+          "matched_query_tag": "query:agentic-rl",
+          "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+          "matched_requirement_id": "req-5",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.39251v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.33740v1",
+          "source": "arxiv",
+          "title": "A Distribution-Matching Perspective on LLM Training Algorithms",
+          "abstract": "In this work, we propose a unified framework for training algorithms across different stages of modern large language model development, based on the perspective of distribution matching. We show that a broad class of language model training algorithms can be interpreted as minimizing a certain divergence between the current model and a target distribution, and that characterizing the properties of this target distribution provides substantial insight into the behavior of the corresponding training algorithms. By analyzing specific forms of the target distribution, we establish that On-Policy Distillation (OPD) enjoys an advantage over classical Knowledge Distillation (KD) when the current model distribution is close to the target distribution, while exhibiting a disadvantage when the two distributions are far apart. Furthermore, when the target distribution itself depends on the model being optimized, we show that the accumulation of estimation variance can induce a deterministic degradation of the target distribution. These results provide a theoretical explanation, at least in part, for the long-term behavior of existing Reinforcement Learning (RL) algorithms. With this intuition we further designed Conditional KL (CKL) regularization for mitigating the degradation of the target distribution. CKL can effectively preserve mode diversity while relaxing the constraint imposed by classical KL regularization on reward improvements. We believe this theoretical perspective can bring some new understanding of language model training algorithms and provide useful guidance for future research.",
+          "authors": [
+            "Yanxing Huang",
+            "Bingzhang Yan",
+            "Zihan Tang",
+            "Wenzhe Li",
+            "Peng Li",
+            "Yang Liu"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.AI"
+          ],
+          "published": "2026-10-24T15:30:39+00:00",
+          "link": "https://arxiv.org/pdf/2610.33740v1",
+          "tags": [
+            "keyword:agentic-rl",
+            "query:agentic-rl"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "unified distribution-matching analysis showing advantage of on-policy distillation over classical KD",
+          "llm_evidence_cn": "用分布匹配统一分析并论证在线策略蒸馏优于经典知识蒸馏",
+          "llm_evidence": "用分布匹配统一分析并论证在线策略蒸馏优于经典知识蒸馏",
+          "canonical_evidence": "用分布匹配统一分析并论证在线策略蒸馏优于经典知识蒸馏",
+          "llm_tldr_en": "A unified distribution-matching framework interprets LLM training algorithms as divergence minimization and shows on-policy distillation beats classical KD when the model is close to the target distribution.",
+          "llm_tldr_cn": "现代大模型各训练阶段的算法长期缺少统一解释，难以比较不同方法的行为差异。作者提出基于分布匹配的统一框架，把训练算法视为最小化当前模型与目标分布之间的散度，并通过刻画目标分布性质分析算法行为。理论分析表明，当当前模型接近目标分布时，在线策略蒸馏相对经典知识蒸馏具有优势。该框架为理解与选择训练算法提供了统一视角。",
+          "llm_tldr": "现代大模型各训练阶段的算法长期缺少统一解释，难以比较不同方法的行为差异。作者提出基于分布匹配的统一框架，把训练算法视为最小化当前模型与目标分布之间的散度，并通过刻画目标分布性质分析算法行为。理论分析表明，当当前模型接近目标分布时，在线策略蒸馏相对经典知识蒸馏具有优势。该框架为理解与选择训练算法提供了统一视角。",
           "llm_tags": [
             "query:agentic-rl"
           ],
@@ -567,7 +269,315 @@
           "matched_query_text": "on-policy distillation methods that train student agents using trajectories generated by their current policy",
           "matched_requirement_id": "req-6",
           "selection_source": "carryover_cache",
-          "paper_id": "2610.32770v1",
+          "paper_id": "2610.33740v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.37195v1",
+          "source": "arxiv",
+          "title": "Action-Value Calibration via Continuation Sharing for Long-Horizon Agentic Reinforcement Learning",
+          "abstract": "Reinforcement learning for long-horizon agents relies on feedback from sequences of interactions, making credit assignment to individual actions difficult. Existing methods such as GiGPO compare actions at shared states to compute relative advantages, but estimate each action's value from a single sampled continuation. The resulting local credit remains sensitive to decisions made later in the trajectory. To address this problem, we propose ConCal (Continuation Calibration), a recursive continuation-value estimator that incorporates continuation evidence already present in a rollout batch. ConCal matches visits from the same task by their incoming state-action-state transitions, combines shared continuation evidence with each visit's own transition estimate, and propagates calibrated values backward to refine earlier action-value estimates. This reduces dependence on individual sampled continuations and mitigates local credit distortions without additional rollouts. Held-out return diagnostics show lower error in within-group value differences and higher agreement with reference action orderings than estimates based on individual continuations. With Qwen2.5-1.5B-Instruct, ConCal improves success rates over GiGPO by 3.39 and 5.86 percentage points on ALFWorld and WebShop, respectively. Our code is available at https://github.com/Yingjian-Chen/ConCal.",
+          "authors": [
+            "Yingjian Chen",
+            "Lang Zhou",
+            "Zixin Zhao",
+            "Pingfan Li",
+            "Weishi Zheng",
+            "Zhilin Zhao"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.AI"
+          ],
+          "published": "2026-10-27T13:16:08+00:00",
+          "link": "https://arxiv.org/pdf/2610.37195v1",
+          "tags": [
+            "keyword:agentic-rl",
+            "query:agentic-rl"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "credit assignment for long-horizon agentic RL over sequences of multi-turn interactions",
+          "llm_evidence_cn": "面向多轮交互序列的长时程智能体强化学习信用分配",
+          "llm_evidence": "面向多轮交互序列的长时程智能体强化学习信用分配",
+          "canonical_evidence": "面向多轮交互序列的长时程智能体强化学习信用分配",
+          "llm_tldr_en": "Long-horizon agentic RL struggles with credit assignment because each action value is estimated from a single continuation. ConCal recursively aggregates shared continuation evidence in the rollout batch to calibrate action values.",
+          "llm_tldr_cn": "长时程智能体强化学习依赖多轮交互序列的反馈，单个动作的价值往往只由一条采样续写估计，导致局部信用对后续决策过于敏感。本文提出ConCal递归续写价值估计器，按状态动作转移匹配同一任务的多次访问，融合rollout批次中已有的共享续写证据来校准动作价值。该方法缓解了信用分配偏差，为长时程多轮智能体强化学习提供更稳健的价值估计手段。",
+          "llm_tldr": "长时程智能体强化学习依赖多轮交互序列的反馈，单个动作的价值往往只由一条采样续写估计，导致局部信用对后续决策过于敏感。本文提出ConCal递归续写价值估计器，按状态动作转移匹配同一任务的多次访问，融合rollout批次中已有的共享续写证据来校准动作价值。该方法缓解了信用分配偏差，为长时程多轮智能体强化学习提供更稳健的价值估计手段。",
+          "llm_tags": [
+            "query:agentic-rl"
+          ],
+          "matched_query_tag": "query:agentic-rl",
+          "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+          "matched_requirement_id": "req-5",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.37195v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.35697v1",
+          "source": "arxiv",
+          "title": "MiRL: Error-Targeted Reinforcement Learning for Correcting Terminal Agent Misbehaviors",
+          "abstract": "Error-targeted learning gives a legible way to improve a model: identify specific weaknesses of the model, train the model to fix these weaknesses, and check whether the weaknesses are fixed. We study how to apply error-targeted learning to terminal agents, which solve long-horizon tasks specified in natural language by interacting with a command shell. Existing error-targeted methods are designed for single-turn tasks, and existing analyses of agent failures are used to evaluate and debug agents rather than to train them. We propose Misbehavior-driven RL (MiRL), which first profiles the errors of a policy to find generalizable misbehaviors: kinds of wrong steps that recur across many environments. MiRL then trains the policy with RL, starting rollouts at the steps where these misbehaviors occur and rewarding a rollout only if it passes the tests and avoids the misbehavior. On Qwen3.5-4B, eight misbehaviors account for 52.1% of wrong steps. After training with MiRL, the policy repeats the measured misbehaviors 43% to 57% less often on average on unseen prefixes. MiRL outperforms TMax-4B on Terminal-Bench Lite (51.8% vs. 47.4%) and matches it on Terminal-Bench 2.1 (21.3% vs. 20.6%), while using 35% of its rollouts. These results show that error-targeted learning can be applied to realistic, long-horizon terminal tasks.",
+          "authors": [
+            "Runchu Tian",
+            "Zaid Khan",
+            "Zun Wang",
+            "Justin Chih-Yao Chen",
+            "Mohit Bansal"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.AI",
+            "cs.CL"
+          ],
+          "published": "2026-10-26T16:25:05+00:00",
+          "link": "https://arxiv.org/pdf/2610.35697v1",
+          "tags": [
+            "keyword:agentic-rl",
+            "query:agentic-rl"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "trains LLM terminal agents with RL over long-horizon multi-turn shell interaction",
+          "llm_evidence_cn": "用强化学习训练在多轮命令行交互中完成长程任务的智能体",
+          "llm_evidence": "用强化学习训练在多轮命令行交互中完成长程任务的智能体",
+          "canonical_evidence": "用强化学习训练在多轮命令行交互中完成长程任务的智能体",
+          "llm_tldr_en": "Error-targeted learning is designed for single-turn tasks, not long-horizon terminal agents. MiRL profiles recurring misbehaviors of a policy across environments and trains it with reinforcement learning to fix them.",
+          "llm_tldr_cn": "面向错误的训练方法多针对单轮任务，难以用于在命令行中完成长程任务的终端智能体，且现有失败分析只用于评估而非训练。作者提出 MiRL，先对策略的错误进行画像，找出跨环境反复出现的可泛化错误行为，再用强化学习针对性地训练策略加以纠正。实验表明该方法能有效减少终端智能体的系统性错误，为长程智能体的错误驱动训练提供了可行路径。",
+          "llm_tldr": "面向错误的训练方法多针对单轮任务，难以用于在命令行中完成长程任务的终端智能体，且现有失败分析只用于评估而非训练。作者提出 MiRL，先对策略的错误进行画像，找出跨环境反复出现的可泛化错误行为，再用强化学习针对性地训练策略加以纠正。实验表明该方法能有效减少终端智能体的系统性错误，为长程智能体的错误驱动训练提供了可行路径。",
+          "llm_tags": [
+            "query:agentic-rl"
+          ],
+          "matched_query_tag": "query:agentic-rl",
+          "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
+          "matched_requirement_id": "req-10",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.35697v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.37648v1",
+          "source": "arxiv",
+          "title": "Scaling Laws for Tool-Use Agents via Controllable Environment Synthesis",
+          "abstract": "We explore how to build performant large language model (LLM) tool-use agents that complete complex, multi-step tasks. Specifically, we study how data composition in synthetically generated tool-use environments affects the training of such agents. To do so, we propose the SynthAPI pipeline, which explicitly controls the diversity of generated environments along the axes of tools, tasks, and the databases on which the tools operate. By systematically varying SynthAPI's generation controls in 458,752 tasks across 849 trained models of four different sizes, we derive a scaling law that predicts downstream tool-use agent generalization based on the scale and composition of the synthesized environments. These predictable relationships reveal several lessons for scaling tool-use agent data. As data budgets grow, scaling tool and database diversity becomes more effective than increasing the number of tasks, and increasing data complexity yields larger gains. Scaling according to these findings yields agents that outperform models trained on data from prior work in large-scale tool-use agent and synthetic environment generation across four evaluation benchmarks.",
+          "authors": [
+            "Andrew Szot",
+            "Samira Abnar",
+            "Omar Attia",
+            "Abbas Kazerouni",
+            "Michael Kirchhof",
+            "Cheng-Yu Hsieh",
+            "Raviteja Vemulapalli",
+            "Alexander Toshev"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG"
+          ],
+          "published": "2026-10-27T17:56:46+00:00",
+          "link": "https://arxiv.org/pdf/2610.37648v1",
+          "tags": [
+            "keyword:agentic-rl",
+            "query:agentic-rl"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "synthetic tool-use environment data composition for training agents",
+          "llm_evidence_cn": "为训练智能体合成工具使用环境的数据构成",
+          "llm_evidence": "为训练智能体合成工具使用环境的数据构成",
+          "canonical_evidence": "为训练智能体合成工具使用环境的数据构成",
+          "llm_tldr_en": "Studies how data composition in synthetically generated tool-use environments affects LLM agent training, proposing the SynthAPI pipeline that controls tool, task and database diversity and derives a scaling law over 849 models.",
+          "llm_tldr_cn": "针对如何构建高性能工具使用智能体的问题，本文研究合成工具环境中数据构成对训练的影响。作者提出SynthAPI流水线，显式控制工具、任务与数据库三个维度的多样性，并在849个模型、45万余任务上系统实验。结果表明下游泛化能力可由环境规模与构成预测，形成可指导智能体数据构建的缩放律。",
+          "llm_tldr": "针对如何构建高性能工具使用智能体的问题，本文研究合成工具环境中数据构成对训练的影响。作者提出SynthAPI流水线，显式控制工具、任务与数据库三个维度的多样性，并在849个模型、45万余任务上系统实验。结果表明下游泛化能力可由环境规模与构成预测，形成可指导智能体数据构建的缩放律。",
+          "llm_tags": [
+            "query:agentic-rl"
+          ],
+          "matched_query_tag": "query:agentic-rl",
+          "matched_query_text": "agentic data construction and curation for training AI agents",
+          "matched_requirement_id": "req-2",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.37648v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.39324v1",
+          "source": "arxiv",
+          "title": "MRC-MMAgent: Reinforcement Learning for Multi-Role Collaboration in Multimodal Tool-Using Agents",
+          "abstract": "Multimodal tool-using agents augment vision-language models with access to external information and capabilities, enabling them to solve knowledge-intensive and visually complex tasks that cannot be addressed using visual context alone. However, existing reinforcement learning pipelines largely train single-role agents to search and answer using terminal rewards, overlooking how humans inspect retrieved evidence, reformulate queries, and revise conclusions during search. Consequently, they fail to optimize this self-corrective process over complete interaction trajectories. We propose MRC-MMAgent, a multi-role collaborative reinforcement learning framework that incorporates trajectory assessment and continuation directly into the executable agent loop. First, the framework establishes a multi-role collaborative loop that integrates solving, inspection, and continuation, enabling the agent to acquire evidence through tools, evaluate the preceding trajectory, and resume problem solving when the current answer is insufficiently supported. Second, we introduce a role-coupled learning objective that combines task success, interaction validity, and successful correction with full-trajectory policy optimization across the decisions generated by all roles. Extensive experiments show that, using only the original baseline training set without constructing additional datasets, our method consistently outperforms the corresponding base models and achieves leading or highly competitive performance across benchmarks.",
+          "authors": [
+            "Shengqin Wang",
+            "Jie Jin",
+            "Xiaofan Li",
+            "Wentao Yan",
+            "Yu Cheng",
+            "Qingsong HuYihang Chen",
+            "Weilin Luo",
+            "Jingyu Gong",
+            "Xin Tan",
+            "Yuan Xie",
+            "Zhizhong Zhang"
+          ],
+          "primary_category": "cs.CV",
+          "categories": [
+            "cs.CV"
+          ],
+          "published": "2026-10-29T04:06:46+00:00",
+          "link": "https://arxiv.org/pdf/2610.39324v1",
+          "tags": [
+            "keyword:agentic-rl",
+            "query:agentic-rl"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "multi-role collaborative RL over complete interaction trajectories for tool-using agents",
+          "llm_evidence_cn": "面向工具使用智能体的多角色协作强化学习与完整交互轨迹",
+          "llm_evidence": "面向工具使用智能体的多角色协作强化学习与完整交互轨迹",
+          "canonical_evidence": "面向工具使用智能体的多角色协作强化学习与完整交互轨迹",
+          "llm_tldr_en": "Existing RL pipelines train single-role multimodal tool-using agents with terminal rewards, ignoring self-corrective search behavior. MRC-MMAgent introduces multi-role collaborative RL with trajectory assessment and continuation to optimize full interaction trajectories.",
+          "llm_tldr_cn": "现有强化学习流水线多以单角色和终端奖励训练多模态工具使用智能体，忽略了检索中审视证据、改写查询与修正结论的自纠正过程。作者提出MRC-MMAgent，将轨迹评估与延续融入多角色协作强化学习框架，在完整交互轨迹上优化策略。该工作使智能体能够在多轮搜索中模拟并学习人类式协作行为，提升复杂任务表现。",
+          "llm_tldr": "现有强化学习流水线多以单角色和终端奖励训练多模态工具使用智能体，忽略了检索中审视证据、改写查询与修正结论的自纠正过程。作者提出MRC-MMAgent，将轨迹评估与延续融入多角色协作强化学习框架，在完整交互轨迹上优化策略。该工作使智能体能够在多轮搜索中模拟并学习人类式协作行为，提升复杂任务表现。",
+          "llm_tags": [
+            "query:agentic-rl"
+          ],
+          "matched_query_tag": "query:agentic-rl",
+          "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+          "matched_requirement_id": "req-5",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.39324v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.36469v1",
+          "source": "arxiv",
+          "title": "CoHARL: Co-Evolving Agent Policies and Executable Harnesses with Reinforcement Learning",
+          "abstract": "Large language model (LLM) agents interact with their environments through executable harnesses that govern tool use and feedback. Optimizing a harness for a fixed policy overlooks how its behavior changes during learning, while training a policy under a fixed harness leaves the interface that generates its training experience unchanged. This motivates adapting the harness throughout policy training. We introduce CoHARL, a population-based reinforcement learning framework that co-evolves a shared policy and a population of executable harnesses. The policy learns from rollouts across the population, and a proposer uses its execution traces to revise harness code during training. CoHARL achieves a 27.6% mean resolved rate on SWE-rebench, improving over harness-only search by 6.4 percentage points. Experiments on SWE-bench Verified and Terminal-Bench 2.0 show gains in software engineering and terminal-based tasks. Under matched training budgets, CoHARL also outperforms searching for a harness once before RL and alternating policy updates with revisions to a single active harness.",
+          "authors": [
+            "Jianwen Chen",
+            "Peng Xia",
+            "Kaide Zeng",
+            "Siwei Han",
+            "Zhen-Yu Zhang",
+            "Charles Fleming",
+            "Xinyu Ye",
+            "Huaxiu Yao"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG"
+          ],
+          "published": "2026-10-27T01:25:26+00:00",
+          "link": "https://arxiv.org/pdf/2610.36469v1",
+          "tags": [
+            "keyword:agentic-rl",
+            "query:agentic-rl"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "population-based RL co-evolving LLM agent policies and tool-use harnesses",
+          "llm_evidence_cn": "基于群体的强化学习协同进化大模型智能体策略与工具使用框架",
+          "llm_evidence": "基于群体的强化学习协同进化大模型智能体策略与工具使用框架",
+          "canonical_evidence": "基于群体的强化学习协同进化大模型智能体策略与工具使用框架",
+          "llm_tldr_en": "LLM agents act through executable harnesses governing tool use, but fixed harnesses or fixed policies limit learning. CoHARL is a population-based RL framework that co-evolves a shared policy with a population of harnesses, reaching 27.6% resolved rate on SWE-rebench.",
+          "llm_tldr_cn": "大模型智能体通过控制工具使用的可执行框架与环境交互，但固定框架或固定策略都会限制学习。作者提出CoHARL，一种基于群体的强化学习框架，使共享策略与一组可执行框架协同进化，并利用执行轨迹在训练中修订框架代码。在SWE-rebench上取得27.6%的平均解决率，表明协同进化能有效提升智能体工具使用表现。",
+          "llm_tldr": "大模型智能体通过控制工具使用的可执行框架与环境交互，但固定框架或固定策略都会限制学习。作者提出CoHARL，一种基于群体的强化学习框架，使共享策略与一组可执行框架协同进化，并利用执行轨迹在训练中修订框架代码。在SWE-rebench上取得27.6%的平均解决率，表明协同进化能有效提升智能体工具使用表现。",
+          "llm_tags": [
+            "query:agentic-rl"
+          ],
+          "matched_query_tag": "query:agentic-rl",
+          "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
+          "matched_requirement_id": "req-10",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.36469v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.37651v1",
+          "source": "arxiv",
+          "title": "GEPA-Curator: Curated Learning for Self Improving Agents",
+          "abstract": "Large Language Models (LLMs) are increasingly used in multi-turn agentic workloads that require sustained interaction with complex environments. Existing reflective prompt optimizers such as GEPA learn from failed rollouts, but agentic failures can also come from prompt weaknesses, harness limitations, stochastic execution, or noisy judges. We argue that such failures may not provide useful learning signal, and may even be harmful; and thus it is essential to curate which tasks are provided to the prompt optimizer for better performance. We introduce GEPA-Curator, a framework that augments the prompt optimizer to select which agent experiences should shape prompt optimization. In particular, GEPA-Curator consists of two components: task curation, which filters out tasks that are likely to provide noisy or unreliable learning signals, and prior success retrieval, which selectively retrieves past successful trajectories for a task and provides them as additional context to the prompt optimizer. We evaluate GEPA-Curator on GoBrowse, ALFWorld, AppWorld, and $τ$-bench, using both Gemini 3.1 Pro and Claude Opus 5 as optimizer models. GEPA-Curator matches or exceeds the mean performance of both baselines, with gains of up to 20.7% over GEPA and 21.2% over ACE.",
+          "authors": [
+            "Zack Yu",
+            "Nicholas Lee",
+            "Minjae Lee",
+            "Lakshya Agarwal",
+            "Luca Manolache",
+            "Wonjun Kang",
+            "Matei Zaharia",
+            "Michael W. Mahoney",
+            "Kurt Keutzer",
+            "Sehoon Kim",
+            "Amir Gholami"
+          ],
+          "primary_category": "cs.CL",
+          "categories": [
+            "cs.CL"
+          ],
+          "published": "2026-10-27T17:58:11+00:00",
+          "link": "https://arxiv.org/pdf/2610.37651v1",
+          "tags": [
+            "keyword:agentic-rl",
+            "query:agentic-rl"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "curates which agent experiences shape prompt optimization for self-improving agents",
+          "llm_evidence_cn": "筛选参与优化的智能体经验以训练自我改进智能体",
+          "llm_evidence": "筛选参与优化的智能体经验以训练自我改进智能体",
+          "canonical_evidence": "筛选参与优化的智能体经验以训练自我改进智能体",
+          "llm_tldr_en": "GEPA-Curator adds task and experience curation in front of a reflective prompt optimizer so that noisy or harmful agentic failures do not corrupt the learning signal for self-improving agents.",
+          "llm_tldr_cn": "多轮智能体任务中，失败往往来自提示缺陷、执行噪声或评审噪声，直接把失败轨迹喂给GEPA等反思式提示优化器可能带来有害信号。作者提出GEPA-Curator，在优化器前加入任务筛选与经验筛选，决定哪些智能体经历应参与提示优化。实验显示经过筛选后提示优化器性能更好。该工作强调数据筛选是自我改进智能体的关键环节。",
+          "llm_tldr": "多轮智能体任务中，失败往往来自提示缺陷、执行噪声或评审噪声，直接把失败轨迹喂给GEPA等反思式提示优化器可能带来有害信号。作者提出GEPA-Curator，在优化器前加入任务筛选与经验筛选，决定哪些智能体经历应参与提示优化。实验显示经过筛选后提示优化器性能更好。该工作强调数据筛选是自我改进智能体的关键环节。",
+          "llm_tags": [
+            "query:agentic-rl"
+          ],
+          "matched_query_tag": "query:agentic-rl",
+          "matched_query_text": "agentic data construction and curation for training AI agents",
+          "matched_requirement_id": "req-2",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.37651v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2610.39682v1",
+          "source": "arxiv",
+          "title": "Heterogeneous Co-Evolution Learning for Tool-Efficient Search Agents with Zero Labels",
+          "abstract": "Deep search agents extend language models by interleaving reasoning with external retrieval. However, effective search-agent training requires addressing two challenges beyond final-answer optimization. First, the capability frontier of agents is largely determined by training questions, whereas fixed or labeled task collections cannot adapt as agents improve. Second, outcome-only reinforcement learning treats all successful trajectories equally, even when some correct answers rely on redundant searches, creating an inherent tension between answer accuracy and tool efficiency. To address these issues, we introduce \\textsc{ZEST-Search}, a zero-label and tool-efficient framework for search-agent training via heterogeneous co-evolution. Starting from unlabeled reference questions, \\textsc{ZEST-Search} constructs validated search tasks online through an answer-first and evidence-path-guided generation process. A heterogeneous proposer adaptively constructs training tasks around the solver's evolving capability boundary, while the solver learns search-augmented reasoning through reinforcement learning. To jointly optimize task difficulty and search efficiency, \\textsc{ZEST-Search} employs an intermediate-difficulty reward for the proposer and a task-local tool-aware reward for the solver, encouraging informative tasks and correct answers with fewer redundant searches. Experiments on seven general-domain and multi-hop question answering benchmarks demonstrate that \\textsc{ZEST-Search} consistently improves search-agent performance while achieving higher tool efficiency without labeled search-training data or expert search trajectories. Further analyses show that heterogeneous generation, adaptive difficulty control, and tool-aware optimization enable more effective search-agent training.",
+          "authors": [
+            "Qin-Wen Luo",
+            "Sheng Ren",
+            "Xiang Chen",
+            "Rui Liu",
+            "Jun Fang",
+            "Naiqiang Tan",
+            "Jun Wang",
+            "Hua Chai",
+            "Sheng-Jun Huang"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.AI",
+            "cs.IR"
+          ],
+          "published": "2026-10-29T09:28:19+00:00",
+          "link": "https://arxiv.org/pdf/2610.39682v1",
+          "tags": [
+            "keyword:agentic-rl",
+            "query:agentic-rl"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "zero-label co-evolution of training questions and search agents",
+          "llm_evidence_cn": "无标签条件下训练问题与搜索智能体协同进化",
+          "llm_evidence": "无标签条件下训练问题与搜索智能体协同进化",
+          "canonical_evidence": "无标签条件下训练问题与搜索智能体协同进化",
+          "llm_tldr_en": "ZEST-Search trains deep search agents without labels by co-evolving training questions with agent capability and rewarding tool-efficient trajectories, balancing answer accuracy against redundant retrieval.",
+          "llm_tldr_cn": "深度搜索智能体需要把推理与外部检索交错，但固定或带标注的训练题集无法随智能体进步而更新，且仅用结果奖励会把冗余搜索的成功轨迹与高效轨迹同等对待。作者提出ZEST-Search，以无标签、异构协同进化方式让训练问题与智能体能力共同演化，并兼顾答案准确性与工具效率。实验表明该框架在无标注条件下提升了搜索智能体的工具使用效率。这为智能体训练数据的自适应构造提供了新思路。",
+          "llm_tldr": "深度搜索智能体需要把推理与外部检索交错，但固定或带标注的训练题集无法随智能体进步而更新，且仅用结果奖励会把冗余搜索的成功轨迹与高效轨迹同等对待。作者提出ZEST-Search，以无标签、异构协同进化方式让训练问题与智能体能力共同演化，并兼顾答案准确性与工具效率。实验表明该框架在无标注条件下提升了搜索智能体的工具使用效率。这为智能体训练数据的自适应构造提供了新思路。",
+          "llm_tags": [
+            "query:agentic-rl"
+          ],
+          "matched_query_tag": "query:agentic-rl",
+          "matched_query_text": "agentic data construction and curation for training AI agents",
+          "matched_requirement_id": "req-2",
+          "selection_source": "carryover_cache",
+          "paper_id": "2610.39682v1",
           "carry_days": 1
         }
       ]

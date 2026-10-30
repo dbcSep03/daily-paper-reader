@@ -1,0 +1,374 @@
+Title: ICLHerd: Herding-Based Data Selection for LLMs with In-Context Learning as a Proxy
+
+URL Source: https://arxiv.org/pdf/2610.27142v1
+
+Published Time: Wed, 21 Oct 2026 00:12:26 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+# ICLHerd: Herding-Based Data Selection for LLMs with In-Context Learning as a Proxy 
+
+Yuqiao Wen 1, Lili Mou 1,21Dept. Computing Science & Alberta Machine Intelligence Institute (Amii), University of Alberta ,
+
+> 2
+
+Canada CIFAR AI Chair 
+
+Data selection plays a central role in modern large language model training, as the quality of training data strongly influences downstream performance. A common approach is to curate a development set that encodes the desired skills (e.g., reasoning or multilinguality) and select data that are similar to them. Existing methods compute similarity using cosine distance over either the model’s hidden states or gradients. However, we observe that this max-similarity strategy induces a mode-seeking bias: the selected data clusters tightly around the development samples. To address this, we propose ICLHerd, a data selection framework that leverages the von Mises–Fisher kernel to balance mode-seeking with mode-averaging. We further introduce in-context learning as a validation proxy, enabling efficient hyperparameter search over the balance trade-off. Results show that ICLHerd outperforms existing LLM data selection algorithms, highlighting the importance of balancing mode-seeking and mode-averaging. 
+
+Emails: yq.when@gmail.com doublepower.mou@gmail.com 
+
+# 1 Introduction 
+
+Data selection is the task of choosing training samples from a data pool in order to maximize model performance given a budget of training data. This is especially important in the large language model (LLM) era, where the candidate data pool is potentially the entire Internet (Li et al., 2024a; Penedo et al., 2024; Wenzek et al., 2020). In modern LLM training, data selection is usually one of the most crucial steps, and researchers rely heavily on intuition and trial-and-error to curate an appropriate training set tailored for the desired model capability. For example, DeepSeek-V4 incorporated different filtering strategies to remove templated data (e.g., repetitive html scripts) and mitigate the risk of model collapse (Xu et al., 2026); Qwen 3 was trained across a selected set of 119 languages and dialects in an attempt to improve data diversity and improve the model’s multilingual skills (Yang et al., 2025); Llama 4 was trained on what the technical report claimed as “specialized datasets” to improve the model’s long-context capabilities (Meta AI, 2025). It is important to note that the training recipes of these frontier open-weight models are not publicly available. This leaves a gap in systematic research on data selection, as the scale of training data (often trillions of tokens) makes it infeasible to ablate individual selection strategies, limiting the scientific rigor of these technical reports. Existing open research on LLM data selection generally uses a development (dev) set to guide the selection process, where the dev samples encode the desired capabilities, e.g., math and reasoning. A promising direction is to embed all the samples and select training data based on the similarity to the dev set. Xia et al. (2024) propose LESS, which embeds training samples via down-projected LoRA gradients, and at each iteration, selects the training sample that maximizes cosine similarity to any dev sample. Ivison et al. (2025) propose RDS+, which embeds samples using the model’s own hidden states for efficiency, and employs a round-robin selection that cycles through dev samples in fixed order, matching each dev sample in turn to promote data diversity. Despite the efforts, we observe that these algorithms suffer from the mode-seeking problem, where 1arXiv:2610.27142v1 [cs.CL] 19 Oct 2026 Preprint Wen et al. 
+
+the selected dataset is overly crowded around the dev samples. Here, a mode refers to a peak in the embedding space, and both algorithms tend to select samples that are close to one or a few peaks of the dev distribution: LESS greedily pick the sample that match well against any of the dev samples, whereas RDS+ attempt to match all dev samples in a round-robin fashion. Alternatively, we may also select data based on the mean embedding of the dev set, as opposed to the maximum used in LESS and RDS+. This, on the other hand, will lead to the mode-averaging problem, where the embeddings of the selected dataset will center around the centroid of the dev distribution, losing the diversity of capabilities encoded by different dev samples. To this end, we propose ICLHerd, a data selection framework based on the principled data herding scheme (Chen et al., 2010; Welling, 2009), where LESS and RDS+ emerge as special cases. The general idea is to make the distribution of selected samples close to that of the dev set. We use the maximum mean discrepancy (MMD, Gretton et al., 2012) to measure the similarity between two distribution based on the selected samples and those in the dev set. In particular, we adopt the von Mises–Fisher (vMF) kernel (Hall et al., 1987) on normalized features as the similarity measure, which operates on cosine similarities, since LLM representations are commonly compared by their direction rather than their magnitude (Banerjee et al., 2005; Gao et al., 2021; Reimers and Gurevych, 2019). We also design a fused kernel that combines hidden-state and gradient representations, allowing us to leverage their complementary signals for data selection. Overall, the data selection reduces to the problem of looking for similar samples with a diversity penalty. We apply the herding algorithm (Chen et al., 2010; Welling, 2009) for optimization, which greedily selects the best sample at a time and adjusts the diversity penalty accordingly. To efficiently tune the balance between mode averaging and mode seeking, we further propose in-context-learning-as-a-proxy for our ICLHerd framework. Typically, hyperparameter tuning on data selection requires repeatedly training the model and validating the model’s performance, which can be prohibitively expensive. Our proposed ICLHerd circumvents this problem by validating through in-context learning, where we put the selected data as a prompt and evaluate its loss on the dev set. Note that this is especially efficient due to prefix caching, as the same prompt is shared among dev samples. Our results establish a connection between in-context learning and gradient-descent-based learning performance. Overall, we propose a ICLHerd framework of data selection for training LLMs. Our contributions are three-fold: (1) we address the mode-averaging and mode-seeking problems in data selection for LLMs; (2) we design a fused vMF kernel combining hidden states and gradients to control this balance; and (3) we propose in-context-learning-as-a-proxy for efficiently tuning it. 
+
+# 2 Related Work 
+
+Data selection for language model training aims to choose a subset of a large candidate pool to reduce training costs (Albalak et al., 2024; Qin et al., 2025). Existing methods span different paradigms. 
+
+Classifier-based data filtering. Classifier-based methods train a lightweight classifier to separate desired samples from the raw pool, and select samples by a threshold on the classifier score, with early studies in machine learning focusing on identifying mislabeled examples and eliminating noise (Brodley and Friedl, 1999; Wilson, 1972). For LLM training, the classifiers are usually trained with high-quality text as positive data, e.g., Wikipedia (Brown et al., 2020; Gao et al., 2020). Alternatively, positive samples can also be task-specific data, such as instruction following (Li et al., 2024a; Xie et al., 2023). More recently, researchers also use an LLM to annotate positive samples and ensemble several classifiers for different aspects of data quality (Penedo et al., 2024; Su et al., 2025). While these methods are efficient enough for pretraining pools, they score each document independently and do not consider the distribution of the selected set. 
+
+Loss and perplexity scoring. Another family of data selection methods filter examples by a language model’s loss or perplexity, treating this as a proxy for sample utility (Lewis and Gale, 1994; Moore and Lewis, 2010; Wenzek et al., 2020). Existing approaches for LLM training differ on which part of the loss 2Preprint ICLHerd: Herding-Based Data Selection for LLMs with In-Context Learning as a Proxy 
+
+range to preserve: the hardest examples, the middle (Ankner et al., 2024; Marion et al., 2023), or the easiest, such as the most likely response to each instruction (Zhang et al., 2025). For instruction tuning, Li et al. (2024b) compare the loss of the response with and without the instruction, ensuring that difficulty reflects the instruction rather than the response alone. However, a loss score only measures how difficult an example is for the model; since a useful example can be either easy or hard, such methods may overlook other aspects of data quality (Sachdeva et al., 2026; Wettig et al., 2024). 
+
+Similarity-based data filtering. Similarity-based methods select data that are most similar to a small dev set from the target task (Huang et al., 2006; Koh and Liang, 2017; Shimodaira, 2000). Specifically, they embed the pool and dev samples into a representation space and compute similarity between them. The choice of representation varies, including the gradient of the model’s loss (Dai et al., 2025; Xia et al., 2024), the hidden states of the model being trained (Ivison et al., 2025), or the output of a separate embedding model (Ivison et al., 2025; Yin and Rush, 2025). They also differ in their selection scheme: Xia et al. (2024) rank examples by their best match to any dev sample; Ivison et al. (2025) go through the dev samples in a round-robin fashion to equally optimize for every dev sample; and Dai et al. (2025) iteratively select the sample that most benefits the currently most underrepresented task. Despite these efforts, there is a lack of systematic study on which features and which selection scheme to use. These similarity-based methods also rely on the best matches to the dev samples, whereas our ICLHerd selects a set of samples whose distribution is close to that of the dev set. 
+
+LLM-as-a-judge for data filtering. LLM-as-a-judge (LaaJ) uses a strong language model to evaluate text (Gu et al., 2024; Liu et al., 2023; Zheng et al., 2023), and has also been used for data selection by rating each training example and keeping the high-scoring ones (Chen et al., 2024; Sachdeva et al., 2026; Wettig et al., 2024). These methods differ in how they define quality, e.g., accuracy (Chen et al., 2024), complexity (Liu et al., 2024), and multi-criteria rubrics (Wettig et al., 2024). Researchers also develop different ways to elicit a judgment, e.g., a 0–5 rating (Chen et al., 2024), the probability of a “yes” answer (Sachdeva et al., 2026), and pairwise comparison (Wettig et al., 2024). However, scoring a whole pool with a large judge is computationally expensive; to address this, some methods distill judge labels into a small trained scorer (Liu et al., 2024; Wettig et al., 2024). Since each example is scored independently and may be redundant, a separate mechanism for coverage is often added to the approach, such as a diversity filter and a sampling temperature (Liu et al., 2024; Sachdeva et al., 2026; Wettig et al., 2024). Recent work shows that random selection and hidden-state similarity are strong baselines for LLMs (Did-dee and Ippolito, 2025; Ivison et al., 2025), a finding consistent with our results. This suggests that data selection for LLMs is still challenging and warrants further investigation. 
+
+# 3 Method 
+
+# 3.1 Problem Formulation 
+
+Consider a standard train, dev, and test split of data, where we have three distinct sets: 𝒟 for model training, 𝒟 dev for hyperparameter tuning, and 𝒟 test for model evaluation. In the context of LLMs, a model is usually pretrained with massive unlabeled data and then finetuned with in-domain data to improve performance. Even for fine-tuning, the training set 𝒟 is often a gigantic pool of unfiltered texts scraped from the Internet, most of which are noisy and out of distribution with respect to 𝒟 dev 
+
+and 𝒟 test (Albalak et al., 2024; Penedo et al., 2024; Qin et al., 2025). In this paper, we study data selection: our goal is to filter 𝒟 to a much smaller subset, where the selected data are better aligned to the task that we care about, for example, reasoning and instruction following. Under this formulation, we utilize 𝒟 dev to guide the selection process, in addition to its role of hyperparameter tuning in standard machine learning. Formally, given a budget of 𝑁 sel training samples, our goal is to find the optimal subset 𝒟 sel that minimizes a loss on the dev set minimize  
+
+> 𝒟 sel ⊂𝒟
+
+ℒ
+
+
+
+𝒟 dev ; argmin 
+
+> 𝜽
+
+ℒ(𝒟 sel ; 𝜽 )
+
+
+
+subject to |𝒟 sel | = 𝑁 sel , (1) 3Preprint Wen et al. 
+
+where ℒ(· ; 𝜽 ) computes the loss on a dataset with parameter 𝜽 , and argmin 𝜽 ℒ(𝒟 sel ; 𝜽 ) is typically given by a gradient descent algorithm as an approximation. Note that this optimization problem is difficult, because it is an integer programming problem with non-linear loss function that involves an expensive argmin operator over the entire parameter space. Brute forcing this problem requires training the model   |𝒟| 
+
+> 𝑁 sel
+
+ times and choosing the best subset, which is not feasible in practice. 
+
+# 3.2 Our ICLHerd Approach 
+
+The overall goal of our approach is to select a dataset 𝒟 sel , whose distribution is close to that of 
+
+𝒟 dev . However, we only have discrete data samples in 𝒟 sel and 𝒟 dev , without an explicit form of their distributions. Thus, we use the maximum mean discrepancy (Gretton et al., 2012) to measure distribution similarity based on samples using a kernel function. With such a formulation, the objective becomes selecting samples that are close to 𝒟 dev , but with a diversity penalty. We minimize this objective by the classic herding algorithm, which selects samples greedily while maintaining a running profile of diversity scores. In the rest of this section, we will first introduce the MMD formulation, kernel design, and the herding algorithm. Then, we will present an in-context-learning-as-a-proxy method for efficient hyperparameter tuning in the LLM setting. 
+
+MMD formulation. We assume 𝒟 sel and 𝒟 dev are sampled from two underlying distributions 𝑃 sel 
+
+and 𝑃 dev , respectively. Specifically, the MMD between 𝑃 sel and 𝑃 dev is defined as MMD (𝑃 sel , 𝑃 dev ) = E
+
+> x∼𝑃 sel
+
+[𝜙 (x)] − E
+
+> y∼𝑃 dev
+
+[𝜙 (y)] 2 
+
+> ℋ
+
+, (2) where 𝜙 : 𝒳 → ℋ is a feature mapping into a reproducing kernel Hilbert space ℋ , and ∥ · ∥ ℋ is the norm in the Hilbert space. We estimate the MMD using finite datasets 𝒟 sel and 𝒟 dev , given by MMD ≈ 1
+
+|𝒟 sel |
+
+Õ
+
+> x∈𝒟 sel
+
+𝜙 (x)− 1
+
+|𝒟 dev |
+
+Õ
+
+> y∈𝒟 dev
+
+𝜙 (y) 2
+
+. (3) When expanding the formula, we replace 𝜙 (·) ⊤ 𝜙 (·) with a general kernel function 𝑘 (· , ·) . This allows us to consider sample similarity without explicitly defining 𝜙 (·) , as 𝑘 (· , ·) serves as an inner product in the 
+
+𝜙 (·) space. We further drop the 1
+
+> |𝒟 dev |2
+
+Íy,y′∈𝒟 dev 𝑘 (y, y′) term, as it is independent of 𝒟 sel . The objective becomes minimize 
+
+> 𝒟 sel ⊂𝒟
+
+1
+
+|𝒟 sel |2
+
+Õ
+
+> x,x′∈𝒟 sel
+
+𝑘 (x, x′) − 2
+
+|𝒟 sel ||𝒟 dev |
+
+Õ 
+
+> x∈𝒟 sel ,y∈𝒟 dev
+
+𝑘 (x, y). (4) We also convert this to a maximization problem for clarity, and introduce a hyperparameter 𝛼 balancing the two terms instead of using fixed coefficients. Overall, we have the following objective maximize 
+
+> 𝒟 sel ⊂𝒟
+
+Õ 
+
+> x∈𝒟 sel ,y∈𝒟 dev
+
+𝑘 (x, y)
+
+| {z }
+
+> similarity
+
+− 𝛼 
+
+Õ
+
+> x,x′∈𝒟 sel
+
+𝑘 (x, x′)
+
+| {z }
+
+> diversity penalty
+
+. (5) Intuitively, the first term aims to maximize the similarity with 𝒟 dev , the second term encourages selecting diverse data samples, avoiding the selected samples crowding around certain modes. Note that the diversity objective is naturally derived from the MMD formulation, whereas previous work uses heuristics to select diverse data (Ivison et al., 2025). 4Preprint ICLHerd: Herding-Based Data Selection for LLMs with In-Context Learning as a Proxy 
+
+Kernel design. A common choice of the kernel is the radial basis function (RBF). For neural networks, the von Mises–Fisher kernel (Hall et al., 1987) is often preferred (Kobayashi, 2018), as the representations are often compared by their direction rather than the Euclidean distance. We empirically analyze different kernels and observe that vMF is indeed superior to other options. Specifically, the von Mises–Fisher (vMF) kernel scales exponentially with the cosine similarity controlled by a concentration parameter. This allows us to tune how sharply similarity decays as samples move away from the dev samples. Formally, we have 
+
+𝑘 vMF (x, y) = exp  𝜅 𝜓 (x)⊤𝜓 (y) , (6) where 𝜓 (·) is a unit-norm feature map that represents the samples in an embedding space, and 𝜅 is the concentration parameter that balances between mode-averaging (mean similarity) and mode-seeking (max similarity). As shown in Eqn. (6), a high 𝜅 causes mode seeking, since the influence of distant samples diminishes rapidly, encouraging the selected subset to cluster around the development samples. On the other hand, a low 𝜅 causes mode averaging, as it places greater emphasis on preserving global similarity and results in selected samples crowded at the center of the dev samples (which may not resemble any dev samples). For the representation 𝜓 (·) of a sample, previous studies use either gradients or hidden states of an LLM (Ivison et al., 2025; Xia et al., 2024), but we notice that they complement each other. Therefore, we propose a fused vMF kernel that utilizes signals from both hidden states and gradients 
+
+𝑘 fused-vMF (x, y) = 𝛽 𝑘 vMF 
+
+ 𝜓 emb (x), 𝜓 emb (y) + ( 1 − 𝛽 ) 𝑘 vMF 
+
+ 𝜓 grad (x), 𝜓 grad (y) (7) where 𝜓 grad (·) and 𝜓 emb (·) compute the unit-norm feature map based on the model’s gradients and hidden states, respectively, and 𝛽 controls the strength of each signal. Specifically, we follow Xia et al. (2024) to down-project the gradients, which reduces the memory cost, and follow Ivison et al. (2025) to pool the hidden states over tokens. 
+
+Herding algorithm. We adopt the herding algorithm (Bach et al., 2012) to optimize the MMD objective. Essentially, data herding is a greedy algorithm that chooses samples to maximize Eqn. (5) iteratively while keeping a running selected set for the diversity penalty. First, the selected set is initialized as 𝑆 0 = ∅.For each step 𝑡 , we pick one sample x𝑡 by argmax 
+
+> x∈𝒟\ 𝑆 𝑡 −1
+
+" Õ
+
+> y∈𝒟 dev
+
+𝑘 (x, y) − 𝛼 
+
+Õ
+
+> x′∈𝑆 𝑡 −1
+
+𝑘 (x, x′)
+
+#
+
+(8) The selected sample x𝑡 is added to the selected set, given by 𝑆 𝑡 = 𝑆 𝑡 −1 ∪ { x𝑡 }.Overall, our ICLHerd generalizes existing similarity-based methods and better balances between extreme mode averaging and mode seeking. 
+
+In-context learning proxy. ICLHerd has several hyperparameters, such as the concentration parameter 
+
+𝜅 that balances mode averaging and mode seeking, the diversity weight 𝛼 , and the fusion weight 𝛽 ,which need to be tuned properly. Traditional hyperparameter tuning for data selection requires repeated model training and subsequent inference to evaluate the selected subset, which is computationally expensive and limits how thoroughly we can balance between mode-seeking and mode-averaging. To this end, we propose in-context learning as an efficient validation proxy, where we place the selected data samples in the model’s context and measure the loss on the dev set to gauge the data quality. Intuitively, higher-quality training samples are also more informative in-context learning samples, thus resulting in a lower loss on the dev set when they are used to prompt an LLM. This allows us to estimate the quality of the data without training on the dataset. 5Preprint Wen et al. 
+
+However, it is noisy and still costly to perform in-context learning evaluation for each individual samples. We propose to estimate the quality of 𝒟 sel by repeatedly drawing 𝑘 samples and evaluate their quality. Let x1 , x2 , . . . , x𝑘 ∈ 𝒟 sel be 𝑘 samples randomly drawn from the selected dataset such that it fits in a budget of 𝐵 tokens available for in-context learning. We build an in-context learning prompt by concatenation: 
+
+c = x1 ⊕ x2 ⊕ · · · ⊕ x𝑘 . (9) We then estimate quality of the in-context learning samples c by computing the loss on the dev set, given by 
+
+ℒ( c) = 1
+
+|𝒟 dev |
+
+Õ
+
+> x∈𝒟 dev
+
+
+
+− 1
+
+|x|
+
+> |x|
+
+Õ
+
+> 𝑡 =1
+
+log 𝑝 𝜽 
+
+ 𝑥 𝑡 | c, x<𝑡 
+
+
+
+. (10) Although one subset x1 , x2 , . . . , x𝑘 already gives a decent proxy for data quality, this score may be susceptible to random noise. To mitigate this, we repeat this process 𝑀 times with different random samples, each forming a context c𝑚 for 𝑚 = 1, · · · , 𝑀 .Finally, we aggregate a proxy score as the maximum loss across different draws ICLProxy (𝒟 sel ) = 𝑀 
+
+max  
+
+> 𝑚 =1
+
+ℒ( c𝑚 ) (11) Note that it is possible to also take the average instead the maximum, but our pilot study suggests that max aggregation is more consistent with actual data quality, potentially because bad outlier samples are especially detrimental to training. ICLHerd is efficient, as we use a prefix caching technique when evaluating different samples in 𝒟 dev .In other words, the cached prefix c is computed once and reused for different dev samples, so each dev sample only requires processing its own tokens. Overall, our proposed method avoids repeated LLM training for hyperparameter tuning and is much faster than the traditional training–validation framework. 
+
+# 4 Experiments 
+
+# 4.1 Setups 
+
+Selection pool dataset. Following Ivison et al. (2025), we use the unfiltered Tülu 2 SFT mixture dataset (Ivison et al., 2023) as our selection pool 𝒟 , containing approximately 5.8M samples from sources including Open Orca (Mukherjee et al., 2023), FLAN (Chung et al., 2024), and WizardLM Evol-Instruct (Xu et al., 2024). This pool combines data across various skills, requiring the selection algorithm to identify examples relevant to each target task. 
+
+Evaluation tasks and datasets. We evaluate all methods on five tasks in a zero-shot setting: GSM8K (Cobbe et al., 2021), MLQA (Lewis et al., 2020), DROP (Dua et al., 2019), XSum (Narayan et al., 2018), and OASST1 (Köpf et al., 2023). These tasks cover a diverse range of skills, including mathematical reasoning, multilingual question answering, reading comprehension, summarization, and instruction following. For in-depth analyses, we focus on GSM8K and MLQA to test two distinct capabilities: reasoning and multilinguality. Details are presented in Appendix A. 
+
+Baselines. We compare ICLHerd against five representative baselines spanning random, loss-based, and representation-based selection. 
+
+• Random: uniform sampling from the pool. This is a surprisingly strong baseline that often remains competitive (Diddee and Ippolito, 2025; Ivison et al., 2025). 6Preprint ICLHerd: Herding-Based Data Selection for LLMs with In-Context Learning as a Proxy 
+
+Table 1. Main results on five tasks with 10K selected samples per task. Training data are selected using Qwen3-1.7B representations and used to finetune Qwen3-1.7B, 4B, and 8B. Due to resource constraints, Top-PPL and Mid-PPL are only evaluated at 1.7B as their performance is relatively low. The best and second-best results within each model size are bold and underlined, respectively. ICLHerd significantly outperforms RDS+, the strongest baseline, under a two-sided binomial test across tasks and model sizes ( 𝑝 ≈ 0.007). 
+
+Selected on Qwen3-1.7B, fine-tuned on Qwen3-1.7B 
+
+Size Method GSM8K MLQA DROP XSum OASST1 Avg 1.7B Random 40.33 48.27 8.13 15.31 20.37 26.48 Top-PPL (Ankner et al., 2024) 13.57 51.63 16.72 6.24 4.71 18.57 Mid-PPL (Marion et al., 2023) 42.08 21.30 9.06 13.60 19.77 21.16 LESS (Xia et al., 2024) 42.53 38.47 9.03 22.58 21.06 26.73 RDS+ (Ivison et al., 2025) 58.91 51.31 7.84 24.47 21.41 32.79 ICLHerd (ours) 59.14 60.61 14.69 24.66 21.67 36.15 
+
+Selected on Qwen3-1.7B, fine-tuned on other Qwen3 models 
+
+Size Method GSM8K MLQA DROP XSum OASST1 Avg 4B Random 50.80 30.85 12.72 18.24 22.49 27.02 LESS (Xia et al., 2024) 65.73 29.96 16.40 26.25 23.22 32.31 RDS+ (Ivison et al., 2025) 73.31 19.00 14.07 27.13 23.02 31.31 ICLHerd (ours) 76.57 39.55 25.18 27.49 22.46 38.25 
+
+8B Random 69.29 49.22 14.76 14.08 23.67 34.20 LESS (Xia et al., 2024) 66.41 54.79 15.71 27.42 24.05 37.68 RDS+ (Ivison et al., 2025) 79.83 55.22 13.60 28.72 23.71 40.22 ICLHerd (ours) 76.27 57.56 17.47 29.19 24.12 40.92 Table 2. Analysis of the concentration parameter 𝜅 using the fusion kernel ( 𝛽 = 0.5, no diversity term). Mean- and max-similarity on concatenated features serve as the approximate extremes for small and large 𝜅 , respectively. Random and round-robin (on fused features) lie outside the 𝜅 continuum and are shown as references. 𝜅 is given as a multiple of the value from the median heuristic (Gretton et al., 2012). Task Random Mean-similarity ICLHerd (ours), 𝜅 Max-similarity Round-robin 0.01 × 1× 3× 10 × 30 × 100 ×
+
+GSM8K 40.33 54.28 56.56 56.25 57.47 58.83 55.88 55.88 54.74 53.53 MLQA 48.27 60.34 60.84 59.99 59.71 43.13 44.63 45.29 47.20 59.31 
+
+• Top-PPL (Ankner et al., 2024): selecting samples with the highest perplexity loss under the base model. 
+
+• Mid-PPL (Marion et al., 2023): selecting samples around the median perplexity loss under the base model. 
+
+• LESS (Xia et al., 2024): embedding samples via gradients and ranking them by maximum cosine similarity to any dev sample. 
+
+• RDS+ (Ivison et al., 2025): embedding samples via hidden states and selecting the best match for each dev sample in a round-robin fashion. We provide additional details on the datasets in Appendix B. 
+
+# 4.2 Results and Analyses 
+
+Main results. The top half of Table 1 shows the main results across the five tasks, where data are selected by Qwen3-1.7B and the performance is obtained by finetuning the same Qwen3-1.7B model. As seen, random selection remains a strong baseline (Diddee and Ippolito, 2025; Ivison et al., 2025), and is particularly competitive on OASST1, likely because the Tülu 2 pool is rich in instruction-tuning data. Loss-based methods, Top-PPL and Mid-PPL, generally underperform random selection. This is because Top-PPL favors surprising samples that often have very short answers; while this benefits the short-span F1 on DROP, it degrades the chain-of-thought reasoning required for GSM8K. Mid-PPL is 7Preprint Wen et al.                                                                               
+
+> Table 3. Comparison of feature spaces. RDS+ and LESS use hidden states and gradients, respectively, while ICLHerd (fused) combines both in the kernel. Method GSM8K MLQA Avg RDS+ 58.91 51.31 55.11 LESS 42.53 38.47 40.50 ICLHerd (hidden states) 61.56 51.05 56.31 ICLHerd (gradients) 52.77 60.19 56.48 ICLHerd (fused) 59.14 60.61 59.88 Table 4. Per-language F1 on MLQA using Qwen3-1.7B with 10k selected samples. The average matches the MLQA column of Table 1. The best and second-best results are bold and underlined, respectively. Method Arabic German English Spanish Hindi Vietnamese Chinese Avg Random 49.18 46.61 59.87 44.13 35.59 53.37 49.11 48.27 Top-PPL (Ankner et al., 2024) 46.89 48.76 63.65 50.73 44.54 54.90 51.97 51.63 Mid-PPL (Marion et al., 2023) 38.98 14.39 14.60 16.20 25.76 19.70 19.47 21.30 LESS (Xia et al., 2024) 47.06 38.85 35.83 26.98 33.31 48.53 38.75 38.47 RDS+ (Ivison et al., 2025) 47.56 51.57 65.71 52.23 38.89 52.81 50.39 51.31 ICLHerd (ours) 56.82 61.58 75.85 65.57 36.48 65.05 62.90 60.61
+
+less extreme and thus maintains an overall edge over Top-PPL. In contrast, RDS+ Ivison et al. (2025) outperforms both random and loss-based selection, whereas LESS (Xia et al., 2024) barely improves over random on average and even falls behind it on MLQA, as its max-similarity selection suffers from extreme mode seeking although Table 3 shows its gradient-based features are informative. Our ICLHerd performs consistently well, achieving the best results on four of the five tasks and on average. The only exception is DROP, where it ranks second to Top-PPL because ICLHerd tends to generate more verbose answers that are penalized by the F1 score. 
+
+MLQA per-language results. Table 4 presents the breakdown results for MLQA in terms of different languages. As seen, ICLHerd achieves the best F1 in six of the seven languages. The exception is Hindi, for which Top-PPL perform surprisingly well, while other methods are only slightly better or even worse than random. Among other languages, our ICLHerd has large margins in English, Spanish, and German, showing that our gain (reported as average in Table 1) is not driven by a few languages. 
+
+Transfer to larger models. We further test whether the selected data transfer to larger models, where data are selected with Qwen3-1.7B and fine-tuned on Qwen3-4B and 8B (bottom half of Table 1). This mimics a practical application scenario, where a small model is used to select high-quality data for training large models. Since Top-PPL and Mid-PPL underperform random in the skill-based selection setting, we drop them from now on to save compute. As seen, ICLHerd outperforms both RDS+ and LESS on average and achieves the highest performance in 8 out of 10 settings. We perform a statistical test against RDS+, which is the strongest baseline. Including the 1.7B results, ICLHerd outperforms RDS+ under 13 of the 15 setups, which is statistically significant under a two-sided binomial test ( 𝑝 ≈ 0.007). These results indicate that a small model with ICLHerd can select data that are effective for significantly larger models, suggesting that the cost of data selection can be paid once with a small model and reused for larger ones. 
+
+Analyzing the concentration parameter. Table 2 compares different selection criteria and their impact on mode-seeking and mode-averaging behaviors. As a controlled setting, all methods use the same feature space with 𝛽 = 0.5. Max-similarity, as adopted by LESS, selects samples based on their highest similarity to any dev sample, leading to extreme mode seeking. On MLQA, for instance, the max operator latches onto purely English samples, so max-similarity is even worse than random selection. Conversely, mean-similarity selects samples based on their overall fit across the dev set; while this can be suboptimal if the average falls into a low-density region, it nevertheless performs 8Preprint ICLHerd: Herding-Based Data Selection for LLMs with In-Context Learning as a Proxy                                                                                                                      
+
+> Table 5. Comparison of the ICL and Train–Val proxies against test performance. Train–Val involves fine-tuning on selected data followed by dev-set evaluation. The final row shows the Spearman’s 𝜌 between each proxy and the test score across the six methods. Method GSM8K MLQA Proxy Test Proxy Test ICL (ours) Train–Val ICL (ours) Train–Val Random −3.76 46.51 40.33 −6.93 46.39 48.27 Top-PPL −3.86 16.21 13.57 −4.93 52.25 51.63 Mid-PPL −3.61 48.66 42.08 −7.31 21.54 21.30 LESS (Xia et al., 2024) −3.25 47.81 42.53 −7.93 37.53 38.47 RDS+ (Ivison et al., 2025) −2.89 63.08 58.91 −5.70 49.96 51.31 ICLHerd (ours) −2.85 64.50 59.14 −3.26 61.11 60.61
+> Spearman 𝜌 with test 1.00 0.94 –0.94 1.00 –
+> Table 6. Efficiency comparison. Times are in minutes, with inference measured on 1K samples. Speedup is the total time of training–validation divided by that of each method, computed from unrounded times. 𝜌 denotes the Spearman correlation relative to the rankings in Table 1. Experiments use an NVIDIA L40S GPU. Method GSM8K MLQA Train Infer Total Speedup 𝜌 Train Infer Total Speedup 𝜌
+> ICL (ours), 𝑀 =1–0.4 0.4 157 ×1.00 –0.5 0.5 68 ×0.89 ICL (ours), 𝑀 =5–1.9 1.9 31 ×1.00 –2.5 2.5 14 ×0.94 ICL (ours), 𝑀 =10 –3.8 3.8 16 ×1.00 –5.0 5.0 7×0.94 Training–validation 33.0 26.1 59.1 1×0.94 30.0 4.3 34.3 1×1.00
+
+reasonably well on MLQA because the balanced dev set keeps the average close to each language. Round-robin, used by RDS+, mitigates extreme mode-seeking by matching each dev sample in turn, thereby promoting diversity and performing well on MLQA. Generally, max-similarity, mean-similarity, and round-robin perform similarly on GSM8K, where the selection should more carefully balance high-quality chain-of-thought samples with diversity. Unlike these fixed criteria, ICLHerd controls the balance through the concentration parameter 𝜅 , where a small 𝜅 behaves like mean-similarity and a large 𝜅 behaves like max-similarity. Our ICLHerd selects 𝜅 
+
+by validation based on the in-context learning proxy. For the analysis, we manually set different scores for 𝜅 and evaluate the performance. In particular, we initialize 𝜅 using the median heuristic (Gretton et al., 2012) and tune a multiplicative factor. The results are reported in Table 2. In this analysis, we also omit the diversity term (setting 𝛼 = 0) across all runs to isolate the effect of 𝜅 . In this way, 𝜅 = 0resembles mean-similarity selection; if 𝜅 approaches infinity, our method becomes max-similarity selection. Empirical results show that 𝜅 indeed balances mode averaging and mode seeking, where small and large 𝜅 matches the performance of mean- and max-similarity, respectively. On GSM8K, an intermediate 𝜅 is optimal, as a balanced 𝜅 strikes a good balance between mode averaging and mode seeking, allowing us to pick diverse, high-quality chain-of-thought reasoning samples. On MLQA, mode averaging is preferred, potentially because the dev set is well-balanced across languages. By contrast, a large 𝜅 suffers from the same mode-seeking issue as max-similarity. Note that Table 2 shows results of different 𝜅 values that are set manually. However, our ICLHerd uses in-context learning as proxy and automatically selects the best 𝜅 for a task, highlighting the flexibility of our approach. 
+
+Comparing feature spaces. Table 3 compares ICLHerd using different feature spaces. As seen, ICLHerd variants generally outperform RDS+ and LESS regardless of the features. Within ICLHerd variants, hidden states and gradients provide complementary signals that suit different tasks, with hidden states performing better on GSM8K and gradients on MLQA. By combining both, the fused space takes advantage of both worlds and achieves the best performance overall. 9Preprint Wen et al.                            
+
+> Table 7. Comparison of kernels within our herding framework, all using fused hidden-state and gradient features. Kernel GSM8K MLQA Avg Euclidean 47.84 54.97 51.41 Cosine 49.58 55.56 52.57 RBF 58.91 60.04 59.48 vMF (ours) 59.14 60.61 59.88 Table 8. Effect of the dev set size on ICLHerd. Full denotes the entire dev set (7,473 samples for GSM8K and 3,500 for MLQA). # Dev samples GSM8K MLQA 10 58.98 60.51 100 58.61 61.23
+> 1,000 58.61 60.52 Full 59.14 60.61
+
+Analyzing the in-context learning proxy. We compare the ICL proxy with the standard training– validation approach for hyperparameter tuning. The latter is computationally inefficient as it requires full training and inference. We use Spearman’s 𝜌 to measure the ranking correlation between the dev performance (using ICL proxy or standard training–validation) and test performance for the methods in Table 1. As seen in Table 5, the ICL proxy is comparable to standard training–validation in terms of method ranking: it achieves a perfect ranking on GSM8K, while training–validation does so on MLQA. Moreover, both methods identify ICLHerd as the top-performing method, consistent with the test results. This shows that the ICL proxy is an effective replacement for fine-tuning and validation. 
+
+Analyzing time efficiency. We further analyze the efficiency gains of the ICL proxy over training– validation in Table 6, where we vary the number of in-context example draws, i.e., 𝑀 in Eqn. (11). We see that our ICL proxy yields significant speedup of 68–157 × when 𝑀 = 1, although the proxy quality is slightly lower (shown by Spearman’s 𝜌 correlation). Even with 𝑀 = 10, our method remains 7–16 ×
+
+faster. This is understandable, as our ICL proxy eliminates the need for training, which is often the most time-consuming component of the training–validation framework. 
+
+Comparing kernels. We compare the choice of kernel function in Table 7. Between Euclidean and cosine kernels, we observe that cosine similarity generally performs better. This is consistent with existing literature, which prefers using direction rather than magnitude for high-dimensional embeddings (Banerjee et al., 2005; Gao et al., 2021; Reimers and Gurevych, 2019). Both RBF and vMF kernels offer an exponential decay when samples are moved apart, which enables a balance between mode averaging and mode seeking; they outperform the Euclidean and cosine kernels by a large margin. Furthermore, the angular similarity of the vMF kernel outperforms Euclidean distance, being the most effective kernel across all tested options. 
+
+Effect of the dev set size. We study the effect of the dev set size on our ICLHerd. We progressively sample 10, 100, and 1,000 dev entries. We keep the 10K training budget and tune hyperparameters on the full dev set. As shown in Table 8, performance is nearly flat across dev set sizes, varying by less than one point on both tasks. This is because the dev set enters the objective only through the average kernel similarity, which a few samples already estimate well. This highlights the robustness of our approach across different dev set sizes. 
+
+# 5 Conclusion 
+
+In this work, we propose ICLHerd, a data selection framework for LLMs based on data herding, which balances mode averaging and mode seeking with a vMF kernel fused over hidden states and gradients. We further propose in-context learning as an efficient proxy for tuning its hyperparameters without 10 Preprint ICLHerd: Herding-Based Data Selection for LLMs with In-Context Learning as a Proxy 
+
+training. Experiments show that ICLHerd outperforms existing data selection methods on average, and that our proxy is a reliable and efficient replacement for fine-tuning and validation. 
+
+# References 
+
+Alon Albalak, Yanai Elazar, Sang Michael Xie, Shayne Longpre, Nathan Lambert, Xinyi Wang, Niklas Muennighoff, Bairu Hou, Liangming Pan, Haewon Jeong, Colin Raffel, Shiyu Chang, Tatsunori Hashimoto, and William Yang Wang. A survey on data selection for language models. Transactions on Machine Learning Research , 2024. 
+
+https://openreview.net/forum?id=XfHWcNTSHp .Zachary Ankner, Cody Blakeney, Kartik Sreenivasan, Max Marion, Matthew L. Leavitt, and Mansheej Paul. Per-plexed by perplexity: Perplexity-based data pruning with small reference models. arXiv preprint arXiv:2405.20541 ,2024. https://arxiv.org/abs/2405.20541 .Francis Bach, Simon Lacoste-Julien, and Guillaume Obozinski. On the equivalence between herding and conditional gradient algorithms. arXiv preprint arXiv:1203.4523 , 2012. https://arxiv.org/abs/1203.4523 .Arindam Banerjee, Inderjit S. Dhillon, Joydeep Ghosh, and Suvrit Sra. Clustering on the unit hypersphere using von Mises–Fisher distributions. Journal of Machine Learning Research , 6(46):1345–1382, 2005. https: //jmlr.org/papers/v6/banerjee05a.html .Carla E. Brodley and Mark A. Friedl. Identifying mislabeled training data. Journal of Artificial Intelligence Research ,11:131–167, 1999. https://doi.org/10.1613/jair.606 .Tom B. Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are few-shot learners. In Advances in Neural Information Processing Systems , 2020. https://proceedings.neurips.cc/paper_files/ paper/2020/hash/1457c0d6bfcb4967418bfb8ac142f64a-Abstract.html .Lichang Chen, Shiyang Li, Jun Yan, Hai Wang, Kalpa Gunaratna, Vikas Yadav, Zheng Tang, Vĳay Srinivasan, Tianyi Zhou, Heng Huang, et al. AlpaGasus: Training a better Alpaca with fewer data. In Proceedings of the International Conference on Learning Representations , 2024. https://openreview.net/forum?id=FdVXgSJhvz .Yutian Chen, Max Welling, and Alex Smola. Super-samples from kernel herding. In Proceedings of the Conference on Uncertainty in Artificial Intelligence , pages 117–124, 2010. https://proceedings.mlr.press/r8/chen10a.html .Hyung Won Chung, Le Hou, Shayne Longpre, Barret Zoph, Yi Tay, William Fedus, Yunxuan Li, Xuezhi Wang, Mostafa Dehghani, Siddhartha Brahma, et al. Scaling instruction-finetuned language models. Journal of Machine Learning Research , 25(70):1–53, 2024. https://jmlr.org/papers/v25/23-0870.html .Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert, Jerry Tworek, et al. Training verifiers to solve math word problems. arXiv preprint arXiv:2110.14168 , 2021. 
+
+https://arxiv.org/abs/2110.14168 .Qirun Dai, Dylan Zhang, Jiaqi W. Ma, and Hao Peng. Improving influence-based instruction tuning data selection for balanced learning of diverse capabilities. In Findings of the Association for Computational Linguistics: EMNLP 2025 , pages 7079–7102, 2025. https://aclanthology.org/2025.findings-emnlp.373/ .Harshita Diddee and Daphne Ippolito. Chasing random: Instruction selection strategies fail to generalize. In Findings of the Association for Computational Linguistics: NAACL 2025 , pages 1943–1957, 2025. https: //aclanthology.org/2025.findings-naacl.103/ .Dheeru Dua, Yizhong Wang, Pradeep Dasigi, Gabriel Stanovsky, Sameer Singh, and Matt Gardner. DROP: A reading comprehension benchmark requiring discrete reasoning over paragraphs. In Proceedings of the Conference of the North American Chapter of the Association for Computational Linguistics , pages 2368–2378, 2019. 
+
+https://aclanthology.org/N19-1246/ .Leo Gao, Stella Biderman, Sid Black, Laurence Golding, Travis Hoppe, Charles Foster, Jason Phang, Horace He, Anish Thite, Noa Nabeshima, Shawn Presser, and Connor Leahy. The Pile: An 800GB dataset of diverse text for language modeling. arXiv preprint arXiv:2101.00027 , 2020. https://arxiv.org/abs/2101.00027 .Tianyu Gao, Xingcheng Yao, and Danqi Chen. SimCSE: Simple contrastive learning of sentence embeddings. In Proceedings of the Conference on Empirical Methods in Natural Language Processing , pages 6894–6910, 2021. 
+
+https://aclanthology.org/2021.emnlp-main.552/ .
+
+11 Preprint Wen et al. 
+
+Arthur Gretton, Karsten M. Borgwardt, Malte J. Rasch, Bernhard Schölkopf, and Alexander Smola. A kernel two-sample test. Journal of Machine Learning Research , 13(25):723–773, 2012. https://jmlr.org/papers/v13/ gretton12a.html .Jiawei Gu, Xuhui Jiang, Zhichao Shi, Hexiang Tan, Xuehao Zhai, Chengjin Xu, Wei Li, Yinghan Shen, Shengjie Ma, Honghao Liu, Saizhuo Wang, Kun Zhang, Yuanzhuo Wang, Wen Gao, Lionel Ni, and Jian Guo. A survey on LLM-as-a-judge. arXiv preprint arXiv:2411.15594 , 2024. https://arxiv.org/abs/2411.15594 .Peter Hall, G. S. Watson, and Javier Cabrera. Kernel density estimation with spherical data. Biometrika , 74(4): 751–762, 1987. https://doi.org/10.1093/biomet/74.4.751 .Jiayuan Huang, Alexander J. Smola, Arthur Gretton, Karsten M. Borgwardt, and Bernhard Schölkopf. Correcting sample selection bias by unlabeled data. In Advances in Neural Information Pro-cessing Systems , pages 601–608, 2006. https://papers.nips.cc/paper_files/paper/2006/hash/ a2186aa7c086b46ad4e8bf81e2a3a19b-Abstract.html .Hamish Ivison, Yizhong Wang, Valentina Pyatkin, Nathan Lambert, Matthew Peters, Pradeep Dasigi, Joel Jang, David Wadden, Noah A. Smith, Iz Beltagy, and Hannaneh Hajishirzi. Camels in a changing climate: Enhancing LM adaptation with Tülu 2. arXiv preprint arXiv:2311.10702 , 2023. https://arxiv.org/abs/2311.10702 .Hamish Ivison, Muru Zhang, Faeze Brahman, Pang Wei Koh, and Pradeep Dasigi. Large-scale data selection for instruction tuning. arXiv preprint arXiv:2503.01807 , 2025. https://arxiv.org/abs/2503.01807 .Hayato Kobayashi. Frustratingly easy model ensemble for abstractive summarization. In Proceedings of the Conference on Empirical Methods in Natural Language Processing , pages 4165–4176, 2018. https://aclanthology. org/D18-1449/ .Pang Wei Koh and Percy Liang. Understanding black-box predictions via influence functions. In Proceedings of the International Conference on Machine Learning , pages 1885–1894, 2017. https://proceedings.mlr.press/v70/ koh17a.html .Andreas Köpf, Yannic Kilcher, Dimitri von Rütte, et al. OpenAssistant conversations – democratizing large language model alignment. In Advances in Neural Information Processing Systems , 2023. https://proceedings. neurips.cc/paper_files/paper/2023/hash/949f0f8f32267d297c2d4e3ee10a2e7e-Abstract.html .David D. Lewis and William A. Gale. A sequential algorithm for training text classifiers. In Proceedings of the Annual International ACM SIGIR Conference on Research and Development in Information Retrieval , pages 3–12, 1994. 
+
+https://doi.org/10.1007/978-1-4471-2099-5_1 .Patrick Lewis, Barlas Oguz, Ruty Rinott, Sebastian Riedel, and Holger Schwenk. MLQA: Evaluating cross-lingual extractive question answering. In Proceedings of the Annual Meeting of the Association for Computational Linguistics ,pages 7315–7330, 2020. https://aclanthology.org/2020.acl-main.653/ .Jeffrey Li, Alex Fang, Georgios Smyrnis, Maor Ivgi, Matt Jordan, Samir Gadre, Hritik Bansal, Etash Guha, et al. DataComp-LM: In search of the next generation of training sets for language models. In Advances in Neural Information Processing Systems , pages 14200–14282, 2024a. https://doi.org/10.52202/079017-0455 .Ming Li, Yong Zhang, Zhitao Li, Jiuhai Chen, Lichang Chen, Ning Cheng, Jianzong Wang, Tianyi Zhou, and Jing Xiao. From quantity to quality: Boosting LLM performance with self-guided data selection for instruction tuning. In Proceedings of the Conference of the North American Chapter of the Association for Computational Linguistics ,pages 7602–7635, 2024b. https://aclanthology.org/2024.naacl-long.421/ .Wei Liu, Weihao Zeng, Keqing He, Yong Jiang, and Junxian He. What makes good data for alignment? acomprehensive study of automatic data selection in instruction tuning. In Proceedings of the International Conference on Learning Representations , 2024. https://openreview.net/forum?id=BTKAeLqLMw .Yang Liu, Dan Iter, Yichong Xu, Shuohang Wang, Ruochen Xu, and Chenguang Zhu. G-Eval: NLG evaluation using GPT-4 with better human alignment. In Proceedings of the Conference on Empirical Methods in Natural Language Processing , pages 2511–2522, 2023. https://aclanthology.org/2023.emnlp-main.153 .Max Marion, Ahmet Üstün, Luiza Pozzobon, Alex Wang, Marzieh Fadaee, and Sara Hooker. When less is more: Investigating data pruning for pretraining LLMs at scale. arXiv preprint arXiv:2309.04564 , 2023. 
+
+https://arxiv.org/abs/2309.04564 .Meta AI. The Llama 4 herd: The beginning of a new era of natively multimodal AI innovation, 2025. https: //ai.meta.com/blog/llama-4-multimodal-intelligence/ .
+
+12 Preprint ICLHerd: Herding-Based Data Selection for LLMs with In-Context Learning as a Proxy 
+
+Robert C. Moore and William Lewis. Intelligent selection of language model training data. In Proceedings of the Annual Meeting of the Association for Computational Linguistics: Short Papers , pages 220–224, 2010. https: //aclanthology.org/P10-2041/ .Subhabrata Mukherjee, Arindam Mitra, Ganesh Jawahar, Sahaj Agarwal, Hamid Palangi, and Ahmed Awadallah. Orca: Progressive learning from complex explanation traces of GPT-4. arXiv preprint arXiv:2306.02707 , 2023. 
+
+https://arxiv.org/abs/2306.02707 .Shashi Narayan, Shay B. Cohen, and Mirella Lapata. Don’t give me the details, just the summary! Topic-aware convolutional neural networks for extreme summarization. In Proceedings of the Conference on Empirical Methods in Natural Language Processing , pages 1797–1807, 2018. https://aclanthology.org/D18-1206/ .Guilherme Penedo, Hynek Kydlíček, Loubna Ben Allal, Anton Lozhkov, Margaret Mitchell, Colin Raffel, Leandro Von Werra, and Thomas Wolf. The FineWeb datasets: Decanting the web for the finest text data at scale. In Ad-vances in Neural Information Processing Systems , 2024. https://proceedings.neurips.cc/paper_files/paper/ 2024/hash/370df50ccfdf8bde18f8f9c2d9151bda-Abstract-Datasets_and_Benchmarks_Track.html .Yulei Qin, Yuncheng Yang, Pengcheng Guo, Gang Li, Hang Shao, Yuchen Shi, Zihan Xu, Yun Gu, Ke Li, and Xing Sun. Unleashing the power of data tsunami: A comprehensive survey on data assessment and selection for instruction tuning of language models. Transactions on Machine Learning Research , 2025. https: //openreview.net/forum?id=RJT1baPhdV .Nils Reimers and Iryna Gurevych. Sentence-BERT: Sentence embeddings using Siamese BERT-networks. In 
+
+Proceedings of the Conference on Empirical Methods in Natural Language Processing and the International Joint Conference on Natural Language Processing , pages 3982–3992, 2019. https://aclanthology.org/D19-1410/ .Noveen Sachdeva, Benjamin Coleman, Wang-Cheng Kang, Jianmo Ni, Lichan Hong, Ed H. Chi, James Caverlee, Julian McAuley, and Derek Zhiyuan Cheng. How to train data-efficient LLMs. In Proceedings of the International Conference on Learning Representations , 2026. https://openreview.net/forum?id=yKUbw7q1IA .Hidetoshi Shimodaira. Improving predictive inference under covariate shift by weighting the log-likelihood func-tion. Journal of Statistical Planning and Inference , 90(2):227–244, 2000. https://doi.org/10.1016/S0378-3758(00) 00115-4 .Dan Su, Kezhi Kong, Ying Lin, Joseph Jennings, Brandon Norick, Markus Kliegl, Mostofa Patwary, Mohammad Shoeybi, and Bryan Catanzaro. Nemotron-CC: Transforming Common Crawl into a refined long-horizon pretraining dataset. In Proceedings of the Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 2459–2475, 2025. https://aclanthology.org/2025.acl-long.123/ .Max Welling. Herding dynamical weights to learn. In Proceedings of the International Conference on Machine Learning ,pages 1121–1128, 2009. https://doi.org/10.1145/1553374.1553517 .Guillaume Wenzek, Marie-Anne Lachaux, Alexis Conneau, Vishrav Chaudhary, Francisco Guzmán, Armand Joulin, and Edouard Grave. CCNet: Extracting high quality monolingual datasets from web crawl data. In 
+
+Proceedings of the Language Resources and Evaluation Conference , pages 4003–4012, 2020. https://aclanthology. org/2020.lrec-1.494/ .Alexander Wettig, Aatmik Gupta, Saumya Malik, and Danqi Chen. QuRating: Selecting high-quality data for training language models. In Proceedings of the International Conference on Machine Learning , pages 52915–52971, 2024. https://proceedings.mlr.press/v235/wettig24a.html .Dennis L. Wilson. Asymptotic properties of nearest neighbor rules using edited data. IEEE Transactions on Systems, Man, and Cybernetics , SMC-2(3):408–421, 1972. https://doi.org/10.1109/TSMC.1972.4309137 .Mengzhou Xia, Sadhika Malladi, Suchin Gururangan, Sanjeev Arora, and Danqi Chen. LESS: Selecting influential data for targeted instruction tuning. In Proceedings of the International Conference on Machine Learning , pages 54104–54132, 2024. https://proceedings.mlr.press/v235/xia24c.html .Sang Michael Xie, Shibani Santurkar, Tengyu Ma, and Percy Liang. Data selection for language models via importance resampling. In Advances in Neural Information Processing Systems , pages 34201–34227, 2023. 
+
+https://doi.org/10.52202/075280-1482 .Anyi Xu, Bangcai Lin, Bing Xue, Bingxuan Wang, Bingzheng Xu, Bochao Wu, Bowei Zhang, Chaofan Lin, Chen Dong, Chenchen Ling, et al. DeepSeek-V4: Towards highly efficient million-token context intelligence. arXiv preprint arXiv:2606.19348 , 2026. https://arxiv.org/abs/2606.19348 .
+
+13 Preprint Wen et al. 
+
+Can Xu, Qingfeng Sun, Kai Zheng, Xiubo Geng, Pu Zhao, Jiazhan Feng, Chongyang Tao, Qingwei Lin, and Daxin Jiang. WizardLM: Empowering large pre-trained language models to follow complex instructions. In Proceedings of the International Conference on Learning Representations , 2024. https://proceedings.iclr.cc/paper_files/ paper/2024/hash/82eec786fdfbbfa53450c5feb7d1ac92-Abstract-Conference.html .An Yang, Anfeng Li, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chang Gao, Chengen Huang, Chenxu Lv, et al. Qwen3 technical report. arXiv preprint arXiv:2505.09388 , 2025. https://arxiv.org/ abs/2505.09388 .Junjie Oscar Yin and Alexander M. Rush. Compute-constrained data selection. In Proceedings of the International Conference on Learning Representations , 2025. https://openreview.net/forum?id=4es2oO9tw1 .Dylan Zhang, Qirun Dai, and Hao Peng. The best instruction-tuning data are those that fit. In Advances in Neural Information Processing Systems , pages 156585–156621, 2025. https://doi.org/10.52202/085713-4717 .Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao Zhuang, Zi Lin, Zhuohan Li, Dacheng Li, Eric P. Xing, Hao Zhang, Joseph E. Gonzalez, and Ion Stoica. Judging LLM-as-a-judge with MT-Bench and Chatbot Arena. In Advances in Neural Information Processing Systems , 2023. https://proceedings. neurips.cc/paper_files/paper/2023/hash/91f18a1287b398d378ef22505bf41832-Abstract.html .
+
+14 Preprint ICLHerd: Herding-Based Data Selection for LLMs with In-Context Learning as a Proxy 
+
+# Appendix 
+
+# A Implementation Details 
+
+We use Qwen3-1.7B (Yang et al., 2025) and set the training budget to 10K, i.e., selecting 10K samples for training each task. Following Ivison et al. (2025), we fine-tune for 2 epochs with a learning rate of 2e-5, and following Xia et al. (2024), we employ LoRA with rank 128. We set vMF concentration 𝜅 by validation (Section 3). 
+
+# B Dataset Details 
+
+We evaluate our method on the following five tasks: 
+
+• GSM8K (Cobbe et al., 2021): grade-school math word problems, evaluated by exact match of the final answer. 
+
+• MLQA (Lewis et al., 2020): extractive question answering over passages in seven languages, evaluated by F1 averaged across languages. 
+
+• DROP (Dua et al., 2019): reading comprehension requiring discrete reasoning (e.g., counting and arithmetic), also evaluated by F1. 
+
+• XSum (Narayan et al., 2018): one-sentence summarization of BBC articles, evaluated by ROUGE-L. 
+
+• OASST1 (Köpf et al., 2023): open-ended instruction following, evaluated by ROUGE-L relative to the reference response. Table 9 lists the number of dev and test samples for each task. For tasks without a dedicated dev split, we use samples from the training set as the dev set. MLQA provides no training set, so we sample 500 dev and 1,000 test samples per language from its validation and test splits, respectively, to keep both sets balanced across languages. For XSum, we subsample 1,000 dev and 1,000 test samples for efficiency, as summarization requires reading long contexts. For OASST1, we split 500 dev and 500 test samples from the Tülu 2 pool and remove all OASST1 samples from the selection pool to prevent data leakage. 
+
+Table 9. Statistics of the evaluation tasks. Dev samples define the target skill for data selection, and test samples are used for the reported results. Task Skill Dev Test GSM8K Math reasoning 7,473 1,319 MLQA Multilingual QA 3,500 7,000 DROP Reading comprehension 5,541 9,536 XSum Summarization 1,000 1,000 OASST1 Instruction following 500 500 
+
+15

@@ -48,17 +48,17 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-29</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-30</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">共 18 篇</strong>
+    <strong class="dpr-home-dashboard-count">共 17 篇</strong>
   </div>
   <dl class="dpr-home-dashboard-stats">
     <div class="dpr-home-dashboard-stat"><dt>累计更新</dt><dd>1 次</dd></div>
-    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>7</dd></div>
+    <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>6</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>11</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-29 23:25:19 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-30 23:22:17 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,9 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日筛选出18篇AI智能体论文，精读7篇、速读11篇，重点聚焦长程智能体的策略优化与强化学习蒸馏中的冲突问题。最值得看的是《One Act, Many Masks》提出的效果边际策略优化（9.0分），以及《CORD》用冲突感知优化联合处理智能体强化学习与蒸馏（9.0分）。普通读者可以先读这两篇精读文章的摘要与实验部分，再按兴趣选读多智能体协作方向的三篇速读论文。</p>
+<p>今日筛完17篇，精读6篇、速读11篇，重点锁定LLM Agent蒸馏。</p>
+<p>最值得看的是两篇9分精读：一篇追问蒸馏应在哪个层级跟随学生，一篇改进on-policy蒸馏的rollout设计。</p>
+<p>普通读者可先读这两篇建立框架，再用SAPD、整体智能体训练和BIRD-RL三篇8分速读补充视角。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -78,12 +80,12 @@
       <span class="dpr-home-dashboard-kicker">今日累计</span>
       <h3 class="dpr-home-dashboard-title">精读推荐</h3>
     </div>
-    <strong class="dpr-home-dashboard-count">7 篇</strong>
+    <strong class="dpr-home-dashboard-count">6 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="One Act, Many Masks: Effect-Marginal Policy Optimization for Long-Horizon Agents">One Act, Many Masks: Effect-Marginal Policy Optimization for Long-Horizon Agents</span></li><li><span class="dpr-home-dashboard-paper-title" title="CORD: Conflict-Aware Optimization for Joint RL and Distillation in Agents">CORD: Conflict-Aware Optimization for Joint RL and Distillation in Agents</span></li><li><span class="dpr-home-dashboard-paper-title" title="IQuest-Q1: Advancing Foundation Capabilities for Agentic CLI Systems">IQuest-Q1: Advancing Foundation Capabilities for Agentic CLI Systems</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Beyond On-Policy vs. Off-Policy: At What Level Should LLM Agent Distillation Follow the Student?">Beyond On-Policy vs. Off-Policy: At What Level Should LLM Agent Distillation Follow the Student?</span></li><li><span class="dpr-home-dashboard-paper-title" title="Proposing Better Rollouts for On-Policy Distillation">Proposing Better Rollouts for On-Policy Distillation</span></li><li><span class="dpr-home-dashboard-paper-title" title="SCOPE: Selective Critical-Step On-Policy Self-Distillation for Agentic Reinforcement Learning">SCOPE: Selective Critical-Step On-Policy Self-Distillation for Agentic Reinforcement Learning</span></li></ul>
   </div>
-  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">agentic-rl <strong>7</strong></span></div>
+  <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">agentic-rl <strong>6</strong></span></div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-skim-card">
   <div class="dpr-home-dashboard-header">
@@ -94,7 +96,7 @@
     <strong class="dpr-home-dashboard-count">11 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Training LLMs for Multi-Agent Collaboration with Verifiable Information Rewards">Training LLMs for Multi-Agent Collaboration with Verifiable Information Rewards</span></li><li><span class="dpr-home-dashboard-paper-title" title="Co-Evolving Acting and Forecasting for Language Agents">Co-Evolving Acting and Forecasting for Language Agents</span></li><li><span class="dpr-home-dashboard-paper-title" title="World of SWECraft: Agent Collaboration at Scale via Simulated Software Worlds">World of SWECraft: Agent Collaboration at Scale via Simulated Software Worlds</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="SAPD: Learning from Agent Experience without Environment Interaction">SAPD: Learning from Agent Experience without Environment Interaction</span></li><li><span class="dpr-home-dashboard-paper-title" title="Training the Whole Agent, Not Just the Model">Training the Whole Agent, Not Just the Model</span></li><li><span class="dpr-home-dashboard-paper-title" title="BIRD-RL: Scaling Agentic Reinforcement Learning over Stateful Data-Centric Environments">BIRD-RL: Scaling Agentic Reinforcement Learning over Stateful Data-Centric Environments</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">agentic-rl <strong>11</strong></span></div>
 </section>

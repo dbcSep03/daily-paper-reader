@@ -1,0 +1,281 @@
+{
+  "date": "20261030",
+  "date_label": "",
+  "generated_at": "2026-10-30 23:22:17 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.31918v1",
+      "route": "202610/30/2610.31918v1-beyond-on-policy-vs-off-policy-at-what-level-should-llm-agent-distillation-follow-the-student",
+      "title": "Beyond On-Policy vs. Off-Policy: At What Level Should LLM Agent Distillation Follow the Student?",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "分层区分交互层与词元层的在策略蒸馏，并控制混合与训练日程",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.36477v2",
+      "route": "202610/30/2610.36477v2-proposing-better-rollouts-for-on-policy-distillation",
+      "title": "Proposing Better Rollouts for On-Policy Distillation",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "利用学生自生成轨迹并改进轨迹采样的同策略蒸馏",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.38391v1",
+      "route": "202610/30/2610.38391v1-scope-selective-critical-step-on-policy-self-distillation-for-agentic-reinforcement-learning",
+      "title": "SCOPE: Selective Critical-Step On-Policy Self-Distillation for Agentic Reinforcement Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向智能体强化学习的选择性关键步在线自蒸馏",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.27142v1",
+      "route": "202610/30/2610.27142v1-iclherd-herding-based-data-selection-for-llms-with-in-context-learning-as-a-proxy",
+      "title": "ICLHerd: Herding-Based Data Selection for LLMs with In-Context Learning as a Proxy",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向LLM训练数据筛选的数据选择框架",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.27847v1",
+      "route": "202610/30/2610.27847v1-sapd-learning-from-agent-experience-without-environment-interaction",
+      "title": "SAPD: Learning from Agent Experience without Environment Interaction",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "利用步级优势的离线多轮策略蒸馏",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.28069v1",
+      "route": "202610/30/2610.28069v1-training-the-whole-agent-not-just-the-model",
+      "title": "Training the Whole Agent, Not Just the Model",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "同时训练策略并自适应工具环境的编码智能体强化学习",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.29426v1",
+      "route": "202610/30/2610.29426v1-bird-rl-scaling-agentic-reinforcement-learning-over-stateful-data-centric-environments",
+      "title": "BIRD-RL: Scaling Agentic Reinforcement Learning over Stateful Data-Centric Environments",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向有状态多轮数据环境的智能体强化学习",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.29458v2",
+      "route": "202610/30/2610.29458v2-harness-scaling-for-generalizable-agentic-reinforcement-learning",
+      "title": "Harness Scaling for Generalizable Agentic Reinforcement Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "通过智能体执行框架进行强化学习，涉及工具使用与长程交互",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.30933v1",
+      "route": "202610/30/2610.30933v1-reflectpo-reflection-guided-policy-optimization-for-long-horizon-llm-agents",
+      "title": "ReflectPO: Reflection-Guided Policy Optimization for Long-Horizon LLM Agents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向带工具使用与多轮交互的长程LLM智能体的强化学习框架",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.32770v1",
+      "route": "202610/30/2610.32770v1-on-policy-self-training-data-free-self-improvement-in-large-language-models",
+      "title": "On-Policy Self-Training: Data-Free Self-Improvement in Large Language Models",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "将在线策略自蒸馏重构为自生成数据的自训练",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.33624v1",
+      "route": "202610/30/2610.33624v1-rsi-arena-towards-recursive-self-improvement-with-human-feedback",
+      "title": "RSI Arena: Towards Recursive Self-Improvement with Human Feedback",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "训练智能体自主选择数据并实施训练流程",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.34467v2",
+      "route": "202610/30/2610.34467v2-dynaflow-learning-free-form-multi-agent-orchestration",
+      "title": "DynaFlow: Learning Free-Form Multi-Agent Orchestration",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "主智能体生成工作流来协调子智能体完成协作执行",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.34500v1",
+      "route": "202610/30/2610.34500v1-calimem-search-efficient-data-agent-via-calibrated-memory",
+      "title": "CaliMem: Search-Efficient Data Agent via Calibrated Memory",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向下游模型与任务自适应搜索数据整理配方的智能体方法",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.35303v1",
+      "route": "202610/30/2610.35303v1-interq-rl-interaction-aware-correction-of-execution-mismatch-in-quantized-agentic-rl",
+      "title": "InterQ-RL: Interaction-Aware Correction of Execution Mismatch in Quantized Agentic RL",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "多轮智能体强化学习，交互感知地校正量化rollout失配",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.30780v1",
+      "route": "202610/30/2610.30780v1-abra-agent-bound-ui-for-human-agent-communication-beyond-chat-with-reusable-views",
+      "title": "ABRA: Agent-Bound UI for Human-Agent Communication beyond Chat with Reusable Views",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通过共享交互视图实现超越聊天的人机协作",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.30790v1",
+      "route": "202610/30/2610.30790v1-agentic-knowledge-model-co-evolution-via-consistency-regularization",
+      "title": "Agentic Knowledge-Model Co-Evolution via Consistency Regularization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "通过一致性正则从智能体经验中构建可靠知识与数据的框架",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    },
+    {
+      "paper_id": "2610.31355v1",
+      "route": "202610/30/2610.31355v1-muffin---a-shared-memory-buffer-for-asynchronous-ai-agents",
+      "title": "Muffin - A Shared Memory Buffer for Asynchronous AI Agents",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "用于智能体间协调与信息交换的异步协议",
+      "first_seen_at": "2026-10-30 23:22:17 UTC",
+      "updated_at": "2026-10-30 23:22:17 UTC"
+    }
+  ]
+}
