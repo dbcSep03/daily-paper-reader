@@ -1,0 +1,281 @@
+{
+  "date": "20261031",
+  "date_label": "",
+  "generated_at": "2026-10-31 22:40:20 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.33817v1",
+      "route": "202610/31/2610.33817v1-envlunch-the-environment-as-a-free-lunch-for-learning-to-interact",
+      "title": "EnvLunch: The Environment as a Free Lunch for Learning to Interact",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "利用环境生成轨迹构建智能体训练数据",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.35013v1",
+      "route": "202610/31/2610.35013v1-multiscale-policy-optimization-for-long-horizon-llm-agents",
+      "title": "Multiscale Policy Optimization for Long-Horizon LLM Agents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向长时程语言模型智能体工具使用的回合级强化学习优化",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.37195v1",
+      "route": "202610/31/2610.37195v1-action-value-calibration-via-continuation-sharing-for-long-horizon-agentic-reinforcement-learning",
+      "title": "Action-Value Calibration via Continuation Sharing for Long-Horizon Agentic Reinforcement Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "长时程智能体强化学习与多步交互信用分配",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.37648v1",
+      "route": "202610/31/2610.37648v1-scaling-laws-for-tool-use-agents-via-controllable-environment-synthesis",
+      "title": "Scaling Laws for Tool-Use Agents via Controllable Environment Synthesis",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向工具使用智能体数据构成的可控合成环境",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.38637v1",
+      "route": "202610/31/2610.38637v1-on-policy-self-distillation-with-teacher-evolution",
+      "title": "On-Policy Self-Distillation with Teacher Evolution",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "在线自蒸馏，用当前策略轨迹训练学生",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.39324v1",
+      "route": "202610/31/2610.39324v1-mrc-mmagent-reinforcement-learning-for-multi-role-collaboration-in-multimodal-tool-using-agents",
+      "title": "MRC-MMAgent: Reinforcement Learning for Multi-Role Collaboration in Multimodal Tool-Using Agents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "面向多模态工具智能体的多角色协作强化学习",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.30105v1",
+      "route": "202610/31/2610.30105v1-asymmetric-on-policy-distillation-learns-in-context-exploration",
+      "title": "Asymmetric On-Policy Distillation Learns In-Context Exploration",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "利用学生同策略上下文的非对称同策略蒸馏",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.33568v1",
+      "route": "202610/31/2610.33568v1-trajectory2gym-decision-grounded-compositional-interaction-synthesis-for-tool-use-agents",
+      "title": "Trajectory2Gym: Decision-Grounded Compositional Interaction Synthesis for Tool-Use Agents",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "为工具使用智能体合成有决策依据的可执行轨迹",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.33740v1",
+      "route": "202610/31/2610.33740v1-a-distribution-matching-perspective-on-llm-training-algorithms",
+      "title": "A Distribution-Matching Perspective on LLM Training Algorithms",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "用分布匹配统一分析并论证在线策略蒸馏优于经典知识蒸馏",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.35398v1",
+      "route": "202610/31/2610.35398v1-belief-conditioned-multi-agent-actor-critic-for-decentralized-llm-collaboration",
+      "title": "Belief-Conditioned Multi-Agent Actor Critic for Decentralized LLM Collaboration",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "去中心化LLM协作与多智能体强化学习",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.33539v1",
+      "route": "202610/31/2610.33539v1-coevolve-counterfactual-guided-co-evolution-of-memory-and-collaboration-in-multi-agent-systems",
+      "title": "CoEvolve: Counterfactual-Guided Co-Evolution of Memory and Collaboration in Multi-Agent Systems",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "多智能体系统中记忆与协作的协同演化",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.35801v1",
+      "route": "202610/31/2610.35801v1-focus-active-critic-learning-for-long-horizon-language-model-agents",
+      "title": "FOCUS: Active Critic Learning for Long-Horizon Language Model Agents",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "通过评论家信用分配训练长程语言模型智能体的强化学习方法",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.35823v1",
+      "route": "202610/31/2610.35823v1-back-to-basics-a-skill-centric-approach-to-generalist-web-agents",
+      "title": "Back to Basics: A Skill-Centric Approach to Generalist Web Agents",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "为网页智能体自动生成经校验的技能中心训练数据",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.37571v1",
+      "route": "202610/31/2610.37571v1-teamgym-a-gym-for-team-decision-making-by-ai-agents-with-distributed-information",
+      "title": "TeamGym: A Gym for Team Decision-Making by AI Agents with Distributed Information",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "面向分布式信息团队决策的语言模型智能体训练环境",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.33451v1",
+      "route": "202610/31/2610.33451v1-a-comprehensive-framework-for-all-stages-of-large-model-training-from-data-and-tokenization-through-pretraining-to-post-training-alignment",
+      "title": "A Comprehensive Framework for All Stages of Large-Model Training: From Data and Tokenization, through Pretraining, to Post-Training Alignment",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "统一覆盖数据、预训练与后训练阶段的大模型训练框架",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.34043v1",
+      "route": "202610/31/2610.34043v1-holding-a-steady-course-knowledge-evolution-from-expertise-and-lessons-for-continual-agent-learning",
+      "title": "Holding a Steady Course: Knowledge Evolution from Expertise and Lessons for Continual Agent Learning",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "将智能体经验整理为可复用技能与纠正教训",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    },
+    {
+      "paper_id": "2610.34450v1",
+      "route": "202610/31/2610.34450v1-evolvemas-a-unified-self-evolution-framework-for-decentralized-multi-agent-systems",
+      "title": "EvolveMAS: A Unified Self-Evolution Framework for Decentralized Multi-Agent Systems",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "去中心化多智能体自演化与跨智能体协作",
+      "first_seen_at": "2026-10-31 22:40:20 UTC",
+      "updated_at": "2026-10-31 22:40:20 UTC"
+    }
+  ]
+}

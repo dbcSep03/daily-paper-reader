@@ -48,7 +48,7 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-30</span>
+      <span class="dpr-home-dashboard-kicker">2026-10-31</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
     <strong class="dpr-home-dashboard-count">共 17 篇</strong>
@@ -58,7 +58,7 @@
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>6</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>11</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-30 23:22:17 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-10-31 22:40:20 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,9 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日筛完17篇，精读6篇、速读11篇，重点锁定LLM Agent蒸馏。</p>
-<p>最值得看的是两篇9分精读：一篇追问蒸馏应在哪个层级跟随学生，一篇改进on-policy蒸馏的rollout设计。</p>
-<p>普通读者可先读这两篇建立框架，再用SAPD、整体智能体训练和BIRD-RL三篇8分速读补充视角。</p>
+<p>今日筛读17篇论文（精读6篇、速读11篇），重点锁定智能体学习与长程决策优化。最值得看的是9.0分的《EnvLunch》提出“环境即免费午餐”的交互学习思路，以及《Multiscale Policy Optimization》面向长程LLM智能体的多尺度策略优化。普通读者可先读这两篇精读，再按兴趣用速读清单补充探索与训练方法。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -83,7 +81,7 @@
     <strong class="dpr-home-dashboard-count">6 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Beyond On-Policy vs. Off-Policy: At What Level Should LLM Agent Distillation Follow the Student?">Beyond On-Policy vs. Off-Policy: At What Level Should LLM Agent Distillation Follow the Student?</span></li><li><span class="dpr-home-dashboard-paper-title" title="Proposing Better Rollouts for On-Policy Distillation">Proposing Better Rollouts for On-Policy Distillation</span></li><li><span class="dpr-home-dashboard-paper-title" title="SCOPE: Selective Critical-Step On-Policy Self-Distillation for Agentic Reinforcement Learning">SCOPE: Selective Critical-Step On-Policy Self-Distillation for Agentic Reinforcement Learning</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="EnvLunch: The Environment as a Free Lunch for Learning to Interact">EnvLunch: The Environment as a Free Lunch for Learning to Interact</span></li><li><span class="dpr-home-dashboard-paper-title" title="Multiscale Policy Optimization for Long-Horizon LLM Agents">Multiscale Policy Optimization for Long-Horizon LLM Agents</span></li><li><span class="dpr-home-dashboard-paper-title" title="Action-Value Calibration via Continuation Sharing for Long-Horizon Agentic Reinforcement Learning">Action-Value Calibration via Continuation Sharing for Long-Horizon Agentic Reinforcement Learning</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">agentic-rl <strong>6</strong></span></div>
 </section>
@@ -96,7 +94,7 @@
     <strong class="dpr-home-dashboard-count">11 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="SAPD: Learning from Agent Experience without Environment Interaction">SAPD: Learning from Agent Experience without Environment Interaction</span></li><li><span class="dpr-home-dashboard-paper-title" title="Training the Whole Agent, Not Just the Model">Training the Whole Agent, Not Just the Model</span></li><li><span class="dpr-home-dashboard-paper-title" title="BIRD-RL: Scaling Agentic Reinforcement Learning over Stateful Data-Centric Environments">BIRD-RL: Scaling Agentic Reinforcement Learning over Stateful Data-Centric Environments</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Asymmetric On-Policy Distillation Learns In-Context Exploration">Asymmetric On-Policy Distillation Learns In-Context Exploration</span></li><li><span class="dpr-home-dashboard-paper-title" title="Trajectory2Gym: Decision-Grounded Compositional Interaction Synthesis for Tool-Use Agents">Trajectory2Gym: Decision-Grounded Compositional Interaction Synthesis for Tool-Use Agents</span></li><li><span class="dpr-home-dashboard-paper-title" title="A Distribution-Matching Perspective on LLM Training Algorithms">A Distribution-Matching Perspective on LLM Training Algorithms</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">agentic-rl <strong>11</strong></span></div>
 </section>

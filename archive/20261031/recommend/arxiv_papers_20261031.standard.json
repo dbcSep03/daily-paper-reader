@@ -1,0 +1,726 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-10-31T22:36:50.977898+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 19,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 26,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2610.33817v1",
+      "source": "arxiv",
+      "title": "EnvLunch: The Environment as a Free Lunch for Learning to Interact",
+      "abstract": "For agentic data analysis, language-model agents often require a large number of annotated tasks to learn how to interact effectively with executable environments (i.e., databases). While high-quality annotated tasks require heavy manual effort, an executable environment already provides rich interaction structure and verifiable outcomes. In this sense, the environment itself offers a free lunch, an additional set of verifiable tasks that require no human annotation. We propose EnvLunch, a warm-up stage that turns this environmental signal into agent training without human-written or model-generated task descriptions, before downstream agentic reinforcement learning. EnvLunch samples valid action trajectories, executes them to obtain final observations, and trains an agent to recover a functionally equivalent trajectory given only its final observation. This label-free warm-up enables the model to outperform the baseline by over 9 points on average across all downstream training budgets, and with few labels, the baseline needs 8 to 32 times as many annotated examples to match the accuracy that the EnvLunch model reaches at its smallest training budget. Letting the environment alone define the task yields a larger gain than having the model write its own tasks over the same environments, and this warm-up also improves fine-tuning on benchmarks beyond data analysis. EnvLunch therefore saves annotated tasks and provides a better starting point for fine-tuning agentic models when such tasks are limited.",
+      "authors": [
+        "Wei Liu",
+        "Min Gao",
+        "Yali Du",
+        "Yulan He"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.DB"
+      ],
+      "published": "2026-10-24T17:29:24+00:00",
+      "link": "https://arxiv.org/pdf/2610.33817v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "environment-generated trajectories as agentic training data",
+      "llm_evidence_cn": "利用环境生成轨迹构建智能体训练数据",
+      "llm_evidence": "利用环境生成轨迹构建智能体训练数据",
+      "canonical_evidence": "利用环境生成轨迹构建智能体训练数据",
+      "llm_tldr_en": "EnvLunch turns executable environments into a free source of verifiable action trajectories for warm-up agent training before downstream agentic reinforcement learning.",
+      "llm_tldr_cn": "针对智能体数据分析需要大量人工标注任务来学习与数据库等可执行环境交互的问题，EnvLunch提出以环境为免费午餐的预热阶段。方法直接从可执行环境采样有效动作轨迹并执行获得最终观测，无需人工或模型生成任务描述，将可验证交互信号转化为训练数据。该阶段为下游智能体强化学习提供数据基础，降低数据构建成本并提升交互学习效率。",
+      "llm_tldr": "针对智能体数据分析需要大量人工标注任务来学习与数据库等可执行环境交互的问题，EnvLunch提出以环境为免费午餐的预热阶段。方法直接从可执行环境采样有效动作轨迹并执行获得最终观测，无需人工或模型生成任务描述，将可验证交互信号转化为训练数据。该阶段为下游智能体强化学习提供数据基础，降低数据构建成本并提升交互学习效率。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "agentic data construction and curation for training AI agents",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.35013v1",
+      "source": "arxiv",
+      "title": "Multiscale Policy Optimization for Long-Horizon LLM Agents",
+      "abstract": "Long-horizon LLM agents interact with their environments through complete assistant turns while generating each action token by token. We observe that critic values vary primarily across turns, motivating optimization anchored at turns with finer credit allocation among tokens. We propose Multiscale Policy Optimization (MPO), combining Multiscale Advantage Estimation (MAE) and turn-level importance sampling to align credit assignment and policy updates at the turn scale. Extensive experiments across search, tool-use, and automation tasks with 4B and 30B-A3B models demonstrate consistent gains over strong RL baselines.",
+      "authors": [
+        "Tao Ren",
+        "Hui Yang",
+        "Jia Deng",
+        "Tingyang Chen",
+        "Qiyao Wang",
+        "Shuo Tang",
+        "Ziyang Zeng",
+        "Yuhua Jiang",
+        "Guanghao Li",
+        "Huatong Song",
+        "Yining Li",
+        "Yifan Luo",
+        "Kunbao Ding",
+        "Feng Chang",
+        "Chuan Hao",
+        "Ran Tao",
+        "Bryan Dai",
+        "Jiafeng Liang",
+        "Jinyang Jiang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-26T08:22:11+00:00",
+      "link": "https://arxiv.org/pdf/2610.35013v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "turn-level RL optimization for long-horizon LLM agents with tool use",
+      "llm_evidence_cn": "面向长时程语言模型智能体工具使用的回合级强化学习优化",
+      "llm_evidence": "面向长时程语言模型智能体工具使用的回合级强化学习优化",
+      "canonical_evidence": "面向长时程语言模型智能体工具使用的回合级强化学习优化",
+      "llm_tldr_en": "MPO improves RL for long-horizon LLM agents by anchoring credit assignment at assistant turns, combining multiscale advantage estimation and turn-level importance sampling; it yields gains on search, tool-use, and automation tasks.",
+      "llm_tldr_cn": "长时程语言模型智能体按完整回合与环境交互，但现有强化学习多在词元级别分配信用，难以匹配回合级决策结构。作者提出多尺度策略优化MPO，结合多尺度优势估计与回合级重要性采样，把信用分配和策略更新对齐到回合尺度。在搜索、工具使用和自动化任务上，4B与30B-A3B模型均稳定优于强强化学习基线，为多轮智能体强化学习提供了更合适的优化粒度。",
+      "llm_tldr": "长时程语言模型智能体按完整回合与环境交互，但现有强化学习多在词元级别分配信用，难以匹配回合级决策结构。作者提出多尺度策略优化MPO，结合多尺度优势估计与回合级重要性采样，把信用分配和策略更新对齐到回合尺度。在搜索、工具使用和自动化任务上，4B与30B-A3B模型均稳定优于强强化学习基线，为多轮智能体强化学习提供了更合适的优化粒度。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.37195v1",
+      "source": "arxiv",
+      "title": "Action-Value Calibration via Continuation Sharing for Long-Horizon Agentic Reinforcement Learning",
+      "abstract": "Reinforcement learning for long-horizon agents relies on feedback from sequences of interactions, making credit assignment to individual actions difficult. Existing methods such as GiGPO compare actions at shared states to compute relative advantages, but estimate each action's value from a single sampled continuation. The resulting local credit remains sensitive to decisions made later in the trajectory. To address this problem, we propose ConCal (Continuation Calibration), a recursive continuation-value estimator that incorporates continuation evidence already present in a rollout batch. ConCal matches visits from the same task by their incoming state-action-state transitions, combines shared continuation evidence with each visit's own transition estimate, and propagates calibrated values backward to refine earlier action-value estimates. This reduces dependence on individual sampled continuations and mitigates local credit distortions without additional rollouts. Held-out return diagnostics show lower error in within-group value differences and higher agreement with reference action orderings than estimates based on individual continuations. With Qwen2.5-1.5B-Instruct, ConCal improves success rates over GiGPO by 3.39 and 5.86 percentage points on ALFWorld and WebShop, respectively. Our code is available at https://github.com/Yingjian-Chen/ConCal.",
+      "authors": [
+        "Yingjian Chen",
+        "Lang Zhou",
+        "Zixin Zhao",
+        "Pingfan Li",
+        "Weishi Zheng",
+        "Zhilin Zhao"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-27T13:16:08+00:00",
+      "link": "https://arxiv.org/pdf/2610.37195v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "long-horizon agentic RL with multi-step interaction credit assignment",
+      "llm_evidence_cn": "长时程智能体强化学习与多步交互信用分配",
+      "llm_evidence": "长时程智能体强化学习与多步交互信用分配",
+      "canonical_evidence": "长时程智能体强化学习与多步交互信用分配",
+      "llm_tldr_en": "ConCal calibrates action values in long-horizon agentic RL by sharing continuation evidence across rollouts, improving credit assignment for multi-step LLM agents.",
+      "llm_tldr_cn": "长时程智能体强化学习依赖多步交互反馈，现有方法仅用单条采样延续估计动作价值，导致信用分配不稳定。作者提出ConCal，通过匹配同一任务中的状态-动作-状态转移并递归整合共享延续证据来校准动作价值。实验表明该方法能更准确地进行长时程信用分配并提升智能体强化学习性能。该工作为多轮智能体RL提供了更可靠的价值估计手段。",
+      "llm_tldr": "长时程智能体强化学习依赖多步交互反馈，现有方法仅用单条采样延续估计动作价值，导致信用分配不稳定。作者提出ConCal，通过匹配同一任务中的状态-动作-状态转移并递归整合共享延续证据来校准动作价值。实验表明该方法能更准确地进行长时程信用分配并提升智能体强化学习性能。该工作为多轮智能体RL提供了更可靠的价值估计手段。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.37648v1",
+      "source": "arxiv",
+      "title": "Scaling Laws for Tool-Use Agents via Controllable Environment Synthesis",
+      "abstract": "We explore how to build performant large language model (LLM) tool-use agents that complete complex, multi-step tasks. Specifically, we study how data composition in synthetically generated tool-use environments affects the training of such agents. To do so, we propose the SynthAPI pipeline, which explicitly controls the diversity of generated environments along the axes of tools, tasks, and the databases on which the tools operate. By systematically varying SynthAPI's generation controls in 458,752 tasks across 849 trained models of four different sizes, we derive a scaling law that predicts downstream tool-use agent generalization based on the scale and composition of the synthesized environments. These predictable relationships reveal several lessons for scaling tool-use agent data. As data budgets grow, scaling tool and database diversity becomes more effective than increasing the number of tasks, and increasing data complexity yields larger gains. Scaling according to these findings yields agents that outperform models trained on data from prior work in large-scale tool-use agent and synthetic environment generation across four evaluation benchmarks.",
+      "authors": [
+        "Andrew Szot",
+        "Samira Abnar",
+        "Omar Attia",
+        "Abbas Kazerouni",
+        "Michael Kirchhof",
+        "Cheng-Yu Hsieh",
+        "Raviteja Vemulapalli",
+        "Alexander Toshev"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-27T17:56:46+00:00",
+      "link": "https://arxiv.org/pdf/2610.37648v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "controllable synthetic environments for tool-use agent data composition",
+      "llm_evidence_cn": "面向工具使用智能体数据构成的可控合成环境",
+      "llm_evidence": "面向工具使用智能体数据构成的可控合成环境",
+      "canonical_evidence": "面向工具使用智能体数据构成的可控合成环境",
+      "llm_tldr_en": "SynthAPI controls synthetic tool-use environment diversity along tools, tasks, and databases; training 849 models on 458,752 tasks yields a scaling law predicting downstream tool-use agent generalization from environment scale and composition.",
+      "llm_tldr_cn": "构建高性能工具使用智能体需要大量多步任务数据，但合成环境中的数据构成如何影响泛化仍不清楚。作者提出SynthAPI流水线，沿工具、任务和数据库三个轴显式控制合成环境的多样性，并在458752个任务上训练849个不同规模模型。实验推导出可根据环境规模与构成预测下游工具使用智能体泛化的缩放定律，为智能体数据构建与配比提供了可量化指导。",
+      "llm_tldr": "构建高性能工具使用智能体需要大量多步任务数据，但合成环境中的数据构成如何影响泛化仍不清楚。作者提出SynthAPI流水线，沿工具、任务和数据库三个轴显式控制合成环境的多样性，并在458752个任务上训练849个不同规模模型。实验推导出可根据环境规模与构成预测下游工具使用智能体泛化的缩放定律，为智能体数据构建与配比提供了可量化指导。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "agentic data construction and curation for training AI agents",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.38637v1",
+      "source": "arxiv",
+      "title": "On-Policy Self-Distillation with Teacher Evolution",
+      "abstract": "On-Policy Self-Distillation (OPSD), which aligns a student model's token-level distribution with that of its self-teacher prompted by privileged context, has emerged as a promising direction to mitigate reward sparsity in sequence-level post-training paradigms. However, OPSD often fails to achieve continuous performance gains during training. In this paper, we find that the model's limited self-teaching capability underlies this phenomenon by generating unreliable guidance on certain samples. To address this problem, we propose Teacher-Evolution Self-Distillation (TESD), which enables the self-teacher to generate rollouts and receive environmental feedback based on task correctness and context independence. First, using these rewards as training objectives, we perform teacher-oriented optimization to continuously enhance the model's self-teaching capability during distillation. Second, by estimating teacher guidance reliability from these rewards, we apply adaptive student-oriented optimization to down-weight samples with unreliable guidance. Extensive experiments across multiple datasets and model scales show that TESD consistently outperforms representative token-level and sequence-level methods, highlighting the necessity of improving supervision quality in OPSD.",
+      "authors": [
+        "Shufan Shen",
+        "Zhongni Hou",
+        "Chao Bi",
+        "Yufei Zhang",
+        "Guojun Yin",
+        "Shuhui Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-28T10:51:52+00:00",
+      "link": "https://arxiv.org/pdf/2610.38637v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "on-policy self-distillation training student with self-teacher trajectories",
+      "llm_evidence_cn": "在线自蒸馏，用当前策略轨迹训练学生",
+      "llm_evidence": "在线自蒸馏，用当前策略轨迹训练学生",
+      "canonical_evidence": "在线自蒸馏，用当前策略轨迹训练学生",
+      "llm_tldr_en": "Proposes Teacher-Evolution Self-Distillation to fix unstable on-policy self-distillation by letting the self-teacher improve from environmental feedback, yielding continuous gains.",
+      "llm_tldr_cn": "在线自蒸馏虽能缓解序列级后训练中的奖励稀疏问题，但训练中常无法持续提升，根源在于模型自教学能力有限、对部分样本给出不可靠指导。为此提出教师演化自蒸馏TESD，让自教师基于任务正确性与上下文独立性生成轨迹并接收环境反馈，以这些奖励作为训练目标持续改进自教师。实验表明该方法能带来更稳定的持续性能提升，为在线蒸馏训练提供了新的改进思路。",
+      "llm_tldr": "在线自蒸馏虽能缓解序列级后训练中的奖励稀疏问题，但训练中常无法持续提升，根源在于模型自教学能力有限、对部分样本给出不可靠指导。为此提出教师演化自蒸馏TESD，让自教师基于任务正确性与上下文独立性生成轨迹并接收环境反馈，以这些奖励作为训练目标持续改进自教师。实验表明该方法能带来更稳定的持续性能提升，为在线蒸馏训练提供了新的改进思路。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "on-policy distillation methods that train student agents using trajectories generated by their current policy",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.39324v1",
+      "source": "arxiv",
+      "title": "MRC-MMAgent: Reinforcement Learning for Multi-Role Collaboration in Multimodal Tool-Using Agents",
+      "abstract": "Multimodal tool-using agents augment vision-language models with access to external information and capabilities, enabling them to solve knowledge-intensive and visually complex tasks that cannot be addressed using visual context alone. However, existing reinforcement learning pipelines largely train single-role agents to search and answer using terminal rewards, overlooking how humans inspect retrieved evidence, reformulate queries, and revise conclusions during search. Consequently, they fail to optimize this self-corrective process over complete interaction trajectories. We propose MRC-MMAgent, a multi-role collaborative reinforcement learning framework that incorporates trajectory assessment and continuation directly into the executable agent loop. First, the framework establishes a multi-role collaborative loop that integrates solving, inspection, and continuation, enabling the agent to acquire evidence through tools, evaluate the preceding trajectory, and resume problem solving when the current answer is insufficiently supported. Second, we introduce a role-coupled learning objective that combines task success, interaction validity, and successful correction with full-trajectory policy optimization across the decisions generated by all roles. Extensive experiments show that, using only the original baseline training set without constructing additional datasets, our method consistently outperforms the corresponding base models and achieves leading or highly competitive performance across benchmarks.",
+      "authors": [
+        "Shengqin Wang",
+        "Jie Jin",
+        "Xiaofan Li",
+        "Wentao Yan",
+        "Yu Cheng",
+        "Qingsong HuYihang Chen",
+        "Weilin Luo",
+        "Jingyu Gong",
+        "Xin Tan",
+        "Yuan Xie",
+        "Zhizhong Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-10-29T04:06:46+00:00",
+      "link": "https://arxiv.org/pdf/2610.39324v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multi-role collaborative RL for multimodal tool-using agents over trajectories",
+      "llm_evidence_cn": "面向多模态工具智能体的多角色协作强化学习",
+      "llm_evidence": "面向多模态工具智能体的多角色协作强化学习",
+      "canonical_evidence": "面向多模态工具智能体的多角色协作强化学习",
+      "llm_tldr_en": "Introduces MRC-MMAgent, a multi-role collaborative RL framework that trains multimodal tool-using agents over full interaction trajectories with trajectory assessment and continuation.",
+      "llm_tldr_cn": "现有多模态工具智能体的强化学习多为单角色、仅用终局奖励训练，忽略了人类检索证据、改写查询、修正结论的自纠正过程。论文提出MRC-MMAgent多角色协作强化学习框架，将轨迹评估与延续直接纳入训练，从而在完整交互轨迹上优化自纠正行为。实验显示该框架能更有效地训练多模态工具使用智能体，提升复杂知识密集任务的求解表现。",
+      "llm_tldr": "现有多模态工具智能体的强化学习多为单角色、仅用终局奖励训练，忽略了人类检索证据、改写查询、修正结论的自纠正过程。论文提出MRC-MMAgent多角色协作强化学习框架，将轨迹评估与延续直接纳入训练，从而在完整交互轨迹上优化自纠正行为。实验显示该框架能更有效地训练多模态工具使用智能体，提升复杂知识密集任务的求解表现。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2610.30105v1",
+      "source": "arxiv",
+      "title": "Asymmetric On-Policy Distillation Learns In-Context Exploration",
+      "abstract": "Sequential decision-making under partial observability is difficult because agents must explore to infer hidden, task-relevant information before acting effectively. Learning such information-gathering behaviors tabula rasa via online reinforcement learning is sample-inefficient, whereas offline imitation averages expert actions across hidden states and fails to learn exploration. In this work, we propose ASTEROID, a simple and effective student--teacher supervised learning framework that can learn test-time exploration. Although a privileged expert never needs to explore, we demonstrate that a history-conditioned student can learn to do so when trained with on-policy contexts: the student first collects on-policy context under partial observability, and the privileged expert provides action labels conditioned on that context. By distilling expert actions directly conditioned on the student's on-policy history, the student learns to systematically resolve partial observability, i.e., search while uncertain and exploit once the hidden state is revealed. This enables efficient test-time exploration (similar to Bayesian posterior sampling) without incurring the impractical training-data costs of reinforcement learning. Across a diverse range of eleven different environments, including discrete exploration benchmarks, robotic manipulation, navigation, and Procgen environments, ASTEROID achieves ~2x higher returns under fixed exploration budgets, uses ~100x fewer interactions than RL baselines, and outperforms frontier models at exploration. Finally, our method transfers policies trained in simulation to vision-denied real-world robot manipulation, exhibiting efficient exploration and increasing success by +40% over standard distillation. Overall, it provides a simple yet surprisingly effective framework to learn efficient test-time exploration.",
+      "authors": [
+        "Sriyash Poddar",
+        "Yanda Bao",
+        "Jacob Krantz",
+        "Matthew Chang",
+        "Xavier Puig",
+        "Roozbeh Mottaghi",
+        "Natasha Jaques",
+        "Abhishek Gupta"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-10-21T17:50:31+00:00",
+      "link": "https://arxiv.org/pdf/2610.30105v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "asymmetric on-policy distillation from on-policy student contexts",
+      "llm_evidence_cn": "利用学生同策略上下文的非对称同策略蒸馏",
+      "llm_evidence": "利用学生同策略上下文的非对称同策略蒸馏",
+      "canonical_evidence": "利用学生同策略上下文的非对称同策略蒸馏",
+      "llm_tldr_en": "Learning exploration under partial observability is sample-inefficient with online RL and fails with offline imitation. ASTEROID uses asymmetric on-policy distillation: a history-conditioned student collects on-policy context then learns exploration from a privileged expert.",
+      "llm_tldr_cn": "部分可观测下的序贯决策需要智能体主动探索以推断隐藏信息，在线强化学习样本效率低，而离线模仿会对隐藏状态平均专家动作、学不会探索。作者提出ASTEROID，一种学生-教师监督学习框架：历史条件化的学生先在部分可观测环境中采集同策略上下文，再向无需探索的特权专家学习。实验表明学生能够学会测试时的信息搜集与探索行为，揭示了同策略蒸馏可高效习得探索，为序贯决策训练提供了新范式。",
+      "llm_tldr": "部分可观测下的序贯决策需要智能体主动探索以推断隐藏信息，在线强化学习样本效率低，而离线模仿会对隐藏状态平均专家动作、学不会探索。作者提出ASTEROID，一种学生-教师监督学习框架：历史条件化的学生先在部分可观测环境中采集同策略上下文，再向无需探索的特权专家学习。实验表明学生能够学会测试时的信息搜集与探索行为，揭示了同策略蒸馏可高效习得探索，为序贯决策训练提供了新范式。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "on-policy distillation methods that train student agents using trajectories generated by their current policy",
+      "matched_requirement_id": "req-6",
+      "selection_source": "carryover_cache",
+      "paper_id": "2610.30105v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.33539v1",
+      "source": "arxiv",
+      "title": "CoEvolve: Counterfactual-Guided Co-Evolution of Memory and Collaboration in Multi-Agent Systems",
+      "abstract": "Large language model (LLM)-based multi-agent systems have demonstrated remarkable capabilities across diverse tasks. Yet their memory and collaboration architectures often remain static, constraining continued adaptation and improvement over time. Recent work addresses this limitation by evolving memory or collaboration based on interaction experience. However, updates to these interdependent components are not necessarily aligned: an evolved workflow may require experience that memory does not provide, while evolved memory may encode guidance that the workflow cannot use. To address this problem, we propose CoEvolve, a skill-centered framework for aligned memory--collaboration evolution. CoEvolve represents reusable local collaboration patterns as skills that link evolving collaboration decisions to their supporting memories. It further compares original and counterfactual trajectories to identify local evolution signals, which coordinate updates to the skill library, skill memory, and executor memories across rounds. Experiments on the ALFWorld and WebShop benchmarks confirm that CoEvolve achieves the best overall performance among the evaluated baselines, while ablation studies further validate the effectiveness of aligned co-evolution and counterfactual-guided evolution.",
+      "authors": [
+        "Xufei Shi",
+        "Derong Xu",
+        "Wei Chen",
+        "Yanyu Yao",
+        "Zhi Zheng",
+        "Tong Xu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-24T08:35:39+00:00",
+      "link": "https://arxiv.org/pdf/2610.33539v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "aligned memory-collaboration evolution in multi-agent systems",
+      "llm_evidence_cn": "多智能体系统中记忆与协作的协同演化",
+      "llm_evidence": "多智能体系统中记忆与协作的协同演化",
+      "canonical_evidence": "多智能体系统中记忆与协作的协同演化",
+      "llm_tldr_en": "Proposes CoEvolve, a skill-centered framework that co-evolves memory and collaboration in LLM multi-agent systems so interdependent components stay aligned during adaptation.",
+      "llm_tldr_cn": "现有LLM多智能体系统的记忆与协作架构多为静态，且两者的演化更新往往不一致，导致工作流与经验彼此无法匹配。论文提出CoEvolve，一种以技能为中心的框架，实现记忆与协作的对齐协同演化，将可复用的局部协作经验与记忆表示协调更新。该方法使多智能体系统能随时间持续适应与改进，为协作智能体的长期演化提供了系统化方案。",
+      "llm_tldr": "现有LLM多智能体系统的记忆与协作架构多为静态，且两者的演化更新往往不一致，导致工作流与经验彼此无法匹配。论文提出CoEvolve，一种以技能为中心的框架，实现记忆与协作的对齐协同演化，将可复用的局部协作经验与记忆表示协调更新。该方法使多智能体系统能随时间持续适应与改进，为协作智能体的长期演化提供了系统化方案。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.33451v1",
+      "source": "arxiv",
+      "title": "A Comprehensive Framework for All Stages of Large-Model Training: From Data and Tokenization, through Pretraining, to Post-Training Alignment",
+      "abstract": "The capabilities of large language models (LLMs) and multimodal LLMs (MLLMs) arise from the synergy of the full training pipeline, including data and tokenization, pretraining, and post-training (supervised fine-tuning, preference alignment, reinforcement learning, and continual optimization), rather than any individual stage. Existing surveys mostly adopt a single-stage or single-technique perspective, treating related research as isolated systems without unified stage division or a horizontally comparable basis.   This paper proposes a unified stage division and a six-dimensional analytical framework covering data, objective function, optimization strategy, system constraints, evaluation, and risk and governance. We systematically review 395 core references from 2017 to 2026, and present a conceptual map of cross-stage effects: forward constraints of pretraining on post-training, and reverse empowerment of post-training on data and pretraining.   We derive three core findings. First, the comparability of scaling laws depends on data quality and mixture, a long-neglected variable. Second, preference alignment methods (RLHF, DPO) and reasoning reinforcement learning with verifiable rewards redefine post-training boundaries, while the Pass@1 versus Pass@K debate remains unresolved. Third, multimodal training poses structural challenges to the pure-text paradigm in tokenizer design, training objectives, and evaluation.   The paper provides a cross-stage effects diagram, a method-family map, a practical decision tree, and at least 10 verifiable open problems, with an extensible skeleton for focused sub-surveys per stage. As of the retrieval date, peer-reviewed evidence (A+B) accounts for approximately 79% of the 395 references.",
+      "authors": [
+        "Xiangjing An",
+        "Zhibin Jiao",
+        "Aiting Chen"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-24T05:09:05+00:00",
+      "link": "https://arxiv.org/pdf/2610.33451v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "unified framework covering data, pretraining, and post-training stages",
+      "llm_evidence_cn": "统一覆盖数据、预训练与后训练阶段的大模型训练框架",
+      "llm_evidence": "统一覆盖数据、预训练与后训练阶段的大模型训练框架",
+      "canonical_evidence": "统一覆盖数据、预训练与后训练阶段的大模型训练框架",
+      "llm_tldr_en": "This paper proposes a unified stage division and six-dimensional framework for the full LLM training pipeline, covering data, tokenization, pretraining, and post-training alignment to enable horizontally comparable analysis across stages.",
+      "llm_tldr_cn": "现有大模型综述常按单一阶段或单一技术展开，难以横向比较数据、预训练与后训练之间的协同关系。作者提出统一阶段划分和六维分析框架，覆盖数据与分词、预训练、监督微调、偏好对齐和强化学习等环节。该框架强调全流程协同对模型能力的贡献，为系统梳理大模型训练管线提供了可比较的组织方式，但对智能体数据与中期训练着墨有限。",
+      "llm_tldr": "现有大模型综述常按单一阶段或单一技术展开，难以横向比较数据、预训练与后训练之间的协同关系。作者提出统一阶段划分和六维分析框架，覆盖数据与分词、预训练、监督微调、偏好对齐和强化学习等环节。该框架强调全流程协同对模型能力的贡献，为系统梳理大模型训练管线提供了可比较的组织方式，但对智能体数据与中期训练着墨有限。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "pretraining data selection and mixture for language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.33568v1",
+      "source": "arxiv",
+      "title": "Trajectory2Gym: Decision-Grounded Compositional Interaction Synthesis for Tool-Use Agents",
+      "abstract": "Successful tool-use trajectories are not necessarily useful supervision. Even successful interactions may underrepresent multi-step dependencies or contain actions that are unjustified by the information visible to the agent at decision time. We identify two coupled requirements for effective trajectory supervision: compositional coverage, so that important observation-action dependencies are represented, and decision grounding, so that each supervised action is supported by the learner-visible interaction history. We introduce Trajectory2Gym, which constructs executable interactions around under-supported compositional structures and derives supervision only from grounded decisions in their realized executions. Structural-support selection allocates the resulting experience, while parent-normalized supervised fine-tuning preserves the semantic interaction as the unit of training weight. This reframes trajectory generation as the deliberate construction of learnable interaction experience, rather than the collection of successful trajectories. Across five Qwen3 scales, Trajectory2Gym improves Tau1, Tau2, and BFCL at every tested scale, increasing the equal-weight three-benchmark mean by 16.9-29.8 percentage points. The gains are strongest in stateful and multi-turn interaction, where later decisions depend on earlier observations and feedback. Our results suggest that scaling tool-use agents depends not only on collecting more successful trajectories, but on constructing interactions whose dependencies are represented and whose decisions are learnable from the agent's visible history.",
+      "authors": [
+        "Yihao Hu",
+        "Zhihao Wen",
+        "Yitong Lin",
+        "Siyuan Lu",
+        "Pan Wang",
+        "Wei Wu",
+        "Jiang-Ming Yang",
+        "Tao Lin"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-10-24T09:38:02+00:00",
+      "link": "https://arxiv.org/pdf/2610.33568v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "synthesizes grounded executable trajectories for tool-use agent training",
+      "llm_evidence_cn": "为工具使用智能体合成有决策依据的可执行轨迹",
+      "llm_evidence": "为工具使用智能体合成有决策依据的可执行轨迹",
+      "canonical_evidence": "为工具使用智能体合成有决策依据的可执行轨迹",
+      "llm_tldr_en": "Introduces Trajectory2Gym, which constructs executable tool-use interactions around under-supported compositional structures and derives supervision only from grounded decisions, improving trajectory data for training tool-use agents.",
+      "llm_tldr_cn": "针对成功的工具使用轨迹未必是有效监督、可能缺少组合覆盖和决策依据的问题，本文提出Trajectory2Gym框架。该方法围绕支持不足的组合结构构造可执行交互，并只从实际执行中有依据的决策提取监督信号。工作强调轨迹数据的组合覆盖与决策锚定，为工具使用智能体的训练数据构建与筛选提供可操作方法，有助于提升智能体数据管线质量。",
+      "llm_tldr": "针对成功的工具使用轨迹未必是有效监督、可能缺少组合覆盖和决策依据的问题，本文提出Trajectory2Gym框架。该方法围绕支持不足的组合结构构造可执行交互，并只从实际执行中有依据的决策提取监督信号。工作强调轨迹数据的组合覆盖与决策锚定，为工具使用智能体的训练数据构建与筛选提供可操作方法，有助于提升智能体数据管线质量。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "agentic data construction and curation for training AI agents",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.35801v1",
+      "source": "arxiv",
+      "title": "FOCUS: Active Critic Learning for Long-Horizon Language Model Agents",
+      "abstract": "Sparse outcome rewards make it difficult for long-horizon language-model agents to assign credit to earlier actions. Learned critics provide value estimates for intermediate states, but these estimates can be inaccurate, while estimating intermediate values with repetitive continuation samples from points within a trajectory incurs substantial costs. To mitigate these issues, we introduce FOCUS, an RL method that uses selective branching to help the critic network learn its value estimator. The rollout controller facilitates active learning for the critic by sampling continuations from states that are expected to most reduce the critic's estimation error. These refined value estimates then score the segment between consecutive states with a TD($λ$) advantage, while the sampled evidence supplies training targets for the critic. FOCUS supports long-horizon agentic reinforcement learning through a modular context-management interface that decouples context management from rollout allocation. Our experiments show that using compaction-induced segment boundaries for value estimation and credit assignment, FOCUS outperforms GRPO and VinePPO with matched per-step generation budgets on legal reasoning, deep search, and code localization benchmarks, improving held-out accuracy at Qwen3.5-9B scale by 7.2 points over the strongest baseline on BrowseComp-Plus (55.4 vs. 48.2) and by 4.1 points on DeonticBench (56.5 vs. 52.4).",
+      "authors": [
+        "Zhengping Jiang",
+        "William Jurayj",
+        "Liaoyaqi Wang",
+        "Chunsheng Zuo",
+        "Anqi Liu",
+        "Benjamin Van Durme"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-26T17:34:47+00:00",
+      "link": "https://arxiv.org/pdf/2610.35801v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "RL method training long-horizon language-model agents via critic-based credit assignment",
+      "llm_evidence_cn": "通过评论家信用分配训练长程语言模型智能体的强化学习方法",
+      "llm_evidence": "通过评论家信用分配训练长程语言模型智能体的强化学习方法",
+      "canonical_evidence": "通过评论家信用分配训练长程语言模型智能体的强化学习方法",
+      "llm_tldr_en": "FOCUS is an RL method for long-horizon language-model agents that uses selective branching to actively train a critic, improving credit assignment under sparse rewards.",
+      "llm_tldr_cn": "针对长程语言模型智能体在稀疏结果奖励下难以对早期动作进行信用分配的问题，本文提出FOCUS强化学习方法。该方法利用选择性分支让评论家网络主动学习价值估计，从预期最能降低估计误差的状态采样续写轨迹。精炼后的价值估计以TD(λ)优势为片段打分，从而改善长程任务中的信用分配，为智能体强化训练提供更可靠的中间价值信号。",
+      "llm_tldr": "针对长程语言模型智能体在稀疏结果奖励下难以对早期动作进行信用分配的问题，本文提出FOCUS强化学习方法。该方法利用选择性分支让评论家网络主动学习价值估计，从预期最能降低估计误差的状态采样续写轨迹。精炼后的价值估计以TD(λ)优势为片段打分，从而改善长程任务中的信用分配，为智能体强化训练提供更可靠的中间价值信号。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.34043v1",
+      "source": "arxiv",
+      "title": "Holding a Steady Course: Knowledge Evolution from Expertise and Lessons for Continual Agent Learning",
+      "abstract": "Autonomous agents are increasingly deployed across sequences of related tasks, yet they often fail to retain and improve their knowledge over time. Existing approaches convert interaction trajectories into memories or reusable skills, but experience is not automatically reliable knowledge. Automatically collected skills and memories can propagate errors, mislead, and corrupt useful knowledge. To address this gap, we introduce Knowledge Evolution from Expertise and Lessons (KEEL), an agent-agnostic framework that uses verifier evidence to transform successful behavior into reusable skills and failures into corrective lessons. As new evidence accumulates, individual skill claims can be supported, contradicted, replaced, or retired. On SkillFlow benchmark, KEEL improves task success by 4.2 to 21.7 percentage points over the no-knowledge baseline, compared with gains of 2.4 to 9.6 points from SkillFlow's default method. Ablations show that skills and lessons are complementary. These results show that reliable continual agent learning depends not simply on accumulating experience, but on continually validating and evolving the knowledge derived from it. Our code is available at: https://github.com/microsoft/KEEL-TTCL26.",
+      "authors": [
+        "Wenzhe Fan",
+        "Benjamin Steenhoek",
+        "Gaurav Mittal",
+        "Yu Hu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-25T04:11:33+00:00",
+      "link": "https://arxiv.org/pdf/2610.34043v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "curates agent experience into reusable skills and corrective lessons",
+      "llm_evidence_cn": "将智能体经验整理为可复用技能与纠正教训",
+      "llm_evidence": "将智能体经验整理为可复用技能与纠正教训",
+      "canonical_evidence": "将智能体经验整理为可复用技能与纠正教训",
+      "llm_tldr_en": "Introduces KEEL, an agent-agnostic framework that uses verifier evidence to transform successful agent behavior into reusable skills and failures into corrective lessons, supporting continual agent learning.",
+      "llm_tldr_cn": "针对自主智能体在连续任务中难以保留和提升知识、自动收集的经验可能传播错误的问题，本文提出KEEL框架。该方法利用验证器证据将成功行为转化为可复用技能，将失败转化为纠正教训，并随新证据累积支持、否定或替换技能主张。工作为持续智能体学习中的经验数据筛选与知识维护提供通用机制，提升经验可靠性并减少错误知识累积。",
+      "llm_tldr": "针对自主智能体在连续任务中难以保留和提升知识、自动收集的经验可能传播错误的问题，本文提出KEEL框架。该方法利用验证器证据将成功行为转化为可复用技能，将失败转化为纠正教训，并随新证据累积支持、否定或替换技能主张。工作为持续智能体学习中的经验数据筛选与知识维护提供通用机制，提升经验可靠性并减少错误知识累积。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "agentic data construction and curation for training AI agents",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.33740v1",
+      "source": "arxiv",
+      "title": "A Distribution-Matching Perspective on LLM Training Algorithms",
+      "abstract": "In this work, we propose a unified framework for training algorithms across different stages of modern large language model development, based on the perspective of distribution matching. We show that a broad class of language model training algorithms can be interpreted as minimizing a certain divergence between the current model and a target distribution, and that characterizing the properties of this target distribution provides substantial insight into the behavior of the corresponding training algorithms. By analyzing specific forms of the target distribution, we establish that On-Policy Distillation (OPD) enjoys an advantage over classical Knowledge Distillation (KD) when the current model distribution is close to the target distribution, while exhibiting a disadvantage when the two distributions are far apart. Furthermore, when the target distribution itself depends on the model being optimized, we show that the accumulation of estimation variance can induce a deterministic degradation of the target distribution. These results provide a theoretical explanation, at least in part, for the long-term behavior of existing Reinforcement Learning (RL) algorithms. With this intuition we further designed Conditional KL (CKL) regularization for mitigating the degradation of the target distribution. CKL can effectively preserve mode diversity while relaxing the constraint imposed by classical KL regularization on reward improvements. We believe this theoretical perspective can bring some new understanding of language model training algorithms and provide useful guidance for future research.",
+      "authors": [
+        "Yanxing Huang",
+        "Bingzhang Yan",
+        "Zihan Tang",
+        "Wenzhe Li",
+        "Peng Li",
+        "Yang Liu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-10-24T15:30:39+00:00",
+      "link": "https://arxiv.org/pdf/2610.33740v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "unified distribution-matching analysis showing advantage of on-policy distillation over classical KD",
+      "llm_evidence_cn": "用分布匹配统一分析并论证在线策略蒸馏优于经典知识蒸馏",
+      "llm_evidence": "用分布匹配统一分析并论证在线策略蒸馏优于经典知识蒸馏",
+      "canonical_evidence": "用分布匹配统一分析并论证在线策略蒸馏优于经典知识蒸馏",
+      "llm_tldr_en": "A unified distribution-matching framework interprets LLM training algorithms as divergence minimization and shows on-policy distillation beats classical KD when the model is close to the target distribution.",
+      "llm_tldr_cn": "现代大模型各训练阶段的算法长期缺少统一解释，难以比较不同方法的行为差异。作者提出基于分布匹配的统一框架，把训练算法视为最小化当前模型与目标分布之间的散度，并通过刻画目标分布性质分析算法行为。理论分析表明，当当前模型接近目标分布时，在线策略蒸馏相对经典知识蒸馏具有优势。该框架为理解与选择训练算法提供了统一视角。",
+      "llm_tldr": "现代大模型各训练阶段的算法长期缺少统一解释，难以比较不同方法的行为差异。作者提出基于分布匹配的统一框架，把训练算法视为最小化当前模型与目标分布之间的散度，并通过刻画目标分布性质分析算法行为。理论分析表明，当当前模型接近目标分布时，在线策略蒸馏相对经典知识蒸馏具有优势。该框架为理解与选择训练算法提供了统一视角。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "on-policy distillation methods that train student agents using trajectories generated by their current policy",
+      "matched_requirement_id": "req-6",
+      "selection_source": "carryover_cache",
+      "paper_id": "2610.33740v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.35823v1",
+      "source": "arxiv",
+      "title": "Back to Basics: A Skill-Centric Approach to Generalist Web Agents",
+      "abstract": "Browser agents do not just need more practice. They need to practice the right things. We introduce MiniWeb, a realistic miniature of the web comprising 65 interconnected websites across 15 domains, where agents navigate, search, and transact as people do. Its 369 human-annotated tasks cover everyday workflows and label 37 reusable interaction primitives grouped into 7 skill families, allowing us to diagnose which skills fail rather than only whether a task succeeds. Benchmarking ten open-weight agents, we find that drag & gesture is consistently the weakest family, with no agent solving more than 24% of its instances. To address this gap, we introduce MiniWebGen, a framework that autonomously generates verified, skill-centric training data from MiniWeb. Fine-tuning Qwen3.5-4B on just 3.1K verified trajectories improves single-primitive success by 24.9pp across 13 unseen websites, with gains across every skill family. However, these trajectories teach short-horizon interactions, which do not directly translate to full-task success. We build on this result with MiniWebAgent, which pairs the trained executor with a planner that decomposes full tasks into the skill-level steps it learned to perform. This approach improves task success by 19.4pp points on unseen MiniWeb sites and transfers to external benchmarks, with gains of 9.3pp on WebArena-Lite, 16.1pp on Online-Mind2Web, and 20.0pp on WebVoyager, without training on their trajectories. We provide a simple recipe for compact browser agents: practice reusable skills directly, then compose them to solve unfamiliar tasks.",
+      "authors": [
+        "Minh Pham-Dinh",
+        "Md Farhan Ishmam",
+        "Hernan Yupanqui",
+        "Reaz Hassan Joarder",
+        "Kenneth Marino"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-10-26T17:47:07+00:00",
+      "link": "https://arxiv.org/pdf/2610.35823v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Autonomous generation of verified skill-centric training data for web agents",
+      "llm_evidence_cn": "为网页智能体自动生成经校验的技能中心训练数据",
+      "llm_evidence": "为网页智能体自动生成经校验的技能中心训练数据",
+      "canonical_evidence": "为网页智能体自动生成经校验的技能中心训练数据",
+      "llm_tldr_en": "Introduces MiniWeb, a miniature web benchmark with 369 tasks and 37 labeled interaction primitives, plus MiniWebGen, which autonomously generates verified skill-centric training data to fix diagnosed agent skill gaps.",
+      "llm_tldr_cn": "浏览器智能体不仅需要更多练习，更需要练习正确的技能，而现有基准难以诊断具体技能短板。本文构建MiniWeb，包含65个互联网站与369个人工标注任务，并标注37个交互原语；同时提出MiniWebGen自动生成经校验的技能中心训练数据。评测十个开放权重智能体后发现拖拽手势是最弱技能族，无一智能体解决超过24%的实例。该工作为网页智能体提供了可诊断、可生成数据的技能中心基础设施。",
+      "llm_tldr": "浏览器智能体不仅需要更多练习，更需要练习正确的技能，而现有基准难以诊断具体技能短板。本文构建MiniWeb，包含65个互联网站与369个人工标注任务，并标注37个交互原语；同时提出MiniWebGen自动生成经校验的技能中心训练数据。评测十个开放权重智能体后发现拖拽手势是最弱技能族，无一智能体解决超过24%的实例。该工作为网页智能体提供了可诊断、可生成数据的技能中心基础设施。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "agentic data construction and curation for training AI agents",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.34450v1",
+      "source": "arxiv",
+      "title": "EvolveMAS: A Unified Self-Evolution Framework for Decentralized Multi-Agent Systems",
+      "abstract": "Decentralized multi-agent systems (MAS) enable large language model agents to interact without centralized control. Agents need to adapt to other agents at test time and reuse accumulated experience to refine their interaction strategies for future interactions across cooperative, mixed-motive, and adversarial settings. However, existing approaches often develop adaptation mechanisms for particular interaction settings. This raises a central question: how can decentralized MAS support test-time adaptation and reliable experience reuse across interaction settings? We propose EvolveMAS, a unified self-evolution framework that supports experience-driven adaptation within and across episodes. EvolveMAS pairs each main agent with a dedicated MemoryAgent for test-time memory governance, which maintains isolated Structured Memory outside the main agent's reasoning context. EvolveMAS organizes adaptation into two complementary processes: Within-Episode Online Adaptation and Cross-Episode Knowledge Evolution. During Within-Episode Online Adaptation, MemoryAgent updates episodic, semantic, and working memory from interaction evidence to inform subsequent actions. During Cross-Episode Knowledge Evolution, the main agent uses memory and episode outcomes to distill reusable interaction knowledge comprising partner profiles and interaction strategies for subsequent episodes. Across five benchmarks and six evaluation configurations spanning the three interaction settings, EvolveMAS achieves the highest normalized average score of 77.2 among the compared methods. Ablations show that test-time memory governance and cross-episode knowledge reuse both improve performance. Interaction traces further illustrate how updated memory and distilled knowledge guide subsequent interactions. These results support experience-driven adaptation in decentralized MAS without updating model parameters.",
+      "authors": [
+        "Yalun Wu",
+        "Qiwei Ma",
+        "Bingbing Xu",
+        "Dan Zhang",
+        "Long Bai",
+        "Boyang Wang",
+        "Jiatong Li",
+        "Zheqi Lv",
+        "Shaozu Yuan",
+        "Peiying Wang",
+        "Jiawei Wang",
+        "An Zhang",
+        "Tat-Seng Chua"
+      ],
+      "primary_category": "cs.MA",
+      "categories": [
+        "cs.MA",
+        "cs.AI"
+      ],
+      "published": "2026-10-25T17:09:49+00:00",
+      "link": "https://arxiv.org/pdf/2610.34450v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "decentralized multi-agent self-evolution and cross-agent collaboration",
+      "llm_evidence_cn": "去中心化多智能体自演化与跨智能体协作",
+      "llm_evidence": "去中心化多智能体自演化与跨智能体协作",
+      "canonical_evidence": "去中心化多智能体自演化与跨智能体协作",
+      "llm_tldr_en": "EvolveMAS is a unified self-evolution framework for decentralized multi-agent systems that enables test-time adaptation and reliable experience reuse across cooperative, mixed-motive and adversarial settings.",
+      "llm_tldr_cn": "针对去中心化多智能体系统难以在测试时适应他者并复用经验的问题，作者提出统一自演化框架 EvolveMAS。方法为每个主智能体配备专门的记忆与适应机制，支持回合内与跨回合的经验驱动适应。该框架在合作、混合动机与对抗等多种交互场景中实现可靠的经验复用，为多智能体协作与自改进提供了通用方案。",
+      "llm_tldr": "针对去中心化多智能体系统难以在测试时适应他者并复用经验的问题，作者提出统一自演化框架 EvolveMAS。方法为每个主智能体配备专门的记忆与适应机制，支持回合内与跨回合的经验驱动适应。该框架在合作、混合动机与对抗等多种交互场景中实现可靠的经验复用，为多智能体协作与自改进提供了通用方案。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.35398v1",
+      "source": "arxiv",
+      "title": "Belief-Conditioned Multi-Agent Actor Critic for Decentralized LLM Collaboration",
+      "abstract": "Recent work has explored optimizing LLM collaboration through Multi-Agent Reinforcement Learning (MARL), but many approaches still rely on predefined workflows, limiting efficiency and scalability. Decentralized LLM collaboration is challenging because agents execute independently with limited communication, share a joint objective, and must infer useful information from communication traces. In this paper, we propose BCMAAC, a Belief-Conditioned Multi-Agent Actor-Critic method that maintains beliefs over contextual information and uses them to facilitate training. Experiments on Minecraft game-playing, web searching and tool-using tasks show that BCMAAC improves task performance and collaborative behavior compared to naive actor-critic baselines. The improvements are particularly pronounced in multi-turn tasks with richer contextual information, where belief modeling provides a clear advantage.",
+      "authors": [
+        "Tianle Chen",
+        "Shuo Liu",
+        "Christopher Amato"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-10-26T13:12:41+00:00",
+      "link": "https://arxiv.org/pdf/2610.35398v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "decentralized LLM collaboration via multi-agent RL",
+      "llm_evidence_cn": "去中心化LLM协作与多智能体强化学习",
+      "llm_evidence": "去中心化LLM协作与多智能体强化学习",
+      "canonical_evidence": "去中心化LLM协作与多智能体强化学习",
+      "llm_tldr_en": "Proposes BCMAAC, a belief-conditioned multi-agent actor-critic method for decentralized LLM collaboration; experiments on Minecraft, web search and tool-use tasks show improved task performance and collaborative behavior over naive actor-critic baselines.",
+      "llm_tldr_cn": "现有LLM多智能体协作多依赖预定义工作流，去中心化场景下智能体独立执行、通信受限且需共享目标。作者提出BCMAAC，维护上下文信念并用于多智能体演员-评论家训练，以提升协作决策。在Minecraft、网页搜索和工具使用任务上，该方法相比朴素演员-评论家基线提高了任务表现与协作行为，为可扩展的去中心化LLM协作提供了强化学习方案。",
+      "llm_tldr": "现有LLM多智能体协作多依赖预定义工作流，去中心化场景下智能体独立执行、通信受限且需共享目标。作者提出BCMAAC，维护上下文信念并用于多智能体演员-评论家训练，以提升协作决策。在Minecraft、网页搜索和工具使用任务上，该方法相比朴素演员-评论家基线提高了任务表现与协作行为，为可扩展的去中心化LLM协作提供了强化学习方案。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.37571v1",
+      "source": "arxiv",
+      "title": "TeamGym: A Gym for Team Decision-Making by AI Agents with Distributed Information",
+      "abstract": "Many real-world decisions require teams to integrate information distributed across participants. Yet AI agents are still primarily trained and benchmarked in isolation. We introduce TeamGym, an environment for evaluating and training language model-based agents on team decision-making problems constructed from real-world legal, finance, medical, and software engineering corpora. TeamGym introduces a method to identify a minimal set of facts, each element of which is necessary and all of which are collectively sufficient for a correct final decision, which we call pivotal information. This enables TeamGym to both control the distribution of pivotal information and track how well agents identify and integrate pivotal information when making team decisions. Examining 8 language models on 12 source corpora, we find that current AI agents often fail to effectively share information: Distributing pivotal information across participants lowers success rate by 22.9 percentage points on average relative to giving the same information to a single model (a communication gap). We also document that participants do not effectively retrieve decision-relevant information on their own: A team's success rate is lowered by a further 19.9 points when participants must identify and extract pivotal information from source material rather than receiving it directly (a retrieval gap). To help remedy these deficits, we use TeamGym to train policies through reinforcement learning on team decision loss. Across two policy-training experiments, we find that training improves final-decision quality and induces emergent coordination in participation, speaker selection, and communication, even though the reward evaluates only the final decision.",
+      "authors": [
+        "Chanwoo Park",
+        "Jaywoong Jeong",
+        "Zachary Wojtowicz",
+        "Yubin Kim",
+        "Taekyun Lee",
+        "Kaiqing Zhang",
+        "Asuman Ozdaglar"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-27T17:15:54+00:00",
+      "link": "https://arxiv.org/pdf/2610.37571v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "team decision-making environment for LM agents with distributed information",
+      "llm_evidence_cn": "面向分布式信息团队决策的语言模型智能体训练环境",
+      "llm_evidence": "面向分布式信息团队决策的语言模型智能体训练环境",
+      "canonical_evidence": "面向分布式信息团队决策的语言模型智能体训练环境",
+      "llm_tldr_en": "TeamGym is an environment for training and evaluating language-model agents on team decision-making with distributed information, using pivotal facts from legal, finance, medical, and software corpora to test information integration.",
+      "llm_tldr_cn": "现实团队决策需要整合分散在成员手中的信息，但AI智能体多在孤立环境中训练和评测。作者提出TeamGym，从法律、金融、医疗和软件工程语料构建团队决策任务，并用关键信息方法控制事实分布。该环境可追踪智能体识别与整合关键信息的能力，为训练和评估多智能体协作提供可诊断基准。它强调团队协作中的信息整合而非单智能体答题，对协作智能体研究具有直接支撑价值。",
+      "llm_tldr": "现实团队决策需要整合分散在成员手中的信息，但AI智能体多在孤立环境中训练和评测。作者提出TeamGym，从法律、金融、医疗和软件工程语料构建团队决策任务，并用关键信息方法控制事实分布。该环境可追踪智能体识别与整合关键信息的能力，为训练和评估多智能体协作提供可诊断基准。它强调团队协作中的信息整合而非单智能体答题，对协作智能体研究具有直接支撑价值。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
