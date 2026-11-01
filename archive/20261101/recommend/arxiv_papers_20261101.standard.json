@@ -1,0 +1,773 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-11-01T23:01:28.682378+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 10,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 13,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2610.37161v1",
+      "source": "arxiv",
+      "title": "WorkFactory: Turning Professional Intents into Executable Work for Scalable Agent Training",
+      "abstract": "Scaling supervised training for working agents requires diverse professional tasks that yield reliable expert demonstrations. However, missing or inconsistent task information can obstruct teacher execution and weaken the resulting supervision. We propose WorkFactory, a scalable framework for constructing coherent and executable professional tasks. Starting from professional intents, information-level planning builds an information support graph to guide task instantiation, explicitly representing the dependencies and locations of information required for the intended outputs. Probe executions then identify support failures and guide repairs while preserving the intended work. We construct 112,686 tasks spanning 612 occupations and use the collected teacher trajectories to fine-tune Qwen models at 4B, 27B, and 35B-A3B scales, yielding the WorkPilot family. All three models improve over their respective base models across four professional-work benchmarks, with WorkPilot-35B-A3B improving from 879 to 1565 Elo on GDPval-AA v2.1. Scaling analyses reveal model-dependent diminishing returns, with execution length first increasing and then decreasing. Controlled component analyses show that planning and repair reduce probe-diagnosed task environment defects and improve downstream performance. The data and models are available at https://github.com/IQuestLab/WorkFactory.",
+      "authors": [
+        "Ziyang Zeng",
+        "Tingyang Chen",
+        "Jia Deng",
+        "Qiyao Wang",
+        "Shuo Tang",
+        "Yike Yang",
+        "Tao Ren",
+        "Wayne Xin Zhao",
+        "Feng Chang",
+        "Jujie He",
+        "Chuan Hao",
+        "Ran Tao",
+        "Bryan Dai"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-27T12:54:16+00:00",
+      "link": "https://arxiv.org/pdf/2610.37161v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "scalable construction of executable tasks for agent training data",
+      "llm_evidence_cn": "为智能体训练构建可执行任务的规模化数据管线",
+      "llm_evidence": "为智能体训练构建可执行任务的规模化数据管线",
+      "canonical_evidence": "为智能体训练构建可执行任务的规模化数据管线",
+      "llm_tldr_en": "Scaling supervised agent training needs diverse reliable professional tasks, but missing information weakens demonstrations. WorkFactory builds an information support graph from professional intents and repairs tasks via probe execution, yielding 112,686 tasks across 612 occupations for scalable agent training.",
+      "llm_tldr_cn": "针对规模化训练工作型智能体缺乏多样且可靠专业任务、任务信息缺失削弱监督的问题，本文提出WorkFactory框架。该方法从职业意图出发构建信息支撑图以指导任务实例化，显式表示所需信息的依赖与来源，并通过探针执行识别支撑失败并修复任务。作者据此构建了覆盖612种职业的11万余条任务，为智能体监督训练提供了可扩展的高质量数据构造管线。",
+      "llm_tldr": "针对规模化训练工作型智能体缺乏多样且可靠专业任务、任务信息缺失削弱监督的问题，本文提出WorkFactory框架。该方法从职业意图出发构建信息支撑图以指导任务实例化，显式表示所需信息的依赖与来源，并通过探针执行识别支撑失败并修复任务。作者据此构建了覆盖612种职业的11万余条任务，为智能体监督训练提供了可扩展的高质量数据构造管线。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "agentic data construction and curation for training AI agents",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.35697v1",
+      "source": "arxiv",
+      "title": "MiRL: Error-Targeted Reinforcement Learning for Correcting Terminal Agent Misbehaviors",
+      "abstract": "Error-targeted learning gives a legible way to improve a model: identify specific weaknesses of the model, train the model to fix these weaknesses, and check whether the weaknesses are fixed. We study how to apply error-targeted learning to terminal agents, which solve long-horizon tasks specified in natural language by interacting with a command shell. Existing error-targeted methods are designed for single-turn tasks, and existing analyses of agent failures are used to evaluate and debug agents rather than to train them. We propose Misbehavior-driven RL (MiRL), which first profiles the errors of a policy to find generalizable misbehaviors: kinds of wrong steps that recur across many environments. MiRL then trains the policy with RL, starting rollouts at the steps where these misbehaviors occur and rewarding a rollout only if it passes the tests and avoids the misbehavior. On Qwen3.5-4B, eight misbehaviors account for 52.1% of wrong steps. After training with MiRL, the policy repeats the measured misbehaviors 43% to 57% less often on average on unseen prefixes. MiRL outperforms TMax-4B on Terminal-Bench Lite (51.8% vs. 47.4%) and matches it on Terminal-Bench 2.1 (21.3% vs. 20.6%), while using 35% of its rollouts. These results show that error-targeted learning can be applied to realistic, long-horizon terminal tasks.",
+      "authors": [
+        "Runchu Tian",
+        "Zaid Khan",
+        "Zun Wang",
+        "Justin Chih-Yao Chen",
+        "Mohit Bansal"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-10-26T16:25:05+00:00",
+      "link": "https://arxiv.org/pdf/2610.35697v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "RL over long-horizon multi-turn terminal agent interactions",
+      "llm_evidence_cn": "面向长程多轮终端智能体交互的强化学习",
+      "llm_evidence": "面向长程多轮终端智能体交互的强化学习",
+      "canonical_evidence": "面向长程多轮终端智能体交互的强化学习",
+      "llm_tldr_en": "Proposes MiRL, which profiles recurring terminal-agent misbehaviors and trains policies with RL to correct them across long-horizon shell tasks.",
+      "llm_tldr_cn": "现有错误靶向方法多针对单轮任务，难以训练需与命令行环境长期交互的终端智能体。论文提出MiRL，先分析策略错误以发现跨环境反复出现的不当行为，再用强化学习训练策略纠正这些行为。该方法面向自然语言指定的长程任务，在终端智能体设置中验证错误靶向训练的有效性。该工作将错误靶向学习扩展到多轮智能体强化学习。",
+      "llm_tldr": "现有错误靶向方法多针对单轮任务，难以训练需与命令行环境长期交互的终端智能体。论文提出MiRL，先分析策略错误以发现跨环境反复出现的不当行为，再用强化学习训练策略纠正这些行为。该方法面向自然语言指定的长程任务，在终端智能体设置中验证错误靶向训练的有效性。该工作将错误靶向学习扩展到多轮智能体强化学习。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.36013v1",
+      "source": "arxiv",
+      "title": "OmniBrain-0: A Unified Agentic Model for Embodied Intelligence",
+      "abstract": "General-purpose embodied intelligence requires robots to coordinate diverse skills over long horizons, track task progress, and recover from failures. Specialist policies alone do not ensure task-level reliability, while powerful multimodal agents rely on costly reasoning and external experience that compact models struggle to reproduce. We introduce OmniBrain-0, a lightweight unified embodied agent that coordinates manipulation and navigation through a shared high-level decision model, integrating task understanding, planning, progress tracking, and feedback-driven recovery. Our progressive training framework combines embodied pretraining, domain-specialized agent distillation, and multi-teacher on-policy distillation (MOPD). It distills powerful teachers' interaction experience into manipulation and navigation experts, then consolidates their decision capabilities into OmniBrain-0. Unification therefore occurs within the learned decision model rather than only at the tool interface. We further introduce Rubric-Guided Recursive Self-Improvement (RSI), a data flywheel in which a Meta-Agent turns execution evidence into refined rubrics, step-level reminders, and verified trajectories for domain-expert updates before their reconsolidation into OmniBrain-0 through MOPD. We evaluate OmniBrain-0 on LIBERO-Pro, LIBERO-Plus, RoboCasa365, RoboTwin 2.0, and R2R-CE Val-Unseen, as well as multiple real-world manipulation tasks. OmniBrain-0 combines strong cross-domain task performance with substantially lower inference and execution overhead than its closed-source teacher, demonstrating efficient transfer and consolidation of embodied capabilities into a compact unified agent.",
+      "authors": [
+        "Xiaomi Embodied Intelligence Team",
+        "Yuechen Luo",
+        "Chong He",
+        "Fang Li",
+        "Shaoqing Xu",
+        "Jingkai Wang",
+        "Menglun Su",
+        "Jiaxin Liu",
+        "Shengyin Jiang",
+        "Zhiyi Lai",
+        "Long Chen",
+        "Longlong Wang",
+        "Liang Hu",
+        "Haochen Liu",
+        "Yuncheng Jiang",
+        "Hongwei Xie",
+        "Jieming Cui",
+        "Hanbing Li",
+        "Junjie Huang",
+        "Zhixiang Duan",
+        "Hexin Zhang",
+        "Weixiang Liang",
+        "Ying Gong",
+        "Yuhan Wang",
+        "Yong Pan",
+        "Pengna Li",
+        "Kangyi Wu",
+        "Ken Deng",
+        "Kun Ma",
+        "Fuxi Wen",
+        "Zhi-xin Yang",
+        "Hangjun Ye"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.CV"
+      ],
+      "published": "2026-10-26T17:15:41+00:00",
+      "link": "https://arxiv.org/pdf/2610.36013v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Multi-teacher on-policy distillation for training a unified embodied agent",
+      "llm_evidence_cn": "用于训练统一具身智能体的多教师同策略蒸馏",
+      "llm_evidence": "用于训练统一具身智能体的多教师同策略蒸馏",
+      "canonical_evidence": "用于训练统一具身智能体的多教师同策略蒸馏",
+      "llm_tldr_en": "OmniBrain-0 trains a lightweight unified embodied agent with embodied pretraining, domain-specialized distillation, and multi-teacher on-policy distillation for long-horizon tasks.",
+      "llm_tldr_cn": "通用具身智能需要机器人在长时程中协调多种技能、跟踪进度并从失败中恢复，但专用策略和大型多模态智能体各有局限。OmniBrain-0 提出轻量统一具身智能体，采用包含具身预训练、领域专家智能体蒸馏和多教师同策略蒸馏的渐进训练框架。该方法将强教师能力蒸馏到紧凑模型中，支持任务理解、规划、进度跟踪与反馈恢复，为紧凑通用具身智能体提供了训练范式。",
+      "llm_tldr": "通用具身智能需要机器人在长时程中协调多种技能、跟踪进度并从失败中恢复，但专用策略和大型多模态智能体各有局限。OmniBrain-0 提出轻量统一具身智能体，采用包含具身预训练、领域专家智能体蒸馏和多教师同策略蒸馏的渐进训练框架。该方法将强教师能力蒸馏到紧凑模型中，支持任务理解、规划、进度跟踪与反馈恢复，为紧凑通用具身智能体提供了训练范式。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "on-policy distillation methods that train student agents using trajectories generated by their current policy",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.36469v1",
+      "source": "arxiv",
+      "title": "CoHARL: Co-Evolving Agent Policies and Executable Harnesses with Reinforcement Learning",
+      "abstract": "Large language model (LLM) agents interact with their environments through executable harnesses that govern tool use and feedback. Optimizing a harness for a fixed policy overlooks how its behavior changes during learning, while training a policy under a fixed harness leaves the interface that generates its training experience unchanged. This motivates adapting the harness throughout policy training. We introduce CoHARL, a population-based reinforcement learning framework that co-evolves a shared policy and a population of executable harnesses. The policy learns from rollouts across the population, and a proposer uses its execution traces to revise harness code during training. CoHARL achieves a 27.6% mean resolved rate on SWE-rebench, improving over harness-only search by 6.4 percentage points. Experiments on SWE-bench Verified and Terminal-Bench 2.0 show gains in software engineering and terminal-based tasks. Under matched training budgets, CoHARL also outperforms searching for a harness once before RL and alternating policy updates with revisions to a single active harness.",
+      "authors": [
+        "Jianwen Chen",
+        "Peng Xia",
+        "Kaide Zeng",
+        "Siwei Han",
+        "Zhen-Yu Zhang",
+        "Charles Fleming",
+        "Xinyu Ye",
+        "Huaxiu Yao"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-10-27T01:25:26+00:00",
+      "link": "https://arxiv.org/pdf/2610.36469v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "RL co-evolving agent policies and tool-use harnesses",
+      "llm_evidence_cn": "协同进化智能体策略与工具执行框架的强化学习",
+      "llm_evidence": "协同进化智能体策略与工具执行框架的强化学习",
+      "canonical_evidence": "协同进化智能体策略与工具执行框架的强化学习",
+      "llm_tldr_en": "LLM agents act through executable harnesses governing tool use, yet policies and harnesses are usually optimized separately. CoHARL is a population-based RL framework that co-evolves a shared policy and a population of harnesses, using execution traces to revise harness code during training, reaching 27.6% resolved rate on SWE-rebench.",
+      "llm_tldr_cn": "针对LLM智能体通过可执行框架使用工具、但策略与框架往往分开优化而忽略彼此随学习变化的问题，本文提出CoHARL。该基于种群的强化学习框架协同进化共享策略与一组可执行框架，策略从跨种群回滚中学习，提议者则用执行轨迹在训练中修订框架代码。实验在SWE-rebench上达到27.6%的解决率，表明策略与工具接口协同适应能显著提升多轮工具使用智能体的训练效果。",
+      "llm_tldr": "针对LLM智能体通过可执行框架使用工具、但策略与框架往往分开优化而忽略彼此随学习变化的问题，本文提出CoHARL。该基于种群的强化学习框架协同进化共享策略与一组可执行框架，策略从跨种群回滚中学习，提议者则用执行轨迹在训练中修订框架代码。实验在SWE-rebench上达到27.6%的解决率，表明策略与工具接口协同适应能显著提升多轮工具使用智能体的训练效果。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.37609v1",
+      "source": "arxiv",
+      "title": "EnvSched: Environment-Aware Scheduling for Rollout-Efficient Agent Reinforcement Learning",
+      "abstract": "As executable environments for language agents scale, generating and verifying their rollouts becomes increasingly expensive. Under finite rollout budgets, this raises an important question: can data management at the environment level make agentic reinforcement learning (RL) more efficient by organizing, evaluating, and scheduling task instances together with the environments that determine their tools, states, transitions, and verification? To address this question, we introduce EnvSched (Environment-aware Scheduling), an online scheduler that learns from rollout history. EnvSched assigns scheduling value through two complementary modeling choices: exploitation prioritizes tasks likely to provide informative reward differences, while coverage spreads each batch across underobserved environments and interaction patterns. EnvSched organizes environment--task pairs as nodes in a dual-relation graph, with within-environment edges capturing task semantics and shared tool, state, and verifier structure, and cross-environment edges capturing abstract execution and reward topology. By propagating historical rollout statistics along both edge types, it predicts within-task reward variance. These predictions guide a scheduler that allocates each batch to tasks with high predicted reward variance and underobserved environments and tasks. Environment quotas and a similarity penalty further limit concentration and redundancy, yielding informative and diverse batches without additional pilot rollouts. In RL on Qwen3-8B, EnvSched achieves an average score of 48.81 across BFCL-v3, tau-Bench, and ACEBench-Agent after 40 training steps, exceeding the highest score attained by random task selection after 120 steps. It also improves downstream performance across model sizes at the same training budget.",
+      "authors": [
+        "Sihan Yang",
+        "Weichen Bai",
+        "Ruichuan An",
+        "Yiming Cheng",
+        "Zhiyuan Feng",
+        "Tianyi Jiang",
+        "Renye Yan",
+        "Ning Ding",
+        "Yifan Zhang",
+        "Renrui Zhang",
+        "Yehui Tang",
+        "Wentao Zhang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-10-27T17:38:52+00:00",
+      "link": "https://arxiv.org/pdf/2610.37609v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "environment-aware online scheduling of agent RL rollouts over tasks and environments",
+      "llm_evidence_cn": "面向智能体强化学习的环境级调度",
+      "llm_evidence": "面向智能体强化学习的环境级调度",
+      "canonical_evidence": "面向智能体强化学习的环境级调度",
+      "llm_tldr_en": "EnvSched is an online, environment-aware scheduler that learns from rollout history to prioritize agentic RL task instances with informative reward differences, improving rollout efficiency under finite budgets.",
+      "llm_tldr_cn": "随着语言智能体的可执行环境规模扩大，生成与验证rollout的成本急剧上升，有限预算下如何高效使用数据成为问题。作者提出EnvSched，一种从rollout历史中学习的在线调度器，在环境层面为任务实例分配调度价值，兼顾利用高信息量奖励差与探索。实验显示环境级数据管理能显著提升智能体强化学习的rollout效率。该工作把数据调度引入智能体强化学习，为多轮交互训练的资源分配提供了新思路。",
+      "llm_tldr": "随着语言智能体的可执行环境规模扩大，生成与验证rollout的成本急剧上升，有限预算下如何高效使用数据成为问题。作者提出EnvSched，一种从rollout历史中学习的在线调度器，在环境层面为任务实例分配调度价值，兼顾利用高信息量奖励差与探索。实验显示环境级数据管理能显著提升智能体强化学习的rollout效率。该工作把数据调度引入智能体强化学习，为多轮交互训练的资源分配提供了新思路。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2610.37651v1",
+      "source": "arxiv",
+      "title": "GEPA-Curator: Curated Learning for Self Improving Agents",
+      "abstract": "Large Language Models (LLMs) are increasingly used in multi-turn agentic workloads that require sustained interaction with complex environments. Existing reflective prompt optimizers such as GEPA learn from failed rollouts, but agentic failures can also come from prompt weaknesses, harness limitations, stochastic execution, or noisy judges. We argue that such failures may not provide useful learning signal, and may even be harmful; and thus it is essential to curate which tasks are provided to the prompt optimizer for better performance. We introduce GEPA-Curator, a framework that augments the prompt optimizer to select which agent experiences should shape prompt optimization. In particular, GEPA-Curator consists of two components: task curation, which filters out tasks that are likely to provide noisy or unreliable learning signals, and prior success retrieval, which selectively retrieves past successful trajectories for a task and provides them as additional context to the prompt optimizer. We evaluate GEPA-Curator on GoBrowse, ALFWorld, AppWorld, and $τ$-bench, using both Gemini 3.1 Pro and Claude Opus 5 as optimizer models. GEPA-Curator matches or exceeds the mean performance of both baselines, with gains of up to 20.7% over GEPA and 21.2% over ACE.",
+      "authors": [
+        "Zack Yu",
+        "Nicholas Lee",
+        "Minjae Lee",
+        "Lakshya Agarwal",
+        "Luca Manolache",
+        "Wonjun Kang",
+        "Matei Zaharia",
+        "Michael W. Mahoney",
+        "Kurt Keutzer",
+        "Sehoon Kim",
+        "Amir Gholami"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-10-27T17:58:11+00:00",
+      "link": "https://arxiv.org/pdf/2610.37651v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Task curation selects agent experiences for prompt optimization",
+      "llm_evidence_cn": "任务整理筛选用于提示优化的智能体经验",
+      "llm_evidence": "任务整理筛选用于提示优化的智能体经验",
+      "canonical_evidence": "任务整理筛选用于提示优化的智能体经验",
+      "llm_tldr_en": "GEPA-Curator curates which agentic tasks and experiences feed prompt optimization, filtering noisy failures to improve self-improving agents in multi-turn workloads.",
+      "llm_tldr_cn": "现有反思式提示优化器从失败 rollout 学习，但多轮智能体失败可能源于提示弱点、执行框架限制、随机执行或噪声评判，未必提供有效学习信号。GEPA-Curator 通过任务整理筛选应参与提示优化的智能体经验，过滤低质量失败样本。该框架提升了自改进智能体在多轮工作负载中的优化效果与稳定性。",
+      "llm_tldr": "现有反思式提示优化器从失败 rollout 学习，但多轮智能体失败可能源于提示弱点、执行框架限制、随机执行或噪声评判，未必提供有效学习信号。GEPA-Curator 通过任务整理筛选应参与提示优化的智能体经验，过滤低质量失败样本。该框架提升了自改进智能体在多轮工作负载中的优化效果与稳定性。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "agentic data construction and curation for training AI agents",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2610.39251v1",
+      "source": "arxiv",
+      "title": "Where to Learn and How Far to Roll Out: Efficient Adaptive Training for GUI Agents",
+      "abstract": "Trajectory-level GRPO is a common approach for training multi-step GUI agents, but repeatedly rolling out complete trajectories from the task root can be inefficient: task-level rewards provide coarse supervision over which intermediate decisions require improvement, while already-mastered prefixes are repeatedly re-executed before reaching difficult states. We introduce a two-stage adaptive training framework that jointly addresses where to learn and how far to roll out. We first construct reusable intermediate checkpoints from successful expert trajectories and select informative pivots using action disagreement, which measures uncertainty directly from sampled GUI actions. Stage I performs one-step RL at these pivots to improve uncertain local decisions. Stage II then progressively expands policy responsibility through adaptive Local, Suffix, and Root training according to task progress. Recoverable checkpoints enable repeated training from intermediate states without replaying the preceding trajectory. Across MobileGym and CUA-Gym-Hub, our method reduces environment interaction by 56-61% relative to Vanilla GRPO while improving task performance, demonstrating that jointly allocating training across states and rollout ranges can substantially improve GUI-agent RL efficiency.",
+      "authors": [
+        "Yuxiang Chai",
+        "Quyu Kong",
+        "Panrong Tong",
+        "Steven Hoi",
+        "Yue Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-29T03:03:29+00:00",
+      "link": "https://arxiv.org/pdf/2610.39251v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "RL training of multi-step GUI agents with adaptive rollouts",
+      "llm_evidence_cn": "多步GUI智能体的自适应强化学习训练",
+      "llm_evidence": "多步GUI智能体的自适应强化学习训练",
+      "canonical_evidence": "多步GUI智能体的自适应强化学习训练",
+      "llm_tldr_en": "Trajectory-level GRPO for GUI agents wastes rollout by re-executing mastered prefixes. This paper proposes a two-stage adaptive framework that builds intermediate checkpoints and selects pivots via action disagreement, then performs one-step RL at pivots to focus learning efficiently.",
+      "llm_tldr_cn": "针对轨迹级GRPO在训练多步GUI智能体时反复执行已掌握前缀、任务级奖励监督粗糙的问题，本文提出两阶段自适应训练框架。方法先从成功专家轨迹构建可复用中间检查点，并用动作分歧度挑选信息量高的关键状态，再在这些枢轴处进行单步强化学习以聚焦不确定决策。该框架同时决定在哪里学习与回滚多远，提升了训练效率与效果，为长程智能体强化学习提供了高效方案。",
+      "llm_tldr": "针对轨迹级GRPO在训练多步GUI智能体时反复执行已掌握前缀、任务级奖励监督粗糙的问题，本文提出两阶段自适应训练框架。方法先从成功专家轨迹构建可复用中间检查点，并用动作分歧度挑选信息量高的关键状态，再在这些枢轴处进行单步强化学习以聚焦不确定决策。该框架同时决定在哪里学习与回滚多远，提升了训练效率与效果，为长程智能体强化学习提供了高效方案。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.38882v1",
+      "source": "arxiv",
+      "title": "Aligning Autoresearch: Co-Improvement between Agents and Humans",
+      "abstract": "Autoresearch agents can now attempt long-horizon AI research end-to-end, i.e., self-improvement. However, best results are still obtained by research agents interacting with human researchers, and improving AI's ability to perform this co-research will only reinforce this effect---a process termed co-improvement (Weston and Foerster, 2025). Further, aligning with human expectations is likely a safer path for research agents, especially given recent agent reward hacking phenomena (OpenAI, 2026b). In this work we address these issues in four ways: (i) we empirically study the role of humans in directing autoresearch agents, focusing on the domain of benchmark creation, and find humans still play a pivotal role particularly in the ideation phase; (ii) we also develop a benchmark, HackBench, that shows current autoresearch agents are not aligned and are unable to achieve hack localization sufficiently; (iii) we present a method to train agents for improved human interaction by using human simulators as a proxy during reinforcement learning (RL); and finally (iv) we develop a method to improve model text generation, and hence agent communication, by RL with rubrics aligned with human experts. Together, our training and evaluation recipes provide a path toward more capable and aligned (co-)research agents.",
+      "authors": [
+        "Tianjian Li",
+        "Chuanyang Jin",
+        "Seungone Kim",
+        "Tong Chen",
+        "John Hoffman",
+        "Yoram Bachrach amd Pedro Rodriguez",
+        "Ping Yu",
+        "Eryk Helenowski",
+        "Swarnadeep Saha",
+        "Jack Lanchantin",
+        "Weizhe Yuan",
+        "Ilia Kulikov",
+        "Jason Weston"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-28T20:47:10+00:00",
+      "link": "https://arxiv.org/pdf/2610.38882v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Co-improvement and collaboration between autoresearch agents and human researchers",
+      "llm_evidence_cn": "自动科研智能体与人类研究者的协同共进",
+      "llm_evidence": "自动科研智能体与人类研究者的协同共进",
+      "canonical_evidence": "自动科研智能体与人类研究者的协同共进",
+      "llm_tldr_en": "Autoresearch agents work best when collaborating with humans. This work studies human roles in directing agents, proposes co-improvement alignment, and addresses reward hacking risks in agent research.",
+      "llm_tldr_cn": "自动科研智能体虽可端到端开展研究，但最佳结果仍来自智能体与人类研究者的协作。作者系统研究人类在指导智能体中的作用，发现人类在构思阶段尤为关键，并提出智能体与人类共同改进（co-improvement）的对齐思路。工作还讨论了智能体奖励黑客等安全风险，并给出相应设计与评估方法。该研究为设计人机协作的同事型智能体提供了实证依据与对齐框架。",
+      "llm_tldr": "自动科研智能体虽可端到端开展研究，但最佳结果仍来自智能体与人类研究者的协作。作者系统研究人类在指导智能体中的作用，发现人类在构思阶段尤为关键，并提出智能体与人类共同改进（co-improvement）的对齐思路。工作还讨论了智能体奖励黑客等安全风险，并给出相应设计与评估方法。该研究为设计人机协作的同事型智能体提供了实证依据与对齐框架。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.33806v1",
+      "source": "arxiv",
+      "title": "IntentDelta: A Human-Constructed Benchmark for Evolving User Intent",
+      "abstract": "Language-model agents must adapt as users revise their requirements and priorities during complex tasks. We introduce IntentDelta, a human-constructed multi-turn benchmark with 638 trajectories and 3,766 turns across WebShop and TravelPlanner. Each turn pairs a user utterance with a cumulative intention state and human reference actions. The trajectories are cross-verified and cover feasibility- and preference-driven changes in constraints and priorities. We evaluate eleven agents on intention recovery and action quality. Average Intention Recovery is 33.1\\% in TravelPlanner and 44.7\\% in WebShop, while average Action Score is 31.6% and 41.0%, respectively. Agents struggle to preserve earlier requirements and distinguish soft preferences from must-have constraints. Correct intention recovery also does not guarantee successful execution, highlighting challenges in translating evolving user intentions into actions.",
+      "authors": [
+        "Jieyu Zhou",
+        "Zijian Wang",
+        "Yun Wang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-10-24T17:10:48+00:00",
+      "link": "https://arxiv.org/pdf/2610.33806v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "multi-turn benchmark of evolving user intent for human-agent interaction",
+      "llm_evidence_cn": "多轮人机交互中用户意图演变的基准",
+      "llm_evidence": "多轮人机交互中用户意图演变的基准",
+      "canonical_evidence": "多轮人机交互中用户意图演变的基准",
+      "llm_tldr_en": "IntentDelta is a human-constructed multi-turn benchmark with 638 trajectories capturing evolving user intent, revealing agents struggle to track revised requirements.",
+      "llm_tldr_cn": "智能体需在复杂任务中随用户不断修改需求而调整，但缺乏针对意图演变的评测。本文构建IntentDelta，包含638条轨迹、3766轮，每轮配对用户话语、累积意图状态与人工参考动作，覆盖可行性与偏好驱动的约束变化。评测十一个智能体显示意图恢复率仅三至四成，说明智能体难以保留早期需求并区分软偏好与硬约束，为协作式多轮交互研究提供了诊断工具。",
+      "llm_tldr": "智能体需在复杂任务中随用户不断修改需求而调整，但缺乏针对意图演变的评测。本文构建IntentDelta，包含638条轨迹、3766轮，每轮配对用户话语、累积意图状态与人工参考动作，覆盖可行性与偏好驱动的约束变化。评测十一个智能体显示意图恢复率仅三至四成，说明智能体难以保留早期需求并区分软偏好与硬约束，为协作式多轮交互研究提供了诊断工具。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.39608v1",
+      "source": "arxiv",
+      "title": "From Intent to Improvement: Agentic Dataset Search for Better Model Training",
+      "abstract": "Finding training data in million-scale machine learning repositories is a Web search problem where text relevance is not enough. A query couples a semantic training goal with constraints such as task, license, and training stage, and the metadata that would verify them are often missing. Text retrieval ranks dataset cards by similarity but cannot enforce hard constraints or follow the relations that reach a sparsely described dataset. Free-form tool-calling agents are more flexible, but the same model that picks a dataset also declares it a match, and nothing checks that the query's constraints are actually met. Neither approach establishes that the data it returns will improve model training. To address it, we propose AgenticDS, a contract-governed agentic framework in which every language model decision instantiates a typed object before deterministic code consumes it. The framework compiles a query into a typed search plan, executes it through admissible deterministic operators over hybrid retrieval and bounded graph expansion, and verifies the provenance-grounded evidence before accepting a ranking or emitting a typed diagnosis that permits only local repairs. On HuDS-Bench, a new benchmark of 200 queries with 24,908 graded judgments pooled over 15 systems, AgenticDS improves NDCG@10 by 25.7\\% over the strongest dense--sparse hybrid and by 18.9\\% over a commercial LLM agent. A controlled search-to-train study further shows that the datasets it retrieves give the best downstream accuracy in mathematics, code, and medicine. Code and data are publicly available at https://github.com/nju-websoft/AgenticDS.",
+      "authors": [
+        "Qiaosheng Chen",
+        "Kaijia Huang",
+        "Fanqi Zhou",
+        "Gong Cheng"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.IR"
+      ],
+      "published": "2026-10-29T08:42:49+00:00",
+      "link": "https://arxiv.org/pdf/2610.39608v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Agentic dataset search enforcing training constraints",
+      "llm_evidence_cn": "面向训练约束的智能体数据集搜索",
+      "llm_evidence": "面向训练约束的智能体数据集搜索",
+      "canonical_evidence": "面向训练约束的智能体数据集搜索",
+      "llm_tldr_en": "Frames dataset search as constraint-aware agentic search; proposes AgenticDS to find training data that verifiably improves model training.",
+      "llm_tldr_cn": "在百万级数据仓库中寻找合适训练数据不能只靠文本相似度，还需满足任务、许可证和训练阶段等约束。论文提出AgenticDS，将数据集搜索建模为带合约约束的智能体流程，以验证返回数据是否真正满足查询并改善训练。该工作连接数据集检索与模型训练效果，为智能体数据管线提供可核验的搜索方法。",
+      "llm_tldr": "在百万级数据仓库中寻找合适训练数据不能只靠文本相似度，还需满足任务、许可证和训练阶段等约束。论文提出AgenticDS，将数据集搜索建模为带合约约束的智能体流程，以验证返回数据是否真正满足查询并改善训练。该工作连接数据集检索与模型训练效果，为智能体数据管线提供可核验的搜索方法。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "agentic data construction and curation for training AI agents",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.39193v1",
+      "source": "arxiv",
+      "title": "Goal-Aware Dynamic Multi-Agent Collaboration for Long-Horizon Tasks",
+      "abstract": "LLM-based agents are increasingly used to complete complex, long-horizon tasks without human intervention. To make progress toward the task goal, agents need to perform different duties, such as planning and verification, when needed. To understand how single agents manage these duties during long-horizon execution, we conduct a preliminary study. Our analysis shows that verification has the strongest association with task success, but often occurs late, leaving limited opportunities for correction. We also find that the proportion of duty-relevant information decreases as records from different duties accumulate in a shared context. These findings lead us to examine whether multi-agent systems (MAS) can address these problems by assigning duties to agents with separate contexts. Our analysis shows that this separation alone is insufficient. Agents can lose track of the overall goal and repeat prior investigations. They may also lack necessary background while receiving irrelevant information from others. To maintain goal awareness and coordinate collaboration as task needs change, we propose Goal-Aware Dynamic Multi-Agent Collaboration (GAD). It uses a growing execution graph to organize subtasks and their dependencies. To keep agents focused on their goals, each context retains the original instruction and the assigned task's goal and acceptance conditions. To adapt collaboration and information sharing during execution, agents can divide tasks into subtasks and specify dependencies based on execution evidence. These dependencies guide when agents work and which results they receive. Verification and recovery check subtask results and full task completion against their goals, providing feedback for repair when checks fail.",
+      "authors": [
+        "Xu Shen",
+        "Lingyong Yan",
+        "Shuaiqiang Wang",
+        "Jianmin Wu",
+        "Zhikai Chen",
+        "Jiliang Tang",
+        "Jie Ren"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-29T02:15:35+00:00",
+      "link": "https://arxiv.org/pdf/2610.39193v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "LLM multi-agent collaboration assigning planning and verification duties",
+      "llm_evidence_cn": "LLM多智能体协作分配规划与验证职责",
+      "llm_evidence": "LLM多智能体协作分配规划与验证职责",
+      "canonical_evidence": "LLM多智能体协作分配规划与验证职责",
+      "llm_tldr_en": "Analyzing long-horizon LLM agent execution, the authors find verification is most tied to success but often arrives too late; they propose goal-aware dynamic multi-agent collaboration that assigns duties to agents to improve long-horizon task completion.",
+      "llm_tldr_cn": "LLM智能体在无人干预下执行长程任务时需在规划、验证等职责间切换，但单智能体常将验证拖到很晚，且共享上下文中职责相关信息随记录累积而被稀释。作者先做初步分析揭示这些问题，进而提出目标感知的动态多智能体协作方法，把不同职责分配给专门的智能体并按目标动态调度。该工作为长程任务中的智能体分工协作提供了实证依据与系统设计，有助于提升任务成功率。",
+      "llm_tldr": "LLM智能体在无人干预下执行长程任务时需在规划、验证等职责间切换，但单智能体常将验证拖到很晚，且共享上下文中职责相关信息随记录累积而被稀释。作者先做初步分析揭示这些问题，进而提出目标感知的动态多智能体协作方法，把不同职责分配给专门的智能体并按目标动态调度。该工作为长程任务中的智能体分工协作提供了实证依据与系统设计，有助于提升任务成功率。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2610.35817v1",
+      "source": "arxiv",
+      "title": "Pretraining Knows What, Simulation Teaches How: Compositional Generalization in a Sim-Trained Robot Agent",
+      "abstract": "A robot policy needs to understand what a task is asking for in a scene, and how to move the robot to accomplish that task. To achieve these two skills, we introduce Zero-real Agent Policy (ZAP), a recipe that teaches a small off-the-shelf vision-language model to control a robot via a simple tool harness. We use a pretrained 27B parameter model to bootstrap world understanding and reasoning, followed by supervised fine-tuning and GRPO on simple simulated tasks to teach it how to move the robot. Without any real-world robot data during training, ZAP reaches 96.7% success on real-world tasks, matching GPT-6 Astra in our harness and outperforming the MolmoAct2 VLA (33.3%), while running 3x faster and 17x cheaper than GPT-6 Astra. We demonstrate that ZAP also generalizes to completely new objects, goals, strategies, and language by seating a test tube in a rack (and choosing a different hole in the rack when prompted), handing a test tube between arms mid-air, drawing an X on a tic-tac-toe board, and playing chess. These goals and types of manipulation don't appear in our training data. Furthermore, ZAP also transfers to an unseen embodiment. On a single-arm Franka, ZAP reaches 55.9% on RoboLab-120, 4.9 percentage points ahead of the leading VLA/WAM baseline.",
+      "authors": [
+        "Benjamin Pikus",
+        "Daniel Saunders",
+        "Mircea Mironenco",
+        "Salman Mohammadi",
+        "Mathew Mathew",
+        "Sirou Zhu",
+        "Divya Makkar",
+        "Xuhua Huang",
+        "Qinbo Li",
+        "Supreeth Narasimhaswamy",
+        "Siyuan Cen",
+        "Thomas Neff",
+        "Dejia Xu",
+        "Shyamal Buch"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-10-26T17:44:34+00:00",
+      "link": "https://arxiv.org/pdf/2610.35817v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "pretrained model bootstrapped then SFT and GRPO on simulated agentic tasks",
+      "llm_evidence_cn": "预训练模型引导后经监督微调与 GRPO 在仿真智能体任务上训练",
+      "llm_evidence": "预训练模型引导后经监督微调与 GRPO 在仿真智能体任务上训练",
+      "canonical_evidence": "预训练模型引导后经监督微调与 GRPO 在仿真智能体任务上训练",
+      "llm_tldr_en": "ZAP shows a pretrained 27B model bootstraps world understanding while SFT and GRPO on simulated tasks teach control, reaching 96.7% real-world robot success without real robot data.",
+      "llm_tldr_cn": "机器人策略既要理解任务要求，又要掌握如何移动机器人，二者难以同时获得。作者提出 ZAP 配方：用预训练 27B 模型引导世界理解与推理，再通过监督微调和 GRPO 在简单仿真任务上教会模型如何控制机器人，全程无需真实机器人数据。实验显示其在真实任务上达到 96.7% 成功率，与强基线持平并显著优于视觉语言动作模型，同时更快更省。该结果说明预训练加仿真强化学习可有效迁移到真实智能体控制。",
+      "llm_tldr": "机器人策略既要理解任务要求，又要掌握如何移动机器人，二者难以同时获得。作者提出 ZAP 配方：用预训练 27B 模型引导世界理解与推理，再通过监督微调和 GRPO 在简单仿真任务上教会模型如何控制机器人，全程无需真实机器人数据。实验显示其在真实任务上达到 96.7% 成功率，与强基线持平并显著优于视觉语言动作模型，同时更快更省。该结果说明预训练加仿真强化学习可有效迁移到真实智能体控制。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "How reinforcement learning, pretraining, and mid training combine for agentic data training",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.39682v1",
+      "source": "arxiv",
+      "title": "Heterogeneous Co-Evolution Learning for Tool-Efficient Search Agents with Zero Labels",
+      "abstract": "Deep search agents extend language models by interleaving reasoning with external retrieval. However, effective search-agent training requires addressing two challenges beyond final-answer optimization. First, the capability frontier of agents is largely determined by training questions, whereas fixed or labeled task collections cannot adapt as agents improve. Second, outcome-only reinforcement learning treats all successful trajectories equally, even when some correct answers rely on redundant searches, creating an inherent tension between answer accuracy and tool efficiency. To address these issues, we introduce \\textsc{ZEST-Search}, a zero-label and tool-efficient framework for search-agent training via heterogeneous co-evolution. Starting from unlabeled reference questions, \\textsc{ZEST-Search} constructs validated search tasks online through an answer-first and evidence-path-guided generation process. A heterogeneous proposer adaptively constructs training tasks around the solver's evolving capability boundary, while the solver learns search-augmented reasoning through reinforcement learning. To jointly optimize task difficulty and search efficiency, \\textsc{ZEST-Search} employs an intermediate-difficulty reward for the proposer and a task-local tool-aware reward for the solver, encouraging informative tasks and correct answers with fewer redundant searches. Experiments on seven general-domain and multi-hop question answering benchmarks demonstrate that \\textsc{ZEST-Search} consistently improves search-agent performance while achieving higher tool efficiency without labeled search-training data or expert search trajectories. Further analyses show that heterogeneous generation, adaptive difficulty control, and tool-aware optimization enable more effective search-agent training.",
+      "authors": [
+        "Qin-Wen Luo",
+        "Sheng Ren",
+        "Xiang Chen",
+        "Rui Liu",
+        "Jun Fang",
+        "Naiqiang Tan",
+        "Jun Wang",
+        "Hua Chai",
+        "Sheng-Jun Huang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.IR"
+      ],
+      "published": "2026-10-29T09:28:19+00:00",
+      "link": "https://arxiv.org/pdf/2610.39682v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Zero-label RL training of search agents with adaptive question co-evolution and tool efficiency",
+      "llm_evidence_cn": "零标签强化学习训练搜索智能体，结合问题协同进化与工具效率",
+      "llm_evidence": "零标签强化学习训练搜索智能体，结合问题协同进化与工具效率",
+      "canonical_evidence": "零标签强化学习训练搜索智能体，结合问题协同进化与工具效率",
+      "llm_tldr_en": "ZEST-Search trains tool-efficient search agents without labels via heterogeneous co-evolution, adapting training questions to the agent and rewarding efficient successful trajectories.",
+      "llm_tldr_cn": "深度搜索智能体训练面临训练问题无法随能力进化、结果奖励忽视工具效率的挑战。ZEST-Search 提出零标签异构协同进化框架，让训练问题与智能体能力共同演化，并在强化学习中区分高效与冗余的成功轨迹。该方法无需人工标签即可提升搜索智能体的答案准确率与工具使用效率，为可扩展的搜索智能体训练提供了新路径。",
+      "llm_tldr": "深度搜索智能体训练面临训练问题无法随能力进化、结果奖励忽视工具效率的挑战。ZEST-Search 提出零标签异构协同进化框架，让训练问题与智能体能力共同演化，并在强化学习中区分高效与冗余的成功轨迹。该方法无需人工标签即可提升搜索智能体的答案准确率与工具使用效率，为可扩展的搜索智能体训练提供了新路径。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "Find methods that train language model agents with reinforcement learning over multi turn interactions and tool use.",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.36538v1",
+      "source": "arxiv",
+      "title": "Agentic Data Sampling Framework for Multilingual ASR via Linguistic-Aware Error-Driven Optimization",
+      "abstract": "Multilingual automatic speech recognition (ASR) has achieved rapid progress with large-scale pretrained models and multilingual speech corpora. Previous studies have proved the pivotal role of data sampling in multilingual ASR performance. However, existing sampling strategies largely rely on time-consuming manual, heuristic-based designs. To address this, we propose a linguistic-aware agentic data sampling framework that introduces a data sampling LLM agent into the multilingual ASR training loop. The agent is driven by a linguistically grounded rubric that analyzes ASR errors from phonological, morphological, and syntactic perspectives, and uses the resulting feedback together with training statistics, budget constraints, and algorithm profiles to select domain-level, sample-level, and token-level sampling strategies. This design turns evaluation results into adaptive data-selection decisions rather than treating WER/CER as final endpoints only. We conduct experiments on twelve Common Voice languages using Whisper-medium as the ASR backbone. The results show that our method achieves performance better than full-data training while using less training data and lower computational resources, and substantially accelerates training convergence compared to conventional sampling strategies.",
+      "authors": [
+        "Zhiheng Qian",
+        "Junhao Du",
+        "Jing Peng",
+        "Hanqi Li",
+        "Kunyang Peng",
+        "Feng Xue",
+        "Lu Chen",
+        "Shuai Wang",
+        "Kai Yu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-10-27T02:49:36+00:00",
+      "link": "https://arxiv.org/pdf/2610.36538v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "agentic data sampling guided by error-driven feedback",
+      "llm_evidence_cn": "由误差驱动反馈引导的智能体化数据采样",
+      "llm_evidence": "由误差驱动反馈引导的智能体化数据采样",
+      "canonical_evidence": "由误差驱动反馈引导的智能体化数据采样",
+      "llm_tldr_en": "Multilingual ASR data sampling still relies on manual heuristics. This paper introduces a linguistic-aware agentic data sampling framework that inserts an LLM sampling agent into the training loop, driven by a phonological, morphological and syntactic error rubric to adapt sampling under budget constraints.",
+      "llm_tldr_cn": "针对多语言ASR数据采样依赖耗时人工启发式设计的问题，本文提出语言感知的智能体化数据采样框架。该方法将数据采样LLM智能体引入训练循环，依据音系、形态和句法的错误分析准则，并结合训练统计与预算约束动态调整采样。该工作把智能体式数据选择方法迁移到语音识别领域，自动化了数据采样流程，为数据混合与采样策略提供了可借鉴思路。",
+      "llm_tldr": "针对多语言ASR数据采样依赖耗时人工启发式设计的问题，本文提出语言感知的智能体化数据采样框架。该方法将数据采样LLM智能体引入训练循环，依据音系、形态和句法的错误分析准则，并结合训练统计与预算约束动态调整采样。该工作把智能体式数据选择方法迁移到语音识别领域，自动化了数据采样流程，为数据混合与采样策略提供了可借鉴思路。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "pretraining data selection and mixture for language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.40578v1",
+      "source": "arxiv",
+      "title": "VeriCUA: Verification as Agentic Exploration for Computer-Using Agents",
+      "abstract": "Building and scaling computer-using agents (CUAs) across desktop, mobile, and web environments requires reliable task-completion verification for data curation, evaluation, and reinforcement learning. Typical automated approaches prompt vision-language models (VLMs) to judge trajectories or generate programs to inspect application state. However, both rely on partial views of complex digital environments. VLM judges are restricted to supplied observations, while generated programs depend on accessible state. These views can omit decisive evidence or leave completion judgments unsupported. Tailoring separate verifiers to different platforms and access settings adds further engineering cost. We present VeriCUA, a platform-agnostic framework for verification through agentic exploration. It treats verification as dynamic evidence gathering and assessment within a shared procedure for online and offline settings across platforms and observation modalities. After inspecting the available context to construct a task rubric, the verifier selects GUI or code checks for unresolved requirements and combines their findings under explicit evidence rules. Experiments show improved agreement with reference labels over the compared baselines across these settings, with the largest offline gains on hard cases and stronger rejection of false completion claims online. Further analyses connect these gains to complementary evidence and test-time exploration.",
+      "authors": [
+        "Qiushi Sun",
+        "Da Yu",
+        "Alexander Knop",
+        "Amer Sinha",
+        "Lingpeng Kong",
+        "Ben Kao",
+        "Ravi Kumar",
+        "Pritish Kamath"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.CV"
+      ],
+      "published": "2026-10-29T17:45:26+00:00",
+      "link": "https://arxiv.org/pdf/2610.40578v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Platform-agnostic verification framework for computer-using agent data curation and RL",
+      "llm_evidence_cn": "面向计算机使用智能体的平台无关验证框架，用于数据整理与强化学习",
+      "llm_evidence": "面向计算机使用智能体的平台无关验证框架，用于数据整理与强化学习",
+      "canonical_evidence": "面向计算机使用智能体的平台无关验证框架，用于数据整理与强化学习",
+      "llm_tldr_en": "VeriCUA provides platform-agnostic task-completion verification for computer-using agents, improving data curation, evaluation, and RL by combining trajectory judgment with state inspection.",
+      "llm_tldr_cn": "跨桌面、移动与网页环境构建计算机使用智能体时，可靠的任务完成验证对数据整理、评估和强化学习至关重要。现有视觉语言模型评判或程序化检查只能依赖局部视图，可能遗漏关键证据。VeriCUA 提出平台无关的验证框架，将轨迹判断与状态检查结合为智能体式探索。该方法能更可靠地验证复杂数字环境中的任务完成情况，并降低跨平台适配成本。",
+      "llm_tldr": "跨桌面、移动与网页环境构建计算机使用智能体时，可靠的任务完成验证对数据整理、评估和强化学习至关重要。现有视觉语言模型评判或程序化检查只能依赖局部视图，可能遗漏关键证据。VeriCUA 提出平台无关的验证框架，将轨迹判断与状态检查结合为智能体式探索。该方法能更可靠地验证复杂数字环境中的任务完成情况，并降低跨平台适配成本。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "agentic data construction and curation for training AI agents",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2610.36925v1",
+      "source": "arxiv",
+      "title": "Vision-Language Agents Can Learn in Their Own Latent Worlds",
+      "abstract": "Learning from experience is essential for building the next generation of agents that continually expand their capabilities. Pretrained vision-language models (VLMs) already internalize rich world knowledge, yet this knowledge is rarely leveraged to drive policy improvement through online interaction. Realizing this potential efficiently remains challenging, as policy updates shift the agent's interaction distribution, requiring the world model to adapt accordingly, while continually updating large pretrained models is computationally expensive. To address this challenge, we introduce Dwell, a model-based reinforcement learning (RL) framework that reframes a VLM as a recurrent latent transition operator, endowing it with the ability to predict, adjust, and act in latent space. Leveraging the VLM's own representations and its dual role as both world model and policy, the agent continually learns from real interactions to anticipate and evaluate action outcomes, and from latent imagination to improve its behavior. Across five interactive visual environments, Dwell achieves the strongest overall performance among trainable methods while substantially reducing the compute required for imagination, showing that effective world models for VLM agents need not reconstruct the future; they need to predict futures that are useful for action. Our code is publicly available at https://github.com/Tom111-lhx/Dwell",
+      "authors": [
+        "Haoxi Li",
+        "Sikai Bai",
+        "Jianfei Ma",
+        "Qinglin Hou",
+        "Xiaocheng Lu",
+        "Tao Han",
+        "Jie Zhang",
+        "Song Guo"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-27T09:51:08+00:00",
+      "link": "https://arxiv.org/pdf/2610.36925v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "model-based RL where VLM agents improve policy through online multi-step interaction",
+      "llm_evidence_cn": "以模型为基础的强化学习让视觉语言智能体通过在线多步交互改进策略",
+      "llm_evidence": "以模型为基础的强化学习让视觉语言智能体通过在线多步交互改进策略",
+      "canonical_evidence": "以模型为基础的强化学习让视觉语言智能体通过在线多步交互改进策略",
+      "llm_tldr_en": "Dwell reframes a pretrained VLM as a recurrent latent transition operator, enabling model-based RL where the agent predicts, adjusts and acts in its own latent world without costly continual updates.",
+      "llm_tldr_cn": "预训练视觉语言模型蕴含丰富世界知识，却很少被用于在线交互中的策略改进；而策略更新会改变交互分布，且持续更新大模型代价高昂。作者提出 Dwell，将视觉语言模型重构为循环潜在转移算子，使其能在自身潜在世界中预测、调整并行动，从而以基于模型的强化学习方式高效提升策略。该框架缓解了世界模型需随策略漂移而适配的难题。实验显示智能体可在无需昂贵持续训练的情况下从经验中持续增强能力。",
+      "llm_tldr": "预训练视觉语言模型蕴含丰富世界知识，却很少被用于在线交互中的策略改进；而策略更新会改变交互分布，且持续更新大模型代价高昂。作者提出 Dwell，将视觉语言模型重构为循环潜在转移算子，使其能在自身潜在世界中预测、调整并行动，从而以基于模型的强化学习方式高效提升策略。该框架缓解了世界模型需随策略漂移而适配的难题。实验显示智能体可在无需昂贵持续训练的情况下从经验中持续增强能力。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "reinforcement learning over sequential multi-turn interactions between agents and environments",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2610.39813v1",
+      "source": "arxiv",
+      "title": "EvoTeam: Multi-Agent Collaboration via Evolving Teams",
+      "abstract": "LLM-based multi-agent systems (MAS) rely on collaboration among specialized agents to solve complex tasks. Existing methods improve MAS by refining the prompts, skills, and execution strategies of individual agents based on task feedback. However, improving individual agents does not necessarily lead to better team collaboration. Recent studies have therefore extended evolution to the collaboration level, using collective execution experience to adjust team organization, and inter-agent interactions. Nevertheless, evolving collaboration across heterogeneous tasks remains challenging, as existing approaches often constrain team reorganization within a shared structure and reuse interaction rules across incompatible team contexts. In this paper, we propose EvoTeam, a collaboration-centric evolution framework that jointly evolves team organization, interaction rules, and individual agent skills through execution experience. It maintains a library of reusable teams, selecting or creating agent teams and guiding collaboration through team-specific interaction rules. Collaboration experience accumulates within compatible team contexts, while individual skills remain reusable across teams. Experiments across four benchmarks demonstrate its effectiveness. Our code is available at https://github.com/DEEP-JLU/EvoTeam.",
+      "authors": [
+        "Qinuo Cao",
+        "Xin He",
+        "Dianxuan Fu",
+        "Lizhi Zhang",
+        "Zhaoqing Xing",
+        "Jiapu Wang",
+        "Xin Wang",
+        "Na Zou",
+        "Yi Chang",
+        "Qinggang Zhang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-10-29T10:55:30+00:00",
+      "link": "https://arxiv.org/pdf/2610.39813v1",
+      "tags": [
+        "keyword:agentic-rl",
+        "query:agentic-rl"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "evolving team organization and inter-agent collaboration among LLM agents",
+      "llm_evidence_cn": "演化LLM智能体团队组织与智能体间协作",
+      "llm_evidence": "演化LLM智能体团队组织与智能体间协作",
+      "canonical_evidence": "演化LLM智能体团队组织与智能体间协作",
+      "llm_tldr_en": "EvoTeam argues that improving individual agents does not yield better teamwork, and instead evolves collaboration-level team organization and interaction rules from collective execution experience across heterogeneous tasks.",
+      "llm_tldr_cn": "现有LLM多智能体系统多通过改进单个智能体的提示、技能与执行策略来提升效果，但个体变强并不必然带来更好的团队协作，且跨异构任务演化协作时往往受限于固定结构。作者提出EvoTeam，把演化扩展到协作层面，利用集体执行经验调整团队组织与智能体间交互规则，并针对不兼容的团队情境分别适配。该工作为多智能体系统的协作结构演化提供了新方法，有助于提升复杂任务下的团队表现。",
+      "llm_tldr": "现有LLM多智能体系统多通过改进单个智能体的提示、技能与执行策略来提升效果，但个体变强并不必然带来更好的团队协作，且跨异构任务演化协作时往往受限于固定结构。作者提出EvoTeam，把演化扩展到协作层面，利用集体执行经验调整团队组织与智能体间交互规则，并针对不兼容的团队情境分别适配。该工作为多智能体系统的协作结构演化提供了新方法，有助于提升复杂任务下的团队表现。",
+      "llm_tags": [
+        "query:agentic-rl"
+      ],
+      "matched_query_tag": "query:agentic-rl",
+      "matched_query_text": "cowork agents that collaborate with humans and other agents",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

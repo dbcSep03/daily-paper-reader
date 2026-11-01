@@ -48,7 +48,7 @@
 <section class="dpr-home-dashboard-card dpr-home-report-card">
   <div class="dpr-home-dashboard-header">
     <div>
-      <span class="dpr-home-dashboard-kicker">2026-10-31</span>
+      <span class="dpr-home-dashboard-kicker">2026-11-01</span>
       <h3 class="dpr-home-dashboard-title">今日汇总</h3>
     </div>
     <strong class="dpr-home-dashboard-count">共 17 篇</strong>
@@ -58,7 +58,7 @@
     <div class="dpr-home-dashboard-stat"><dt>精读</dt><dd>6</dd></div>
     <div class="dpr-home-dashboard-stat"><dt>速读</dt><dd>11</dd></div>
   </dl>
-  <p class="dpr-home-dashboard-body">最近更新：2026-10-31 22:40:20 UTC<br>状态：成功</p>
+  <p class="dpr-home-dashboard-body">最近更新：2026-11-01 23:05:55 UTC<br>状态：成功</p>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-brief-card">
   <div class="dpr-home-dashboard-header">
@@ -69,7 +69,7 @@
     <strong class="dpr-home-dashboard-count">AI</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<p>今日筛读17篇论文（精读6篇、速读11篇），重点锁定智能体学习与长程决策优化。最值得看的是9.0分的《EnvLunch》提出“环境即免费午餐”的交互学习思路，以及《Multiscale Policy Optimization》面向长程LLM智能体的多尺度策略优化。普通读者可先读这两篇精读，再按兴趣用速读清单补充探索与训练方法。</p>
+<p>今天共筛出 17 篇论文，其中 6 篇精读、11 篇速读，重点集中在智能体训练与行为纠偏。最值得看的是 9.0 分的《WorkFactory》和 8.0 分的《MiRL》：前者把专业意图转成可执行任务，用于规模化智能体训练；后者用错误定向强化学习修正终端智能体的不当行为。普通读者可以先从这两篇入手，再顺带看 GUI 智能体自适应训练与无标签工具高效搜索智能体这两篇速读。</p>
   </div>
 </section>
 <section class="dpr-home-dashboard-card dpr-home-deep-card">
@@ -81,7 +81,7 @@
     <strong class="dpr-home-dashboard-count">6 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="EnvLunch: The Environment as a Free Lunch for Learning to Interact">EnvLunch: The Environment as a Free Lunch for Learning to Interact</span></li><li><span class="dpr-home-dashboard-paper-title" title="Multiscale Policy Optimization for Long-Horizon LLM Agents">Multiscale Policy Optimization for Long-Horizon LLM Agents</span></li><li><span class="dpr-home-dashboard-paper-title" title="Action-Value Calibration via Continuation Sharing for Long-Horizon Agentic Reinforcement Learning">Action-Value Calibration via Continuation Sharing for Long-Horizon Agentic Reinforcement Learning</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="WorkFactory: Turning Professional Intents into Executable Work for Scalable Agent Training">WorkFactory: Turning Professional Intents into Executable Work for Scalable Agent Training</span></li><li><span class="dpr-home-dashboard-paper-title" title="MiRL: Error-Targeted Reinforcement Learning for Correcting Terminal Agent Misbehaviors">MiRL: Error-Targeted Reinforcement Learning for Correcting Terminal Agent Misbehaviors</span></li><li><span class="dpr-home-dashboard-paper-title" title="OmniBrain-0: A Unified Agentic Model for Embodied Intelligence">OmniBrain-0: A Unified Agentic Model for Embodied Intelligence</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">agentic-rl <strong>6</strong></span></div>
 </section>
@@ -94,7 +94,7 @@
     <strong class="dpr-home-dashboard-count">11 篇</strong>
   </div>
   <div class="dpr-home-dashboard-body">
-<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Asymmetric On-Policy Distillation Learns In-Context Exploration">Asymmetric On-Policy Distillation Learns In-Context Exploration</span></li><li><span class="dpr-home-dashboard-paper-title" title="Trajectory2Gym: Decision-Grounded Compositional Interaction Synthesis for Tool-Use Agents">Trajectory2Gym: Decision-Grounded Compositional Interaction Synthesis for Tool-Use Agents</span></li><li><span class="dpr-home-dashboard-paper-title" title="A Distribution-Matching Perspective on LLM Training Algorithms">A Distribution-Matching Perspective on LLM Training Algorithms</span></li></ul>
+<ul class="dpr-home-dashboard-paper-list"><li><span class="dpr-home-dashboard-paper-title" title="Where to Learn and How Far to Roll Out: Efficient Adaptive Training for GUI Agents">Where to Learn and How Far to Roll Out: Efficient Adaptive Training for GUI Agents</span></li><li><span class="dpr-home-dashboard-paper-title" title="From Intent to Improvement: Agentic Dataset Search for Better Model Training">From Intent to Improvement: Agentic Dataset Search for Better Model Training</span></li><li><span class="dpr-home-dashboard-paper-title" title="Heterogeneous Co-Evolution Learning for Tool-Efficient Search Agents with Zero Labels">Heterogeneous Co-Evolution Learning for Tool-Efficient Search Agents with Zero Labels</span></li></ul>
   </div>
   <div class="dpr-home-dashboard-tags"><span class="dpr-home-dashboard-tag">agentic-rl <strong>11</strong></span></div>
 </section>

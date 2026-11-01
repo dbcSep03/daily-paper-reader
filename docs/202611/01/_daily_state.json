@@ -1,0 +1,281 @@
+{
+  "date": "20261101",
+  "date_label": "",
+  "generated_at": "2026-11-01 23:05:55 UTC",
+  "recommend_exists": true,
+  "run_count": 1,
+  "papers": [
+    {
+      "paper_id": "2610.37161v1",
+      "route": "202611/01/2610.37161v1-workfactory-turning-professional-intents-into-executable-work-for-scalable-agent-training",
+      "title": "WorkFactory: Turning Professional Intents into Executable Work for Scalable Agent Training",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 9.0,
+      "evidence": "为智能体训练构建可执行任务的规模化数据管线",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.35697v1",
+      "route": "202611/01/2610.35697v1-mirl-error-targeted-reinforcement-learning-for-correcting-terminal-agent-misbehaviors",
+      "title": "MiRL: Error-Targeted Reinforcement Learning for Correcting Terminal Agent Misbehaviors",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向长程多轮终端智能体交互的强化学习",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.36013v1",
+      "route": "202611/01/2610.36013v1-omnibrain-0-a-unified-agentic-model-for-embodied-intelligence",
+      "title": "OmniBrain-0: A Unified Agentic Model for Embodied Intelligence",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "用于训练统一具身智能体的多教师同策略蒸馏",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.36469v1",
+      "route": "202611/01/2610.36469v1-coharl-co-evolving-agent-policies-and-executable-harnesses-with-reinforcement-learning",
+      "title": "CoHARL: Co-Evolving Agent Policies and Executable Harnesses with Reinforcement Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "协同进化智能体策略与工具执行框架的强化学习",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.37609v1",
+      "route": "202611/01/2610.37609v1-envsched-environment-aware-scheduling-for-rollout-efficient-agent-reinforcement-learning",
+      "title": "EnvSched: Environment-Aware Scheduling for Rollout-Efficient Agent Reinforcement Learning",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向智能体强化学习的环境级调度",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.37651v1",
+      "route": "202611/01/2610.37651v1-gepa-curator-curated-learning-for-self-improving-agents",
+      "title": "GEPA-Curator: Curated Learning for Self Improving Agents",
+      "section": "deep",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "任务整理筛选用于提示优化的智能体经验",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.39251v1",
+      "route": "202611/01/2610.39251v1-where-to-learn-and-how-far-to-roll-out-efficient-adaptive-training-for-gui-agents",
+      "title": "Where to Learn and How Far to Roll Out: Efficient Adaptive Training for GUI Agents",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "多步GUI智能体的自适应强化学习训练",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.39608v1",
+      "route": "202611/01/2610.39608v1-from-intent-to-improvement-agentic-dataset-search-for-better-model-training",
+      "title": "From Intent to Improvement: Agentic Dataset Search for Better Model Training",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向训练约束的智能体数据集搜索",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.39682v1",
+      "route": "202611/01/2610.39682v1-heterogeneous-co-evolution-learning-for-tool-efficient-search-agents-with-zero-labels",
+      "title": "Heterogeneous Co-Evolution Learning for Tool-Efficient Search Agents with Zero Labels",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "零标签强化学习训练搜索智能体，结合问题协同进化与工具效率",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.40578v1",
+      "route": "202611/01/2610.40578v1-vericua-verification-as-agentic-exploration-for-computer-using-agents",
+      "title": "VeriCUA: Verification as Agentic Exploration for Computer-Using Agents",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 8.0,
+      "evidence": "面向计算机使用智能体的平台无关验证框架，用于数据整理与强化学习",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.38882v1",
+      "route": "202611/01/2610.38882v1-aligning-autoresearch-co-improvement-between-agents-and-humans",
+      "title": "Aligning Autoresearch: Co-Improvement between Agents and Humans",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "自动科研智能体与人类研究者的协同共进",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.39193v1",
+      "route": "202611/01/2610.39193v1-goal-aware-dynamic-multi-agent-collaboration-for-long-horizon-tasks",
+      "title": "Goal-Aware Dynamic Multi-Agent Collaboration for Long-Horizon Tasks",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 7.0,
+      "evidence": "LLM多智能体协作分配规划与验证职责",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.33806v1",
+      "route": "202611/01/2610.33806v1-intentdelta-a-human-constructed-benchmark-for-evolving-user-intent",
+      "title": "IntentDelta: A Human-Constructed Benchmark for Evolving User Intent",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "多轮人机交互中用户意图演变的基准",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.35817v1",
+      "route": "202611/01/2610.35817v1-pretraining-knows-what-simulation-teaches-how-compositional-generalization-in-a-sim-trained-robot-agent",
+      "title": "Pretraining Knows What, Simulation Teaches How: Compositional Generalization in a Sim-Trained Robot Agent",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "预训练模型引导后经监督微调与 GRPO 在仿真智能体任务上训练",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.36538v1",
+      "route": "202611/01/2610.36538v1-agentic-data-sampling-framework-for-multilingual-asr-via-linguistic-aware-error-driven-optimization",
+      "title": "Agentic Data Sampling Framework for Multilingual ASR via Linguistic-Aware Error-Driven Optimization",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "由误差驱动反馈引导的智能体化数据采样",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.36925v1",
+      "route": "202611/01/2610.36925v1-vision-language-agents-can-learn-in-their-own-latent-worlds",
+      "title": "Vision-Language Agents Can Learn in Their Own Latent Worlds",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "以模型为基础的强化学习让视觉语言智能体通过在线多步交互改进策略",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    },
+    {
+      "paper_id": "2610.39813v1",
+      "route": "202611/01/2610.39813v1-evoteam-multi-agent-collaboration-via-evolving-teams",
+      "title": "EvoTeam: Multi-Agent Collaboration via Evolving Teams",
+      "section": "quick",
+      "tags": [
+        {
+          "kind": "query",
+          "label": "agentic-rl"
+        }
+      ],
+      "score": 6.0,
+      "evidence": "演化LLM智能体团队组织与智能体间协作",
+      "first_seen_at": "2026-11-01 23:05:55 UTC",
+      "updated_at": "2026-11-01 23:05:55 UTC"
+    }
+  ]
+}
